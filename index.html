@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Espresso Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8f5f0; --surface: #ffffff; --surface2: #f0ece4;
+      --border: rgba(0,0,0,0.09); --border-strong: rgba(0,0,0,0.16);
+      --text: #1c1814; --muted: #78726a; --hint: #b0a898;
+      --accent: #b85215; --accent-light: #fdf0e8;
+      --info-bg: #e8f1fd; --info-text: #1a4fa0; --info-border: rgba(26,79,160,0.25);
+      --success-bg: #e6f4ec; --success-text: #1a6b3a; --success-border: rgba(26,107,58,0.25);
+      --warning-bg: #fdf4e0; --warning-text: #8a6000; --warning-border: rgba(138,96,0,0.25);
+      --danger-text: #b03030; --danger-bg: #fdeaea; --danger-border: rgba(176,48,48,0.25);
+      --radius: 8px; --radius-lg: 14px; --radius-xl: 20px;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --font-serif: 'Lora', Georgia, serif;
+      --mono: ui-monospace, 'SF Mono', monospace;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #18150f; --surface: #211d16; --surface2: #2a2520;
+        --border: rgba(255,255,255,0.09); --border-strong: rgba(255,255,255,0.16);
+        --text: #f0ece4; --muted: #9a9082; --hint: #5a544a;
+        --accent: #d4672a; --accent-light: #2e1e0e;
+        --info-bg: #0e1e3a; --info-text: #7aabf0; --info-border: rgba(122,171,240,0.25);
+        --success-bg: #0a2018; --success-text: #5abf80; --success-border: rgba(90,191,128,0.25);
+        --warning-bg: #281e06; --warning-text: #d4a030; --warning-border: rgba(212,160,48,0.25);
+        --danger-text: #e07070; --danger-bg: #280f0f; --danger-border: rgba(224,112,112,0.25);
+        --shadow: 0 1px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+      }
+    }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; -webkit-text-size-adjust: 100%; }
+
+    /* AUTH SCREEN */
+    .auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+    .auth-card { background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 2.5rem 2rem; width: 100%; max-width: 400px; box-shadow: var(--shadow); }
+    .auth-logo { font-family: var(--font-serif); font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .auth-tagline { font-size: 13px; color: var(--muted); margin-bottom: 2rem; }
+    .auth-divider { display: flex; align-items: center; gap: 12px; margin: 1.25rem 0; }
+    .auth-divider-line { flex: 1; height: 1px; background: var(--border); }
+    .auth-divider-text { font-size: 12px; color: var(--hint); }
+    .auth-msg { font-size: 13px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 1rem; }
+    .auth-msg.success { background: var(--success-bg); color: var(--success-text); }
+    .auth-msg.error { background: var(--danger-bg); color: var(--danger-text); }
+    .auth-msg.info { background: var(--info-bg); color: var(--info-text); }
+    .auth-toggle { font-size: 13px; color: var(--muted); text-align: center; margin-top: 1rem; }
+    .auth-toggle a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 500; }
+    .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px 16px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); cursor: pointer; font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text); transition: background 0.15s; -webkit-tap-highlight-color: transparent; }
+    .google-btn:hover { background: var(--surface2); }
+    .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* LAYOUT */
+    header { border-bottom: 1px solid var(--border); padding: 0.875rem 1.25rem; display: flex; align-items: center; justify-content: space-between; background: var(--surface); position: sticky; top: 0; z-index: 10; }
+    .header-left { display: flex; align-items: baseline; gap: 10px; }
+    header h1 { font-family: var(--font-serif); font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+    header span { font-size: 12px; color: var(--muted); }
+    .user-menu { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; overflow: hidden; flex-shrink: 0; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .signout-btn { font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: var(--radius); font-family: var(--font); }
+    .signout-btn:hover { background: var(--surface2); color: var(--text); }
+    .container { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem; }
+    .tabs { display: flex; overflow-x: auto; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { padding: 8px 13px; font-size: 13px; cursor: pointer; border: none; background: none; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; font-family: var(--font); font-weight: 500; }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* FORMS */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    input, select, textarea { font-family: var(--font); font-size: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 9px 11px; width: 100%; transition: border-color 0.15s; -webkit-appearance: none; appearance: none; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(184,82,21,0.1); }
+    textarea { resize: vertical; min-height: 70px; }
+    .date-hint { font-size: 11px; color: var(--hint); min-height: 16px; }
+    .computed-field { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 11px; font-size: 14px; min-height: 40px; display: flex; align-items: center; }
+    .computed-field.dim { color: var(--hint); font-style: italic; }
+    .days-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; }
+    .days-fresh { background: var(--success-bg); color: var(--success-text); }
+    .days-peak  { background: var(--info-bg); color: var(--info-text); }
+    .days-old   { background: var(--warning-bg); color: var(--warning-text); }
+
+    /* RATING */
+    .rating-row { display: flex; gap: 5px; align-items: center; }
+    .star { font-size: 24px; cursor: pointer; color: var(--border-strong); transition: color 0.1s; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .star.active { color: #d4880a; }
+    #star-label { font-size: 12px; color: var(--muted); margin-left: 4px; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 18px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: transparent; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text); font-family: var(--font); transition: background 0.12s, opacity 0.12s; -webkit-tap-highlight-color: transparent; }
+    .btn:hover { background: var(--surface2); }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary:hover { opacity: 0.88; }
+    .btn.success { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+    .btn.info { background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); }
+    .btn.full { width: 100%; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-row { display: flex; gap: 8px; margin-top: 1rem; justify-content: flex-end; flex-wrap: wrap; }
+    .save-msg { text-align: right; font-size: 13px; margin-top: 8px; min-height: 20px; }
+
+    /* ROAST PICKER */
+    .roast-picker { background: var(--surface2); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border); }
+    .roast-picker-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+
+    /* NOTICE */
+    .notice { font-size: 12px; border-radius: var(--radius); padding: 9px 13px; border-left: 3px solid; border-top-left-radius: 0; border-bottom-left-radius: 0; line-height: 1.55; }
+    .notice-info { color: var(--muted); background: var(--surface2); border-color: var(--info-border); }
+    .notice-warning { color: var(--warning-text); background: var(--warning-bg); border-color: var(--warning-border); }
+    .notice-success { color: var(--success-text); background: var(--success-bg); border-color: var(--success-border); }
+
+    /* SHOT CARDS */
+    .shot-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 10px; }
+    .shot-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .shot-title { font-family: var(--font-serif); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
+    .shot-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .shot-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; }
+    .chip { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); }
+    .chip.highlight { background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); }
+    .chip.mine { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+    .chip.finished-chip { background: var(--surface2); color: var(--muted); }
+    .shot-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+    .stat { background: var(--surface2); border-radius: var(--radius); padding: 6px 8px; text-align: center; }
+    .stat-val { font-size: 14px; font-weight: 600; }
+    .stat-lbl { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .shot-note { font-size: 12px; color: var(--muted); margin-top: 8px; font-style: italic; border-top: 1px solid var(--border); padding-top: 8px; line-height: 1.5; }
+    .stars-display { color: #d4880a; font-size: 12px; }
+    .rating-stars-sm { color: #d4880a; font-size: 12px; }
+    .delete-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 15px; padding: 3px 6px; border-radius: 4px; }
+    .delete-btn:hover { color: var(--danger-text); background: var(--danger-bg); }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .filters input, .filters select { max-width: 165px; font-size: 13px; }
+
+    /* LIBRARY */
+    .lib-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.875rem 1.25rem; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; transition: opacity 0.2s; }
+    .lib-card.finished { opacity: 0.55; }
+    .lib-card-img { width: 54px; height: 54px; border-radius: var(--radius); border: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; overflow: hidden; }
+    .lib-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .lib-card-body { flex: 1; min-width: 0; }
+    .lib-card-name { font-family: var(--font-serif); font-weight: 500; font-size: 14px; }
+    .lib-card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    .lib-card-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .icon-btn { background: none; border: none; cursor: pointer; padding: 6px 7px; border-radius: var(--radius); font-size: 14px; color: var(--muted); -webkit-tap-highlight-color: transparent; }
+    .icon-btn:hover { background: var(--surface2); }
+
+    /* INSIGHTS */
+    .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+    .insight-card { background: var(--surface); border-radius: var(--radius); padding: 0.875rem; border: 1px solid var(--border); }
+    .insight-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+    .insight-val { font-family: var(--font-serif); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+    .insight-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .section-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; margin-top: 1.25rem; }
+    .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .profile-row:last-child { border-bottom: none; }
+    .ratio-bar { flex: 1; height: 4px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .ratio-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+    .chart-wrap { position: relative; width: 100%; margin-bottom: 1.25rem; }
+
+    /* GRINDERS */
+    .grinder-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.25rem; overflow: hidden; }
+    .grinder-block-header { display: flex; justify-content: space-between; align-items: center; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .grinder-block-name { font-family: var(--font-serif); font-weight: 500; font-size: 14px; }
+    .grinder-block-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .grinder-filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 1.25rem; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .grinder-filters select, .grinder-filters input { font-size: 12px; padding: 5px 8px; max-width: 140px; }
+    .community-shot-row { padding: 10px 1.25rem; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .community-shot-row:last-child { border-bottom: none; }
+    .community-shot-row.is-mine { background: var(--success-bg); }
+
+    /* TOGGLE */
+    .insight-toggle { display: flex; gap: 4px; background: var(--surface2); border-radius: var(--radius); padding: 3px; margin-bottom: 1.25rem; }
+    .insight-toggle-btn { flex: 1; padding: 7px 12px; font-size: 13px; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--muted); font-family: var(--font); font-weight: 500; }
+    .insight-toggle-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .bag-insight-header select { font-size: 13px; flex: 1; min-width: 180px; width: 100%; margin-bottom: 1rem; }
+
+    /* FINISHED SECTION */
+    .finished-section-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; margin-top: 1.5rem; margin-bottom: 8px; border-top: 1px solid var(--border); cursor: pointer; }
+    .finished-section-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* MODAL */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-start; justify-content: center; z-index: 50; padding: 1.5rem 1rem; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .modal { background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 1.5rem; width: 100%; max-width: 460px; margin: auto; box-shadow: var(--shadow); }
+    .modal-title { font-family: var(--font-serif); font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; }
+    .modal-hidden { display: none; }
+    .upload-hint { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    input[type=file] { font-size: 13px; padding: 6px 10px; }
+
+    /* LOADING */
+    .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: var(--muted); }
+
+    /* DB STATUS */
+    .db-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .db-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .db-dot.ok { background: #4caf50; }
+    .db-dot.saving { background: var(--accent); animation: pulse 1s infinite; }
+    .db-dot.error { background: #e24b4a; }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.3;} }
+
+    @media (max-width: 480px) {
+      .shot-stats { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .filters input, .filters select { max-width: 100%; flex: 1; }
+      .auth-card { padding: 2rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen" class="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading…</div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" style="display:none;">
+  <div class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">☕ Espresso</div>
+      <div class="auth-tagline">Track every extraction. Dial in every roast.</div>
+
+      <div id="auth-msg" style="display:none;"></div>
+
+      <!-- Google -->
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><div class="auth-divider-line"></div><div class="auth-divider-text">or use email</div><div class="auth-divider-line"></div></div>
+
+      <!-- Email form -->
+      <div id="email-form">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>Email</label>
+          <input type="email" id="auth-email" placeholder="you@example.com" autocapitalize="none" autocorrect="off">
+        </div>
+        <div class="form-group" id="password-group" style="margin-bottom:10px;">
+          <label>Password</label>
+          <input type="password" id="auth-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAuth()">
+        </div>
+        <div class="form-group" id="confirm-group" style="margin-bottom:10px;display:none;">
+          <label>Confirm password</label>
+          <input type="password" id="auth-confirm" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAuth()">
+        </div>
+        <button class="btn primary full" onclick="submitAuth()" id="auth-submit-btn">Sign in</button>
+        <div class="auth-toggle" id="auth-mode-toggle">
+          Don't have an account? <a onclick="toggleAuthMode()">Create one</a>
+        </div>
+        <div class="auth-toggle" id="forgot-link" style="margin-top:6px;">
+          <a onclick="sendPasswordReset()">Forgot password?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" style="display:none;">
+  <header>
+    <div class="header-left">
+      <h1>Espresso</h1>
+      <span>extraction tracker</span>
+    </div>
+    <div class="user-menu">
+      <div class="db-status"><div class="db-dot ok" id="db-dot"></div><span id="db-label">Saved</span></div>
+      <div class="user-avatar" id="user-avatar" title="Signed in"></div>
+      <button class="signout-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('log')">Log shot</button>
+      <button class="tab" onclick="showTab('history')">History</button>
+      <button class="tab" onclick="showTab('library')">Roast library</button>
+      <button class="tab" onclick="showTab('grinders')">Grinders</button>
+      <button class="tab" onclick="showTab('insights')">Insights</button>
+    </div>
+
+    <!-- LOG SHOT -->
+    <div class="section active" id="tab-log">
+      <div class="roast-picker">
+        <div class="roast-picker-label">Load from roast library</div>
+        <select id="roast-select" onchange="loadRoast()"><option value="">— choose a saved roast —</option></select>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Extraction date</label><input type="date" id="f-extractdate"><div class="date-hint" id="extraction-date-hint"></div></div>
+        <div class="form-group"><label>Roaster</label><input type="text" id="f-roaster" placeholder="e.g. Onyx Coffee Lab" autocorrect="off"></div>
+        <div class="form-group"><label>Origin</label><input type="text" id="f-origin" placeholder="e.g. Ethiopia" autocorrect="off"></div>
+        <div class="form-group"><label>Varietal</label><input type="text" id="f-varietal" placeholder="e.g. Gesha" autocorrect="off"></div>
+        <div class="form-group"><label>Process</label><select id="f-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select></div>
+        <div class="form-group"><label>Roast level</label><select id="f-roast"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>
+        <div class="form-group"><label>Roast date</label><input type="date" id="f-roastdate" onchange="updateDaysOffRoast()"></div>
+        <div class="form-group"><label>Days off roast</label><div class="computed-field dim" id="f-daysoffroast">Set roast date above</div></div>
+        <div class="form-group"><label>Grinder</label><select id="f-grinder" onchange="updateShareNotice()"><option value="">— none selected —</option></select></div>
+        <div class="form-group"><label>Grind setting</label><input type="number" id="f-grind" placeholder="e.g. 14" step="0.5" inputmode="decimal"></div>
+        <div class="form-group"><label>Dose (g in)</label><input type="number" id="f-dose" placeholder="e.g. 18" step="0.1" oninput="updateRatio()" inputmode="decimal"></div>
+        <div class="form-group"><label>Yield (g out)</label><input type="number" id="f-yield" placeholder="e.g. 36" step="0.1" oninput="updateRatio()" inputmode="decimal"></div>
+        <div class="form-group"><label>Ratio</label><div class="computed-field dim" id="f-ratio">Enter dose &amp; yield</div></div>
+        <div class="form-group"><label>Brew temp (°C)</label><input type="number" id="f-temp" placeholder="e.g. 93" step="0.5" inputmode="decimal"></div>
+        <div class="form-group"><label>Pre-infusion (s)</label><input type="number" id="f-preinfusion" placeholder="e.g. 5" step="1" inputmode="numeric"></div>
+        <div class="form-group"><label>Total shot time (s)</label><input type="number" id="f-time" placeholder="e.g. 28" step="1" inputmode="numeric"></div>
+        <div class="form-group full">
+          <label>Rating</label>
+          <div class="rating-row">
+            <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+            <span id="star-label">tap to rate</span>
+          </div>
+        </div>
+        <div class="form-group full" id="share-notice-wrap" style="display:none;"><div class="notice" id="share-notice"></div></div>
+        <div class="form-group full"><label>Tasting notes</label><textarea id="f-notes" placeholder="e.g. bright citrus, jasmine — try finer next time"></textarea></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="clearForm()">Clear</button>
+        <button class="btn success" onclick="saveToLibrary()">+ Save to library</button>
+        <button class="btn primary" onclick="saveShot()" id="save-shot-btn">Save shot</button>
+      </div>
+      <div class="save-msg" id="save-msg"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="section" id="tab-history">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="btn info" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <div class="filters">
+        <input type="text" id="filter-search" placeholder="Search roaster, origin…" oninput="renderHistory()" autocorrect="off">
+        <select id="filter-process" onchange="renderHistory()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select>
+        <select id="filter-roast" onchange="renderHistory()"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
+        <select id="filter-rating" onchange="renderHistory()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4+ stars</option><option value="3">3+ stars</option></select>
+      </div>
+      <div id="history-list"></div>
+    </div>
+
+    <!-- ROAST LIBRARY -->
+    <div class="section" id="tab-library">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <span style="font-size:13px;color:var(--muted);">Your saved roasts</span>
+        <button class="btn primary" onclick="openModal('roast')">+ Add roast</button>
+      </div>
+      <div id="library-list"></div>
+      <div id="finished-section"></div>
+    </div>
+
+    <!-- GRINDERS -->
+    <div class="section" id="tab-grinders">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <span style="font-size:13px;color:var(--muted);">Your grinders</span>
+        <button class="btn primary" onclick="openModal('grinder')">+ Add grinder</button>
+      </div>
+      <div id="grinder-list"></div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="section" id="tab-insights">
+      <div class="insight-toggle">
+        <button class="insight-toggle-btn active" onclick="switchInsightView('overview')" id="toggle-overview">Overview</button>
+        <button class="insight-toggle-btn" onclick="switchInsightView('bag')" id="toggle-bag">By bag</button>
+      </div>
+      <div id="insights-overview"></div>
+      <div id="insights-bag" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROAST MODAL -->
+<div id="modal-roast" class="modal-hidden">
+  <div class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-title" id="modal-roast-title">Add roast to library</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Roaster *</label><input type="text" id="m-roaster" placeholder="e.g. Onyx Coffee Lab" autocorrect="off"></div>
+        <div class="form-group"><label>Origin *</label><input type="text" id="m-origin" placeholder="e.g. Ethiopia" autocorrect="off"></div>
+        <div class="form-group"><label>Varietal</label><input type="text" id="m-varietal" placeholder="e.g. Gesha" autocorrect="off"></div>
+        <div class="form-group"><label>Process</label><select id="m-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select></div>
+        <div class="form-group"><label>Roast level</label><select id="m-roast"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>
+        <div class="form-group"><label>Roast date</label><input type="date" id="m-roastdate"></div>
+        <div class="form-group full"><label>Bag photo</label><input type="file" id="m-photo" accept="image/*" onchange="previewPhoto()"><div class="upload-hint">Upload a photo of the bag or label</div><img id="m-photo-preview" style="display:none;margin-top:8px;width:80px;height:80px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);"></div>
+        <div class="form-group full"><label>Notes (optional)</label><textarea id="m-desc" placeholder="e.g. stone fruit, seasonal release" style="min-height:52px;"></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn" onclick="closeModal('roast')">Cancel</button><button class="btn primary" id="modal-roast-save" onclick="saveRoastEntry()">Save roast</button></div>
+      <div class="save-msg" id="modal-roast-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GRINDER MODAL -->
+<div id="modal-grinder" class="modal-hidden">
+  <div class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-title" id="modal-grinder-title">Add grinder</div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Grinder name *</label><input type="text" id="mg-name" placeholder="e.g. Niche Zero, Lagom P64" autocorrect="off"></div>
+        <div class="form-group full"><label>Notes (optional)</label><textarea id="mg-notes" placeholder="e.g. SSP burrs, stock burrs" style="min-height:52px;"></textarea></div>
+      </div>
+      <div class="save-msg" id="modal-grinder-msg"></div>
+      <div class="btn-row"><button class="btn" onclick="closeModal('grinder')">Cancel</button><button class="btn primary" onclick="saveGrinderEntry()">Save grinder</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://oxrskeieeveyxrjnkqyg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94cnNrZWllZXZleXhyam5rcXlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjUxNTQsImV4cCI6MjA4OTk0MTE1NH0.OmToaFedMTQ7YX4vhj0ElHGIIY0_bf9DZtf_6a2aZm4';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let shots = [], roastLib = [], grinderLib = [];
+let currentRating = 0, editingRoastId = null, editingGrinderId = null;
+let chartInstances = {}, saveTimeout = null;
+let finishedExpanded = false, currentInsightView = 'overview', selectedBagId = null;
+let authMode = 'signin';
+const SHARE_MIN_RATING = 4;
+
+// ─── AUTH ───
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadUserData();
+    showApp();
+  } else {
+    showAuthScreen();
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await loadUserData();
+      showApp();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      shots = []; roastLib = []; grinderLib = [];
+      showAuthScreen();
+    }
+  });
+}
+
+function showAuthScreen() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'block';
+  document.getElementById('main-app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  const av = document.getElementById('user-avatar');
+  if (currentUser?.user_metadata?.avatar_url) {
+    av.innerHTML = `<img src="${currentUser.user_metadata.avatar_url}" alt="">`;
+  } else {
+    const initial = (currentUser?.email || currentUser?.user_metadata?.full_name || 'U')[0].toUpperCase();
+    av.textContent = initial;
+  }
+  initExtractionDate();
+  populateRoastDropdown();
+  populateGrinderDropdown();
+}
+
+async function signInWithGoogle() {
+  showAuthMsg('Redirecting to Google…', 'info');
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) showAuthMsg(error.message, 'error');
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  document.getElementById('auth-submit-btn').textContent = authMode === 'signin' ? 'Sign in' : 'Create account';
+  document.getElementById('auth-mode-toggle').innerHTML = authMode === 'signin' ? `Don't have an account? <a onclick="toggleAuthMode()">Create one</a>` : `Already have an account? <a onclick="toggleAuthMode()">Sign in</a>`;
+  document.getElementById('confirm-group').style.display = authMode === 'signup' ? 'flex' : 'none';
+  document.getElementById('forgot-link').style.display = authMode === 'signin' ? 'block' : 'none';
+  hideAuthMsg();
+}
+
+async function submitAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!email || !password) { showAuthMsg('Please enter your email and password.', 'error'); return; }
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true; btn.textContent = '…';
+  if (authMode === 'signup') {
+    const confirm = document.getElementById('auth-confirm').value;
+    if (password !== confirm) { showAuthMsg('Passwords do not match.', 'error'); btn.disabled = false; btn.textContent = 'Create account'; return; }
+    const { error } = await sb.auth.signUp({ email, password });
+    if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; btn.textContent = 'Create account'; }
+    else showAuthMsg('Check your email to confirm your account, then sign in.', 'success');
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; btn.textContent = 'Sign in'; }
+  }
+}
+
+async function sendPasswordReset() {
+  const email = document.getElementById('auth-email').value.trim();
+  if (!email) { showAuthMsg('Enter your email above first.', 'error'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  if (error) showAuthMsg(error.message, 'error');
+  else showAuthMsg('Password reset email sent — check your inbox.', 'success');
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+}
+
+function showAuthMsg(msg, type) {
+  const el = document.getElementById('auth-msg');
+  el.className = `auth-msg ${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideAuthMsg() { document.getElementById('auth-msg').style.display = 'none'; }
+
+// ─── DATA LAYER (Supabase) ───
+async function loadUserData() {
+  if (!currentUser) return;
+  setDbStatus('saving', 'Loading…');
+  try {
+    const [shotsRes, roastRes, grinderRes] = await Promise.all([
+      sb.from('shots').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
+      sb.from('roast_library').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
+      sb.from('grinders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true })
+    ]);
+    shots = (shotsRes.data || []).map(r => ({...r.data, _db_id: r.id}));
+    roastLib = (roastRes.data || []).map(r => ({...r.data, _db_id: r.id}));
+    grinderLib = (grinderRes.data || []).map(r => ({...r.data, _db_id: r.id}));
+    setDbStatus('ok', 'Saved');
+  } catch(e) {
+    setDbStatus('error', 'Load error');
+  }
+}
+
+async function dbInsert(table, data) {
+  const { data: row, error } = await sb.from(table).insert({ user_id: currentUser.id, data }).select().single();
+  if (error) throw error;
+  return row;
+}
+
+async function dbUpdate(table, dbId, data) {
+  const { error } = await sb.from(table).update({ data }).eq('id', dbId).eq('user_id', currentUser.id);
+  if (error) throw error;
+}
+
+async function dbDelete(table, dbId) {
+  const { error } = await sb.from(table).delete().eq('id', dbId).eq('user_id', currentUser.id);
+  if (error) throw error;
+}
+
+function setDbStatus(state, label) {
+  const dot = document.getElementById('db-dot');
+  if (dot) { dot.className = 'db-dot ' + state; document.getElementById('db-label').textContent = label; }
+}
+
+// ─── COMMUNITY (shared storage via artifact storage for grinder shots) ───
+async function publishCommunityShot(shot, grinderName) {
+  if (!shot || !grinderName || shot.rating < SHARE_MIN_RATING) return;
+  const pub = {
+    userId: currentUser.id,
+    grinderName,
+    coffee: [shot.roaster, shot.origin, shot.varietal].filter(Boolean).join(' · '),
+    process: shot.process, roast: shot.roast,
+    daysOffRoast: shot.daysOffRoast,
+    grind: shot.grind, dose: shot.dose, yield: shot.yield, ratio: shot.ratio,
+    temp: shot.temp, time: shot.time, rating: shot.rating,
+    date: shot.date?.slice(0,10) || todayStr(), ts: Date.now()
+  };
+  try { await window.storage.set(`grinder_shot:${shot.id}`, JSON.stringify(pub), true); } catch(e) {}
+}
+
+// ─── APP LOGIC ───
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function initExtractionDate() {
+  const el = document.getElementById('f-extractdate');
+  if (el) { el.value = todayStr(); updateExtractionHint(); }
+}
+
+function updateExtractionHint() {
+  const val = document.getElementById('f-extractdate').value, hint = document.getElementById('extraction-date-hint');
+  if (!val) { hint.textContent = ''; return; }
+  const diff = Math.round((new Date(todayStr()+'T12:00:00') - new Date(val+'T12:00:00')) / 86400000);
+  hint.textContent = diff===0?'Today': diff===1?'1 day ago': diff>1?`${diff} days ago`:'';
+}
+document.getElementById('f-extractdate').addEventListener('change', () => { updateExtractionHint(); updateDaysOffRoast(); });
+
+function updateShareNotice() {
+  const grinderId = document.getElementById('f-grinder').value, wrap = document.getElementById('share-notice-wrap'), notice = document.getElementById('share-notice');
+  if (!grinderId) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  const gr = grinderLib.find(x=>x.id==grinderId), gName = gr?gr.name:'this grinder';
+  if (currentRating>=SHARE_MIN_RATING) { notice.className='notice notice-success'; notice.textContent=`This shot will be shared with the community for ${gName} — rated ${currentRating}★, params only, no tasting notes.`; }
+  else if (currentRating>0) { notice.className='notice notice-warning'; notice.textContent=`Rated ${currentRating}★ — only shots rated ${SHARE_MIN_RATING}★ or above are shared for ${gName}.`; }
+  else { notice.className='notice notice-info'; notice.textContent=`Rate this shot ${SHARE_MIN_RATING}★ or above to share extraction params with the community for ${gName}. Tasting notes stay private.`; }
+}
+
+document.querySelectorAll('.star').forEach(s => {
+  s.addEventListener('click', () => { currentRating=+s.dataset.v; document.querySelectorAll('.star').forEach(x=>x.classList.toggle('active',+x.dataset.v<=currentRating)); document.getElementById('star-label').textContent=['','Poor','Fair','Good','Great','Outstanding'][currentRating]; updateShareNotice(); });
+  s.addEventListener('mouseover', () => document.querySelectorAll('.star').forEach(x=>x.style.color=+x.dataset.v<=+s.dataset.v?'#d4880a':''));
+  s.addEventListener('mouseout', () => document.querySelectorAll('.star').forEach(x=>x.style.color=''));
+});
+
+function showTab(t) {
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='history')renderHistory();
+  if(t==='insights')renderInsights();
+  if(t==='library')renderLibrary();
+  if(t==='grinders')renderGrinders();
+  if(t==='log'){populateRoastDropdown();populateGrinderDropdown();}
+}
+
+function switchInsightView(view) {
+  currentInsightView=view;
+  document.getElementById('toggle-overview').classList.toggle('active',view==='overview');
+  document.getElementById('toggle-bag').classList.toggle('active',view==='bag');
+  document.getElementById('insights-overview').style.display=view==='overview'?'block':'none';
+  document.getElementById('insights-bag').style.display=view==='bag'?'block':'none';
+  if(view==='bag')renderBagInsights();
+}
+
+function calcDaysOffRoast(roastDateStr, fromDateStr) {
+  if (!roastDateStr) return null;
+  return Math.round((new Date((fromDateStr||todayStr())+'T12:00:00') - new Date(roastDateStr+'T12:00:00')) / 86400000);
+}
+
+function updateDaysOffRoast() {
+  const days = calcDaysOffRoast(document.getElementById('f-roastdate').value, document.getElementById('f-extractdate').value||null);
+  const el = document.getElementById('f-daysoffroast');
+  if (days===null) { el.className='computed-field dim'; el.textContent='Set roast date above'; return; }
+  el.className='computed-field';
+  if (days<7) el.innerHTML=`<span class="days-badge days-fresh">${days}d — resting</span>`;
+  else if (days<=21) el.innerHTML=`<span class="days-badge days-peak">${days}d — peak window</span>`;
+  else el.innerHTML=`<span class="days-badge days-old">${days}d — past peak</span>`;
+}
+
+function updateRatio() {
+  const dose=parseFloat(document.getElementById('f-dose').value), yld=parseFloat(document.getElementById('f-yield').value), el=document.getElementById('f-ratio');
+  if(!isNaN(dose)&&!isNaN(yld)&&dose>0){el.className='computed-field';el.textContent=`1 : ${(yld/dose).toFixed(2)}`;}
+  else{el.className='computed-field dim';el.textContent='Enter dose & yield';}
+}
+
+function populateRoastDropdown() {
+  const sel=document.getElementById('roast-select'),prev=sel.value;
+  sel.innerHTML='<option value="">— choose a saved roast —</option>';
+  roastLib.filter(r=>!r.finished).forEach(r=>sel.innerHTML+=`<option value="${r.id}">${r.roaster} · ${r.origin}${r.varietal?' ('+r.varietal+')':''}</option>`);
+  if(prev)sel.value=prev;
+}
+
+function populateGrinderDropdown() {
+  const sel=document.getElementById('f-grinder'),prev=sel.value;
+  sel.innerHTML='<option value="">— none selected —</option>';
+  grinderLib.forEach(g=>sel.innerHTML+=`<option value="${g.id}">${g.name}</option>`);
+  if(prev)sel.value=prev;
+  updateShareNotice();
+}
+
+function loadRoast() {
+  const r=roastLib.find(x=>x.id==document.getElementById('roast-select').value); if(!r)return;
+  setField('f-roaster',r.roaster);setField('f-origin',r.origin);setField('f-varietal',r.varietal||'');
+  setField('f-roastdate',r.roastDate||'');
+  document.getElementById('f-process').value=r.process||'';document.getElementById('f-roast').value=r.roast||'';
+  updateDaysOffRoast();flash('save-msg','Roast loaded — fill in your extraction params below','info');
+}
+
+function setField(id,val){const el=document.getElementById(id);if(el)el.value=val||'';}
+function g(id){return document.getElementById(id).value.trim();}
+
+async function saveShot() {
+  const btn=document.getElementById('save-shot-btn');
+  btn.disabled=true;btn.textContent='Saving…';
+  setDbStatus('saving','Saving…');
+  const dose=parseFloat(g('f-dose')),yld=parseFloat(g('f-yield'));
+  const ratio=(!isNaN(dose)&&!isNaN(yld)&&dose>0)?+(yld/dose).toFixed(2):null;
+  const roastDate=g('f-roastdate'),extractDate=g('f-extractdate')||todayStr();
+  const grinderId=document.getElementById('f-grinder').value||null;
+  const grinderName=grinderId?(grinderLib.find(x=>x.id==grinderId)||{}).name||null:null;
+  const shot={
+    id: Date.now(),
+    date: extractDate+'T12:00:00.000Z',
+    roastLibId: document.getElementById('roast-select').value||null,
+    roaster:g('f-roaster'),origin:g('f-origin'),varietal:g('f-varietal'),
+    process:g('f-process'),roast:g('f-roast'),roastDate,
+    daysOffRoast:calcDaysOffRoast(roastDate,extractDate),
+    grinderId,grinderName,grind:g('f-grind'),
+    dose:isNaN(dose)?null:dose,yield:isNaN(yld)?null:yld,ratio,
+    temp:g('f-temp'),preinfusion:g('f-preinfusion'),time:g('f-time'),
+    rating:currentRating,notes:g('f-notes')
+  };
+  try {
+    const row = await dbInsert('shots', shot);
+    shot._db_id = row.id;
+    shots.unshift(shot);
+    shots.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    setDbStatus('ok','Saved');
+    const willShare = grinderId&&grinderName&&currentRating>=SHARE_MIN_RATING;
+    if(willShare) await publishCommunityShot(shot, grinderName);
+    if(willShare) flash('save-msg',`Shot saved and shared with community (${currentRating}★).`,'success');
+    else if(grinderId&&currentRating>0&&currentRating<SHARE_MIN_RATING) flash('save-msg',`Shot saved. Rated ${currentRating}★ — not shared (min ${SHARE_MIN_RATING}★).`,'success');
+    else flash('save-msg','Shot saved!','success');
+    clearForm();
+  } catch(e) {
+    setDbStatus('error','Save failed');
+    flash('save-msg','Error saving shot — please try again','danger');
+  }
+  btn.disabled=false;btn.textContent='Save shot';
+}
+
+async function saveToLibrary() {
+  const roaster=g('f-roaster'),origin=g('f-origin');
+  if(!roaster||!origin){flash('save-msg','Enter at least a roaster and origin first','danger');return;}
+  const entry={id:Date.now(),roaster,origin,varietal:g('f-varietal'),process:g('f-process'),roast:g('f-roast'),roastDate:g('f-roastdate'),photo:null,desc:'',finished:false,finishedDate:null};
+  try {
+    setDbStatus('saving','Saving…');
+    const row = await dbInsert('roast_library', entry);
+    entry._db_id=row.id;
+    roastLib.unshift(entry);
+    populateRoastDropdown();document.getElementById('roast-select').value=entry.id;
+    setDbStatus('ok','Saved');flash('save-msg','Roast saved to library!','success');
+  } catch(e){setDbStatus('error','Save failed');flash('save-msg','Error saving roast','danger');}
+}
+
+function clearForm(){
+  ['f-roaster','f-origin','f-varietal','f-grind','f-dose','f-yield','f-temp','f-preinfusion','f-time','f-notes','f-roastdate'].forEach(id=>setField(id,''));
+  document.getElementById('f-process').value='';document.getElementById('f-roast').value='';
+  document.getElementById('roast-select').value='';document.getElementById('f-grinder').value='';
+  currentRating=0;document.querySelectorAll('.star').forEach(x=>x.classList.remove('active'));
+  document.getElementById('star-label').textContent='tap to rate';
+  setField('f-extractdate',todayStr());updateExtractionHint();updateDaysOffRoast();updateRatio();updateShareNotice();
+}
+
+function previewPhoto(){const file=document.getElementById('m-photo').files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const img=document.getElementById('m-photo-preview');img.src=e.target.result;img.style.display='block';};reader.readAsDataURL(file);}
+
+function openModal(type){
+  document.getElementById('modal-'+type).classList.remove('modal-hidden');
+  if(type==='roast'){editingRoastId=null;document.getElementById('modal-roast-title').textContent='Add roast to library';document.getElementById('modal-roast-save').textContent='Save roast';['m-roaster','m-origin','m-varietal','m-desc','m-roastdate'].forEach(id=>setField(id,''));document.getElementById('m-process').value='';document.getElementById('m-roast').value='';document.getElementById('m-photo-preview').style.display='none';document.getElementById('modal-roast-msg').textContent='';}
+  if(type==='grinder'){editingGrinderId=null;document.getElementById('modal-grinder-title').textContent='Add grinder';setField('mg-name','');setField('mg-notes','');document.getElementById('modal-grinder-msg').textContent='';}
+}
+function closeModal(type){document.getElementById('modal-'+type).classList.add('modal-hidden');}
+
+function openEditRoast(id){
+  const r=roastLib.find(x=>x.id==id);if(!r)return;
+  editingRoastId=id;
+  document.getElementById('modal-roast-title').textContent='Edit roast';document.getElementById('modal-roast-save').textContent='Update roast';
+  setField('m-roaster',r.roaster);setField('m-origin',r.origin);setField('m-varietal',r.varietal||'');setField('m-desc',r.desc||'');setField('m-roastdate',r.roastDate||'');
+  document.getElementById('m-process').value=r.process||'';document.getElementById('m-roast').value=r.roast||'';
+  const img=document.getElementById('m-photo-preview');if(r.photo){img.src=r.photo;img.style.display='block';}else{img.style.display='none';}
+  document.getElementById('modal-roast-msg').textContent='';
+  document.getElementById('modal-roast').classList.remove('modal-hidden');
+}
+
+async function saveRoastEntry(){
+  const roaster=g('m-roaster'),origin=g('m-origin');
+  if(!roaster||!origin){flash('modal-roast-msg','Roaster and origin are required','danger');return;}
+  const photo=document.getElementById('m-photo-preview').style.display!=='none'?document.getElementById('m-photo-preview').src:null;
+  const entry={roaster,origin,varietal:g('m-varietal'),process:g('m-process'),roast:g('m-roast'),roastDate:g('m-roastdate'),desc:g('m-desc'),photo};
+  try{
+    setDbStatus('saving','Saving…');
+    if(editingRoastId){const r=roastLib.find(x=>x.id==editingRoastId);if(r){Object.assign(r,entry);await dbUpdate('roast_library',r._db_id,r);}}
+    else{const ne={id:Date.now(),...entry,finished:false,finishedDate:null};const row=await dbInsert('roast_library',ne);ne._db_id=row.id;roastLib.unshift(ne);}
+    setDbStatus('ok','Saved');renderLibrary();populateRoastDropdown();closeModal('roast');
+  }catch(e){setDbStatus('error','Save failed');flash('modal-roast-msg','Error saving — try again','danger');}
+}
+
+async function deleteRoast(id){
+  const r=roastLib.find(x=>x.id==id);if(!r)return;
+  try{await dbDelete('roast_library',r._db_id);roastLib=roastLib.filter(x=>x.id!==id);renderLibrary();populateRoastDropdown();setDbStatus('ok','Saved');}
+  catch(e){setDbStatus('error','Error');}
+}
+
+async function toggleFinished(id){
+  const r=roastLib.find(x=>x.id==id);if(!r)return;
+  r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;
+  try{await dbUpdate('roast_library',r._db_id,r);setDbStatus('ok','Saved');}catch(e){setDbStatus('error','Error');}
+  renderLibrary();populateRoastDropdown();
+}
+
+async function saveGrinderEntry(){
+  const name=g('mg-name');if(!name){flash('modal-grinder-msg','Grinder name is required','danger');return;}
+  const entry={name,notes:g('mg-notes')};
+  try{
+    setDbStatus('saving','Saving…');
+    if(editingGrinderId){const gr=grinderLib.find(x=>x.id==editingGrinderId);if(gr){Object.assign(gr,entry);await dbUpdate('grinders',gr._db_id,gr);}}
+    else{const ne={id:Date.now(),...entry};const row=await dbInsert('grinders',ne);ne._db_id=row.id;grinderLib.push(ne);}
+    setDbStatus('ok','Saved');renderGrinders();populateGrinderDropdown();closeModal('grinder');
+  }catch(e){setDbStatus('error','Save failed');flash('modal-grinder-msg','Error saving','danger');}
+}
+
+async function deleteGrinder(id){
+  const gr=grinderLib.find(x=>x.id==id);if(!gr)return;
+  try{await dbDelete('grinders',gr._db_id);grinderLib=grinderLib.filter(x=>x.id!==id);renderGrinders();populateGrinderDropdown();setDbStatus('ok','Saved');}
+  catch(e){setDbStatus('error','Error');}
+}
+
+async function deleteShot(id){
+  const s=shots.find(x=>x.id==id);if(!s)return;
+  try{await dbDelete('shots',s._db_id);shots=shots.filter(x=>x.id!==id);renderHistory();setDbStatus('ok','Saved');}
+  catch(e){setDbStatus('error','Error');}
+}
+
+// ─── RENDER FUNCTIONS ───
+function renderLibCard(r){
+  const sc=shots.filter(s=>s.roastLibId==r.id).length;
+  const chips=[r.process,r.roast,r.varietal].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
+  const refDate=r.finished&&r.finishedDate?r.finishedDate:null;
+  const days=calcDaysOffRoast(r.roastDate,refDate);
+  let dc='';
+  if(days!==null&&!r.finished){const cls=days<7?'days-fresh':days<=21?'days-peak':'days-old';const lbl=days<7?'resting':days<=21?'peak':'past peak';dc=`<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;}
+  else if(days!==null&&r.finished){dc=`<span class="chip finished-chip">finished at ${days}d</span>`;}
+  const img=r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover;">`:`<span style="font-size:22px;">☕</span>`;
+  return`<div class="lib-card${r.finished?' finished':''}"><div class="lib-card-img" onclick="openEditRoast(${r.id})">${img}</div><div class="lib-card-body"><div class="lib-card-name">${r.roaster} · ${r.origin}</div><div class="lib-card-meta">${chips}${dc}${sc?`<span class="chip highlight">${sc} shot${sc>1?'s':''}</span>`:''}</div>${r.roastDate?`<div style="font-size:11px;color:var(--muted);margin-top:3px;">Roasted ${fmtDate(r.roastDate+'T12:00:00')}</div>`:''}${r.desc?`<div style="font-size:12px;color:var(--muted);margin-top:2px;font-style:italic;">${r.desc}</div>`:''}</div><div class="lib-card-actions"><button class="icon-btn" onclick="loadRoastById(${r.id})" title="Load into log">↗</button><button class="icon-btn" onclick="toggleFinished(${r.id})" title="${r.finished?'Mark active':'Mark finished'}" style="${r.finished?'color:var(--success-text);':''}">${r.finished?'↩':'✓'}</button><button class="icon-btn" onclick="openEditRoast(${r.id})" title="Edit">✏</button><button class="icon-btn" onclick="deleteRoast(${r.id})" style="color:var(--danger-text);" title="Delete">✕</button></div></div>`;
+}
+
+function renderLibrary(){
+  const active=roastLib.filter(r=>!r.finished),finished=roastLib.filter(r=>r.finished);
+  const el=document.getElementById('library-list');
+  if(!active.length&&!finished.length){el.innerHTML='<div class="empty">No roasts saved yet.<br>Add one above or use "+ Save to library" while logging.</div>';}
+  else{el.innerHTML=active.length?active.map(renderLibCard).join(''):'<div style="font-size:13px;color:var(--muted);padding:0.5rem 0 1rem;">No active bags — all finished.</div>';}
+  const fel=document.getElementById('finished-section');
+  if(!finished.length){fel.innerHTML='';return;}
+  fel.innerHTML=`<div class="finished-section-header" onclick="finishedExpanded=!finishedExpanded;renderLibrary();"><span class="finished-section-title">Finished bags (${finished.length})</span><span style="font-size:13px;color:var(--muted);">${finishedExpanded?'▲':'▼'}</span></div>${finishedExpanded?finished.map(renderLibCard).join(''):''}`;
+}
+
+function loadRoastById(id){showTab('log');setTimeout(()=>{const r=roastLib.find(x=>x.id==id);if(!r)return;setField('f-roaster',r.roaster);setField('f-origin',r.origin);setField('f-varietal',r.varietal||'');setField('f-roastdate',r.roastDate||'');document.getElementById('f-process').value=r.process||'';document.getElementById('f-roast').value=r.roast||'';document.getElementById('roast-select').value=r.finished?'':id;updateDaysOffRoast();flash('save-msg',`Loaded: ${r.roaster} · ${r.origin}`,'info');},50);}
+
+async function renderGrinders(){
+  const el=document.getElementById('grinder-list');
+  if(!grinderLib.length){el.innerHTML=`<div class="empty">No grinders saved yet.<br>Add yours above — shots rated ${SHARE_MIN_RATING}★+ with a grinder selected are automatically shared with the community.</div>`;return;}
+  let allComm=[];
+  try{const kr=await window.storage.list('grinder_shot:',true);const keys=(kr&&kr.keys)?kr.keys:[];for(const k of keys.slice(-300)){try{const r=await window.storage.get(k,true);if(r)allComm.push(JSON.parse(r.value));}catch(e){}}}catch(e){}
+  el.innerHTML=grinderLib.map(gr=>{
+    const myShots=shots.filter(s=>s.grinderId==gr.id);
+    const cShots=allComm.filter(s=>s.grinderName.toLowerCase()===gr.name.toLowerCase()).sort((a,b)=>b.ts-a.ts);
+    const gid=gr.id;
+    const filterHTML=`<div class="grinder-filters"><input type="text" placeholder="Origin…" id="gf-origin-${gid}" oninput="filterGrinderShots(${gid})" style="max-width:110px;"><select id="gf-process-${gid}" onchange="filterGrinderShots(${gid})"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option></select><select id="gf-roast-${gid}" onchange="filterGrinderShots(${gid})"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select><select id="gf-rating-${gid}" onchange="filterGrinderShots(${gid})"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option></select></div>`;
+    const rows=cShots.slice(0,60).map(s=>{const isMe=s.userId===currentUser?.id;const stars=s.rating?`<span class="rating-stars-sm">${'★'.repeat(s.rating)}</span>`:null;const params=[s.grind?`Grind <strong>${s.grind}</strong>`:null,s.ratio?`1:${parseFloat(s.ratio).toFixed(2)}`:(s.dose&&s.yield?`1:${(s.yield/s.dose).toFixed(2)}`:null),s.temp?`${s.temp}°C`:null,s.time?`${s.time}s`:null,s.daysOffRoast!=null?`${s.daysOffRoast}d off roast`:null].filter(Boolean).join(' · ');return`<div class="community-shot-row${isMe?' is-mine':''}" data-origin="${(s.coffee||'').toLowerCase()}" data-process="${(s.process||'').toLowerCase()}" data-roast="${(s.roast||'').toLowerCase()}" data-rating="${s.rating||0}"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;"><span style="font-weight:600;font-size:13px;">${s.coffee||'Unknown coffee'}</span><span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);">${stars||''}${isMe?'<span class="chip mine" style="font-size:10px;padding:1px 6px;">you</span>':''}${s.date?fmtDate(s.date+'T12:00:00'):''}</span></div>${[s.process,s.roast].filter(Boolean).length?`<div style="font-size:11px;color:var(--muted);margin-top:1px;">${[s.process,s.roast].filter(Boolean).join(' · ')}</div>`:''}<div style="font-size:12px;margin-top:4px;">${params}</div></div>`;}).join('');
+    return`<div class="grinder-block"><div class="grinder-block-header"><div><div class="grinder-block-name">${gr.name}</div><div class="grinder-block-meta">${gr.notes||''}${myShots.length?` · ${myShots.length} shot${myShots.length>1?'s':''} logged`:''}${cShots.length?` · ${cShots.length} community shot${cShots.length>1?'s':''}`:' · no community shots yet'}</div></div><button class="icon-btn" onclick="deleteGrinder(${gr.id})" style="color:var(--danger-text);">✕</button></div>${cShots.length?`${filterHTML}<div style="padding:7px 1.25rem;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);">Only ${SHARE_MIN_RATING}★+ shots · tasting notes private · your shots highlighted</div><div id="gf-rows-${gid}">${rows}</div><div id="gf-empty-${gid}" style="display:none;padding:1rem 1.25rem;font-size:13px;color:var(--muted);">No shots match these filters.</div>`:`<div style="padding:1rem 1.25rem;font-size:13px;color:var(--muted);">No community shots yet. Log a shot rated ${SHARE_MIN_RATING}★+ with this grinder to be first!</div>`}</div>`;
+  }).join('');
+}
+
+function filterGrinderShots(gid){const oQ=(document.getElementById(`gf-origin-${gid}`)?.value||'').toLowerCase().trim();const pQ=(document.getElementById(`gf-process-${gid}`)?.value||'').toLowerCase();const rQ=(document.getElementById(`gf-roast-${gid}`)?.value||'').toLowerCase();const rtQ=+(document.getElementById(`gf-rating-${gid}`)?.value||0);const rows=document.querySelectorAll(`#gf-rows-${gid} .community-shot-row`);let v=0;rows.forEach(row=>{const show=(!oQ||row.dataset.origin.includes(oQ))&&(!pQ||row.dataset.process===pQ)&&(!rQ||row.dataset.roast===rQ)&&(!rtQ||+row.dataset.rating>=rtQ);row.style.display=show?'':'none';if(show)v++;});const empty=document.getElementById(`gf-empty-${gid}`);if(empty)empty.style.display=v===0?'block':'none';}
+
+function renderHistory(){
+  const search=document.getElementById('filter-search').value.toLowerCase(),proc=document.getElementById('filter-process').value,roast=document.getElementById('filter-roast').value,minRating=+document.getElementById('filter-rating').value||0;
+  let filtered=shots.filter(s=>{const text=[s.roaster,s.origin,s.varietal,s.notes,s.grinderName].join(' ').toLowerCase();if(search&&!text.includes(search))return false;if(proc&&s.process!==proc)return false;if(roast&&s.roast!==roast)return false;if(minRating&&s.rating<minRating)return false;return true;});
+  const el=document.getElementById('history-list');
+  if(!filtered.length){el.innerHTML='<div class="empty">No shots found.<br>Log your first extraction above.</div>';return;}
+  el.innerHTML=filtered.map(s=>{const chips=[s.process,s.roast,s.varietal].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');const sharedBadge=(s.grinderId&&s.rating>=SHARE_MIN_RATING)?`<span class="chip highlight" style="font-size:10px;">shared</span>`:'';return`<div class="shot-card"><div class="shot-card-header"><div><div class="shot-title">${s.roaster||'Unknown roaster'} · ${s.origin||'Unknown origin'}</div><div class="shot-meta">${fmtDate(s.date)}${s.rating?' · '+starsHTML(s.rating):''}${s.grinderName?` · ${s.grinderName}`:''}</div></div><button class="delete-btn" onclick="deleteShot(${s.id})">✕</button></div>${(chips||sharedBadge)?`<div class="shot-chips">${chips}${sharedBadge}</div>`:''}<div class="shot-stats"><div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose in</div></div><div class="stat"><div class="stat-val">${s.yield||'—'}g</div><div class="stat-lbl">Yield out</div></div><div class="stat"><div class="stat-val">${s.ratio?'1:'+s.ratio:'—'}</div><div class="stat-lbl">Ratio</div></div><div class="stat"><div class="stat-val">${s.time?s.time+'s':'—'}</div><div class="stat-lbl">Shot time</div></div></div><div class="shot-stats" style="margin-top:6px;"><div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div><div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div><div class="stat"><div class="stat-val">${s.preinfusion?s.preinfusion+'s':'—'}</div><div class="stat-lbl">Pre-infusion</div></div><div class="stat"><div class="stat-val">${s.daysOffRoast!=null?s.daysOffRoast+'d':'—'}</div><div class="stat-lbl">Off roast</div></div></div>${s.notes?`<div class="shot-note">${s.notes}</div>`:''}</div>`;}).join('');
+}
+
+function exportCSV(){const h=['Date','Roaster','Origin','Varietal','Process','Roast level','Roast date','Days off roast','Grinder','Grind setting','Dose (g)','Yield (g)','Ratio','Temp (C)','Pre-infusion (s)','Shot time (s)','Rating','Shared','Notes'];const rows=shots.map(s=>[fmtDate(s.date),s.roaster||'',s.origin||'',s.varietal||'',s.process||'',s.roast||'',s.roastDate||'',s.daysOffRoast!=null?s.daysOffRoast:'',s.grinderName||'',s.grind||'',s.dose||'',s.yield||'',s.ratio||'',s.temp||'',s.preinfusion||'',s.time||'',s.rating||'',(s.grinderId&&s.rating>=SHARE_MIN_RATING)?'Yes':'No',`"${(s.notes||'').replace(/"/g,'""')}"`].join(','));const csv=[h.join(','),...rows].join('\n');const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='espresso_shots.csv';a.click();URL.revokeObjectURL(url);}
+
+function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
+function chartTheme(){const dark=window.matchMedia('(prefers-color-scheme: dark)').matches;const gc=dark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.05)',tc=dark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)';const tt={backgroundColor:dark?'#2a2520':'#fff',titleColor:dark?'#f0ece4':'#1c1814',bodyColor:dark?'#9a9082':'#78726a',borderColor:dark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.08)',borderWidth:1,padding:10,cornerRadius:8};return{gc,tc,tt};}
+
+function renderInsights(){
+  const el=document.getElementById('insights-overview');
+  if(!shots.length){el.innerHTML='<div class="empty">Log some shots to see insights.</div>';return;}
+  const rated=shots.filter(s=>s.rating>0);const avgRating=rated.length?(rated.reduce((a,b)=>a+b.rating,0)/rated.length).toFixed(1):'—';const ratioShots=shots.filter(s=>s.ratio);const avgRatio=ratioShots.length?(ratioShots.reduce((a,b)=>a+b.ratio,0)/ratioShots.length).toFixed(2):null;
+  const ps={};shots.forEach(s=>{if(!s.process||!s.rating)return;if(!ps[s.process])ps[s.process]={total:0,count:0};ps[s.process].total+=s.rating;ps[s.process].count++;});
+  const pSorted=Object.entries(ps).sort((a,b)=>(b[1].total/b[1].count)-(a[1].total/a[1].count));
+  const top=[...shots].filter(s=>s.rating>=4).sort((a,b)=>b.rating-a.rating);
+  el.innerHTML=`<div class="insight-grid"><div class="insight-card"><div class="insight-label">Total shots</div><div class="insight-val">${shots.length}</div></div><div class="insight-card"><div class="insight-label">Average rating</div><div class="insight-val">${avgRating}${avgRating!=='—'?` <span style="font-size:18px;color:#d4880a;">★</span>`:''}</div><div class="insight-sub">${rated.length} rated shots</div></div><div class="insight-card"><div class="insight-label">Average ratio</div><div class="insight-val">${avgRatio?'1:'+avgRatio:'—'}</div></div><div class="insight-card"><div class="insight-label">Saved roasts</div><div class="insight-val">${roastLib.length}</div></div></div>
+  <div class="section-title">Grind setting over time</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-grind"></canvas></div>
+  <div class="section-title">Days off roast vs rating</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-days"></canvas></div>
+  <div class="section-title">Ratio over time</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-ratio"></canvas></div>
+  ${pSorted.length?`<div class="section-title">Process performance</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">${pSorted.map(([p,d])=>{const avg=(d.total/d.count).toFixed(1);const pct=(d.total/d.count)/5*100;return`<div class="profile-row"><div><div style="font-weight:500;">${p}</div><div style="font-size:12px;color:var(--muted);">${d.count} shot${d.count>1?'s':''}</div></div><div style="display:flex;align-items:center;gap:8px;min-width:140px;"><div class="ratio-bar"><div class="ratio-fill" style="width:${pct}%"></div></div><span style="font-size:13px;font-weight:600;min-width:28px;">${avg}★</span></div></div>`;}).join('')}</div>`:''}
+  ${top.length?`<div class="section-title">Best shots</div>${top.slice(0,3).map(s=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.75rem 1.25rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-family:var(--font-serif);font-size:14px;font-weight:500;">${s.roaster||'—'} · ${s.origin||'—'}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">${[s.process,s.varietal,s.roast].filter(Boolean).join(' · ')}${s.daysOffRoast?' · '+s.daysOffRoast+'d off roast':''} · ${fmtDate(s.date)}</div>${s.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${s.notes.slice(0,80)}${s.notes.length>80?'…':''}</div>`:''}</div><span style="font-size:18px;color:#d4880a;margin-left:12px;white-space:nowrap;">${'★'.repeat(s.rating)}</span></div>`).join('')}`:''}`;
+  setTimeout(()=>{
+    const sorted=[...shots].filter(s=>s.grind).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const dR=[...shots].filter(s=>s.ratio).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const daysR=shots.filter(s=>s.daysOffRoast!=null&&s.rating>0);
+    const{gc,tc,tt}=chartTheme();
+    const base=(yL)=>({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tt},scales:{x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:yL,color:tc,font:{size:11}}}}});
+    destroyChart('grind');if(sorted.length)chartInstances['grind']=new Chart(document.getElementById('chart-grind'),{type:'line',data:{labels:sorted.map(s=>fmtDate(s.date)),datasets:[{data:sorted.map(s=>parseFloat(s.grind)),borderColor:'#b85215',backgroundColor:'#b8521522',pointBackgroundColor:'#b85215',tension:0.3,fill:true,pointRadius:4,pointHoverRadius:6}]},options:base('Grind setting')});else document.getElementById('chart-grind').parentElement.innerHTML='<div class="empty" style="padding:1rem;">No grind data yet.</div>';
+    destroyChart('ratio');if(dR.length)chartInstances['ratio']=new Chart(document.getElementById('chart-ratio'),{type:'line',data:{labels:dR.map(s=>fmtDate(s.date)),datasets:[{data:dR.map(s=>s.ratio),borderColor:'#1a6b3a',backgroundColor:'#1a6b3a22',pointBackgroundColor:'#1a6b3a',tension:0.3,fill:true,pointRadius:4,pointHoverRadius:6}]},options:base('Ratio (out/in)')});else document.getElementById('chart-ratio').parentElement.innerHTML='<div class="empty" style="padding:1rem;">No ratio data yet.</div>';
+    destroyChart('days');if(daysR.length)chartInstances['days']=new Chart(document.getElementById('chart-days'),{type:'scatter',data:{datasets:[{data:daysR.map(s=>({x:s.daysOffRoast,y:s.rating,label:`${s.roaster||''} · ${s.origin||''}`})),backgroundColor:'#1a4fa0bb',pointRadius:6,pointHoverRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.label||'Shot'}: ${ctx.raw.x}d off roast, ${ctx.raw.y}★`}}},scales:{x:{title:{display:true,text:'Days off roast',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,grid:{color:gc},ticks:{color:tc,stepSize:1}}}}});else document.getElementById('chart-days').parentElement.innerHTML='<div class="empty" style="padding:1rem;">Log shots with roast dates and ratings to see this chart.</div>';
+  },100);
+}
+
+function renderBagInsights(){
+  const el=document.getElementById('insights-bag');
+  const bagsWithShots=roastLib.filter(r=>shots.some(s=>s.roastLibId==r.id));
+  if(!bagsWithShots.length){el.innerHTML='<div class="empty">No shots linked to a roast yet.<br>Use "Load from roast library" when logging shots.</div>';return;}
+  if(!selectedBagId||!bagsWithShots.find(r=>r.id==selectedBagId))selectedBagId=bagsWithShots[0].id;
+  const bag=roastLib.find(r=>r.id==selectedBagId);
+  const bagShots=shots.filter(s=>s.roastLibId==selectedBagId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const bagOptions=bagsWithShots.map(r=>`<option value="${r.id}"${selectedBagId==r.id?' selected':''}>${r.roaster} · ${r.origin}${r.varietal?' ('+r.varietal+')':''}${r.finished?' ✓':''}</option>`).join('');
+  if(!bag||!bagShots.length){el.innerHTML=`<select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select><div class="empty">No shots for this bag yet.</div>`;return;}
+  const rated=bagShots.filter(s=>s.rating>0);const avgRating=rated.length?(rated.reduce((a,b)=>a+b.rating,0)/rated.length).toFixed(1):'—';
+  const bestShot=rated.length?[...rated].sort((a,b)=>b.rating-a.rating)[0]:null;
+  const lastShot=bagShots[bagShots.length-1];
+  el.innerHTML=`<select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;"><div style="font-family:var(--font-serif);font-size:15px;font-weight:500;">${bag.roaster} · ${bag.origin}${bag.varietal?' · '+bag.varietal:''}</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bag.process,bag.roast].filter(Boolean).join(' · ')}${bag.roastDate?' · Roasted '+fmtDate(bag.roastDate+'T12:00:00'):''}${bag.finished?` · <span style="color:var(--success-text);">Finished</span>`:''}</div></div>
+  <div class="insight-grid"><div class="insight-card"><div class="insight-label">Shots pulled</div><div class="insight-val">${bagShots.length}</div></div><div class="insight-card"><div class="insight-label">Average rating</div><div class="insight-val">${avgRating}${avgRating!=='—'?` <span style="font-size:16px;color:#d4880a;">★</span>`:''}</div><div class="insight-sub">${rated.length} rated</div></div><div class="insight-card"><div class="insight-label">Days spanned</div><div class="insight-val">${bagShots.length>1?calcDaysOffRoast(bagShots[0].date.slice(0,10),bagShots[bagShots.length-1].date.slice(0,10)):'—'}</div><div class="insight-sub">first to last shot</div></div><div class="insight-card"><div class="insight-label">Last pulled</div><div class="insight-val" style="font-size:14px;margin-top:4px;">${fmtDate(lastShot.date)}</div><div class="insight-sub">${lastShot.daysOffRoast!=null?lastShot.daysOffRoast+'d off roast':''}</div></div></div>
+  ${bestShot?`<div class="section-title">Best shot from this bag</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.875rem 1.25rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:600;">${fmtDate(bestShot.date)}${bestShot.daysOffRoast!=null?' · '+bestShot.daysOffRoast+'d off roast':''}</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bestShot.grind?'Grind '+bestShot.grind:null,bestShot.ratio?'1:'+bestShot.ratio:null,bestShot.temp?bestShot.temp+'°C':null,bestShot.time?bestShot.time+'s':null].filter(Boolean).join(' · ')}</div>${bestShot.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${bestShot.notes.slice(0,80)}</div>`:''}</div><span style="font-size:16px;color:#d4880a;margin-left:12px;">${'★'.repeat(bestShot.rating)}</span></div>`:''}
+  <div class="section-title">Grind setting — ${bag.roaster} · ${bag.origin}</div><div class="chart-wrap" style="height:200px;"><canvas id="bag-chart-grind"></canvas></div>
+  <div class="section-title">Rating over time</div><div class="chart-wrap" style="height:200px;"><canvas id="bag-chart-rating"></canvas></div>
+  <div class="section-title">Days off roast</div><div class="chart-wrap" style="height:200px;"><canvas id="bag-chart-days"></canvas></div>
+  <div class="section-title">All shots from this bag</div>
+  ${bagShots.slice().reverse().map(s=>`<div class="shot-card" style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><span style="font-size:13px;font-weight:600;">${fmtDate(s.date)}${s.daysOffRoast!=null?' · '+s.daysOffRoast+'d off roast':''}</span><span>${s.rating?starsHTML(s.rating):''}</span></div><div class="shot-stats"><div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div><div class="stat"><div class="stat-val">${s.ratio?'1:'+s.ratio:'—'}</div><div class="stat-lbl">Ratio</div></div><div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div><div class="stat"><div class="stat-val">${s.time?s.time+'s':'—'}</div><div class="stat-lbl">Time</div></div></div>${s.notes?`<div class="shot-note">${s.notes}</div>`:''}</div>`).join('')}`;
+  setTimeout(()=>{
+    const{gc,tc,tt}=chartTheme();const labels=bagShots.map(s=>fmtDate(s.date));
+    const base=(yL,mn,mx)=>({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tt},scales:{x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:yL,color:tc,font:{size:11}},min:mn,max:mx}}});
+    destroyChart('bag-grind');const gd=bagShots.map(s=>s.grind?parseFloat(s.grind):null);if(gd.some(v=>v!==null))chartInstances['bag-grind']=new Chart(document.getElementById('bag-chart-grind'),{type:'line',data:{labels,datasets:[{data:gd,borderColor:'#b85215',backgroundColor:'#b8521522',pointBackgroundColor:'#b85215',tension:0.3,fill:true,pointRadius:5,pointHoverRadius:7,spanGaps:true}]},options:base('Grind setting')});else document.getElementById('bag-chart-grind').parentElement.innerHTML='<div class="empty" style="padding:0.75rem;">No grind data for this bag.</div>';
+    destroyChart('bag-rating');const rd=bagShots.map(s=>s.rating||null);if(rd.some(v=>v!==null))chartInstances['bag-rating']=new Chart(document.getElementById('bag-chart-rating'),{type:'line',data:{labels,datasets:[{data:rd,borderColor:'#d4880a',backgroundColor:'#d4880a22',pointBackgroundColor:'#d4880a',tension:0.3,fill:true,pointRadius:5,pointHoverRadius:7,spanGaps:true}]},options:base('Rating',0,6)});else document.getElementById('bag-chart-rating').parentElement.innerHTML='<div class="empty" style="padding:0.75rem;">No ratings for this bag.</div>';
+    destroyChart('bag-days');const dd=bagShots.map(s=>s.daysOffRoast!=null?s.daysOffRoast:null);if(dd.some(v=>v!==null))chartInstances['bag-days']=new Chart(document.getElementById('bag-chart-days'),{type:'line',data:{labels,datasets:[{data:dd,borderColor:'#1a6b3a',backgroundColor:'#1a6b3a22',pointBackgroundColor:'#1a6b3a',tension:0.3,fill:true,pointRadius:5,pointHoverRadius:7,spanGaps:true}]},options:base('Days off roast')});else document.getElementById('bag-chart-days').parentElement.innerHTML='<div class="empty" style="padding:0.75rem;">No roast date data for this bag.</div>';
+  },100);
+}
+
+function flash(id,msg,type){const el=document.getElementById(id);if(!el)return;el.style.color=type==='danger'?'var(--danger-text)':type==='info'?'var(--muted)':'var(--success-text)';el.textContent=msg;if(type!=='info')setTimeout(()=>el.textContent='',3500);}
+function starsHTML(r){return r?`<span class="stars-display">${'★'.repeat(r)}${'☆'.repeat(5-r)}</span>`:'';}
+function fmtDate(iso){return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+initAuth();
+</script>
+</body>
+</html>

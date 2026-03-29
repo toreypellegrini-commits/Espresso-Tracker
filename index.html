@@ -230,6 +230,26 @@
     .icon-btn { background: none; border: none; cursor: pointer; padding: 6px 7px; border-radius: var(--radius); font-size: 14px; color: var(--muted); -webkit-tap-highlight-color: transparent; }
     .icon-btn:hover { background: var(--surface2); }
 
+
+    /* ─── PROFILE ─── */
+    .profile-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 2rem; }
+    .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: var(--accent-light); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 600; color: var(--accent); overflow: hidden; cursor: pointer; }
+    .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-avatar-edit { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500; }
+    .profile-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1rem; overflow: hidden; }
+    .profile-section-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem 0.25rem; }
+    .profile-field { display: flex; align-items: center; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); gap: 12px; }
+    .profile-field:last-child { border-bottom: none; }
+    .profile-field-label { font-size: 13px; color: var(--muted); min-width: 110px; flex-shrink: 0; }
+    .profile-field input, .profile-field select, .profile-field textarea { border: none; background: transparent; font-size: 14px; color: var(--text); flex: 1; padding: 0; font-family: var(--font); outline: none; }
+    .profile-field textarea { resize: none; min-height: 44px; line-height: 1.5; }
+    .profile-field input::placeholder, .profile-field textarea::placeholder { color: var(--hint); }
+    .stats-table { width: 100%; border-collapse: collapse; }
+    .stats-table td { padding: 10px 1.25rem; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+    .stats-table td:first-child { color: var(--muted); font-size: 13px; width: 60%; }
+    .stats-table td:last-child { font-weight: 600; text-align: right; font-family: var(--font-serif); font-size: 16px; }
+    .stats-table tr:last-child td { border-bottom: none; }
+
     /* ─── EMPTY STATE ─── */
     .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 14px; line-height: 1.8; }
 
@@ -287,6 +307,8 @@
       <div class="drawer-divider"></div>
       <button class="drawer-item" id="nav-grinders" onclick="navTo('grinders')"><span class="drawer-item-icon">⚙</span>Grinders</button>
       <button class="drawer-item" id="nav-insights" onclick="navTo('insights')"><span class="drawer-item-icon">◎</span>Insights</button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-item" id="nav-profile" onclick="navTo('profile')"><span class="drawer-item-icon">👤</span>My Profile</button>
     </nav>
     <div class="drawer-footer">
       <button class="signout-btn" onclick="signOut()">Sign out</button>
@@ -307,7 +329,7 @@
     </div>
     <div class="header-right">
       <div class="db-status"><div class="db-dot ok" id="db-dot"></div><span id="db-label">Saved</span></div>
-      <div class="user-avatar" id="user-avatar"></div>
+      <div class="user-avatar" id="user-avatar" onclick="navTo('profile')" title="My Profile" style="cursor:pointer;"></div>
     </div>
   </header>
 
@@ -405,6 +427,84 @@
     </div>
   </div>
 
+
+  <!-- PAGE: PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="container">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-large" id="profile-avatar-large" onclick="document.getElementById('profile-photo-input').click()"></div>
+        <div class="profile-avatar-edit" onclick="document.getElementById('profile-photo-input').click()">Change photo</div>
+        <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhoto(this)">
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Identity</div>
+        <div class="profile-field"><span class="profile-field-label">Username</span><input type="text" id="p-username" placeholder="e.g. jbrewing" autocorrect="off" autocapitalize="none"></div>
+        <div class="profile-field"><span class="profile-field-label">Location</span><input type="text" id="p-location" placeholder="e.g. Dallas, TX" autocorrect="off"></div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Setup</div>
+        <div class="profile-field"><span class="profile-field-label">Espresso machine</span>
+          <select id="p-machine">
+            <option value="">Select machine…</option>
+            <optgroup label="Prosumer">
+              <option>Breville Barista Express</option>
+              <option>Breville Dual Boiler</option>
+              <option>Breville Oracle Touch</option>
+              <option>De'Longhi La Specialista</option>
+              <option>Gaggia Classic Pro</option>
+              <option>Rancilio Silvia</option>
+              <option>Lelit Bianca</option>
+              <option>Lelit MaraX</option>
+              <option>ECM Synchronika</option>
+              <option>Rocket Appartamento</option>
+              <option>Rocket Espresso R58</option>
+              <option>La Pavoni Europiccola</option>
+            </optgroup>
+            <optgroup label="Commercial">
+              <option>La Marzocco Linea Mini</option>
+              <option>La Marzocco GS3</option>
+              <option>Synesso MVP Hydra</option>
+              <option>Nuova Simonelli Appia</option>
+              <option>Victoria Arduino Eagle One</option>
+            </optgroup>
+            <optgroup label="Super-automatic">
+              <option>Jura E8</option>
+              <option>Jura Z10</option>
+              <option>De'Longhi Magnifica Evo</option>
+              <option>Philips 3200 Series</option>
+            </optgroup>
+            <option value="__other__">Other (type below)</option>
+          </select>
+        </div>
+        <div class="profile-field" id="machine-other-field" style="display:none;"><span class="profile-field-label">Machine (custom)</span><input type="text" id="p-machine-other" placeholder="Enter machine name" autocorrect="off"></div>
+        <div class="profile-field"><span class="profile-field-label">Grinder</span>
+          <select id="p-grinder-profile">
+            <option value="">Select grinder…</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Preferences</div>
+        <div class="profile-field" style="align-items:flex-start;padding-top:0.875rem;">
+          <span class="profile-field-label" style="margin-top:2px;">Coffee notes</span>
+          <textarea id="p-coffee-prefs" placeholder="e.g. prefer washed Ethiopians, light roasts, floral and citrus notes…"></textarea>
+        </div>
+        <div class="profile-field" style="align-items:flex-start;padding-top:0.875rem;">
+          <span class="profile-field-label" style="margin-top:2px;">Favorite roasters</span>
+          <textarea id="p-fav-roasters" placeholder="e.g. Onyx Coffee Lab, Heart, Stumptown…"></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row" style="justify-content:stretch;">
+        <button class="btn primary" style="flex:1;" onclick="saveProfile()" id="profile-save-btn">Save profile</button>
+      </div>
+      <div class="save-msg" id="profile-save-msg" style="text-align:center;"></div>
+    </div>
+  </div>
+
   <!-- PAGE: INSIGHTS -->
   <div class="page" id="page-insights">
     <div class="container">
@@ -497,6 +597,7 @@ function showApp() {
   if (currentUser?.user_metadata?.avatar_url) av.innerHTML=`<img src="${currentUser.user_metadata.avatar_url}" alt="">`;
   else av.textContent=(currentUser?.email||'U')[0].toUpperCase();
   document.getElementById('drawer-user').textContent=currentUser?.email||'';
+  loadProfile();
   initExtractionDate(); populateRoastDropdown(); populateGrinderDropdown();
   renderLibrary();
 }
@@ -572,15 +673,16 @@ function navTo(page, opts={}) {
   const backBtn=document.getElementById('back-btn');
   const hamburger=document.getElementById('hamburger-btn');
   const subtitle=document.getElementById('header-subtitle');
-  const titles={library:'<em>EX</em>traction Tracker',log:'Log Shot','roast-detail':'','community':'Community Shots',grinders:'Grinders',insights:'Insights'};
+  const titles={library:'<em>EX</em>traction Tracker',log:'Log Shot','roast-detail':'','community':'Community Shots',grinders:'Grinders',insights:'Insights',profile:'My Profile'};
   document.getElementById('header-title').innerHTML=titles[page]||page;
-  const isTopLevel=['library','community','grinders','insights'].includes(page);
+  const isTopLevel=['library','community','grinders','insights','profile'].includes(page);
   backBtn.style.display=isTopLevel?'none':'block';
   hamburger.style.display=isTopLevel?'flex':'none';
   subtitle.style.display='none';
   if(page==='library'){renderLibrary();}
   if(page==='log'){populateRoastDropdown();populateGrinderDropdown();if(opts.roastId){const sel=document.getElementById('roast-select');sel.value=opts.roastId;loadRoast();}}
   if(page==='roast-detail'&&opts.roastId){currentDetailRoastId=opts.roastId;renderRoastDetail();}
+  if(page==='profile'){populateProfileForm();}
   if(page==='community'){loadCommunityShots().then(()=>{populateCommunityGrinderFilter();renderCommunity();});}
   if(page==='grinders')renderGrinders();
   if(page==='insights')renderInsights();
@@ -795,11 +897,12 @@ function renderCommunity(){
   if(!filtered.length){el.innerHTML='<div class="empty">No community shots match these filters.</div>';return;}
   el.innerHTML=filtered.map(s=>{
     const isMe=s.user_id===currentUser?.id;
+    const displayName=isMe&&userProfile.username?userProfile.username:'';
     const params=[s.grind?`Grind ${s.grind}`:null,s.ratio?`1:${parseFloat(s.ratio).toFixed(2)}`:(s.dose&&s.yield_g?`1:${(s.yield_g/s.dose).toFixed(2)}`:null),s.temp?`${s.temp}°C`:null,s.time_s?`${s.time_s}s`:null,s.days_off_roast!=null?`${s.days_off_roast}d off roast`:null].filter(Boolean).join(' · ');
     return`<div class="comm-card">
       <div class="comm-card-header">
         <div class="comm-coffee">${s.coffee||'Unknown coffee'}</div>
-        <div class="comm-meta">${s.rating?`<span class="rating-stars-sm">${'★'.repeat(s.rating)}</span> · `:''} ${s.extraction_date?fmtDate(s.extraction_date+'T12:00:00'):''}${isMe?' · <span class="chip mine" style="font-size:10px;padding:1px 6px;">you</span>':''}</div>
+        <div class="comm-meta">${s.rating?`<span class="rating-stars-sm">${'★'.repeat(s.rating)}</span> · `:''}${s.extraction_date?fmtDate(s.extraction_date+'T12:00:00'):''}${isMe?` · <span class="chip mine" style="font-size:10px;padding:1px 6px;">${displayName||'you'}</span>`:''}</div>
       </div>
       <div style="font-size:12px;color:var(--muted);">${s.grinder_name}${[s.process,s.roast].filter(Boolean).length?' · '+[s.process,s.roast].filter(Boolean).join(' · '):''}</div>
       <div class="comm-params" style="color:var(--muted);">${params}</div>
@@ -813,31 +916,101 @@ function switchInsightView(view){currentInsightView=view;document.getElementById
 function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
 function chartTheme(){const dark=window.matchMedia('(prefers-color-scheme: dark)').matches;const gc=dark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.05)',tc=dark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)';const tt={backgroundColor:dark?'#2a2520':'#fff',titleColor:dark?'#f0ece4':'#1c1814',bodyColor:dark?'#9a9082':'#78726a',borderColor:dark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.08)',borderWidth:1,padding:10,cornerRadius:8};return{gc,tc,tt};}
 
+function calcStreak() {
+  if (!shots.length) return 0;
+  const dates = [...new Set(shots.map(s=>s.date.slice(0,10)))].sort().reverse();
+  let streak = 0, prev = null;
+  for (const d of dates) {
+    if (!prev) { streak = 1; prev = d; continue; }
+    const diff = (new Date(prev) - new Date(d)) / 86400000;
+    if (diff === 1) { streak++; prev = d; }
+    else break;
+  }
+  return streak;
+}
+
+function ratingColor(r) {
+  const colors = {1:'#e24b4a',2:'#e8783a',3:'#d4880a',4:'#7ab648',5:'#2a9d4e'};
+  return colors[r]||'#888';
+}
+
 function renderInsights(){
   const el=document.getElementById('insights-overview');
   if(!shots.length){el.innerHTML='<div class="empty">Log some shots to see insights.</div>';return;}
+
+  // Stats
   const rated=shots.filter(s=>s.rating>0);
+  const fiveStars=shots.filter(s=>s.rating===5).length;
+  const streak=calcStreak();
+  const roasterCounts={};shots.forEach(s=>{if(s.roaster)roasterCounts[s.roaster]=(roasterCounts[s.roaster]||0)+1;});
+  const favRoaster=Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  const originCounts={};shots.forEach(s=>{if(s.origin)originCounts[s.origin]=(originCounts[s.origin]||0)+1;});
+  const favOrigin=Object.entries(originCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
   const avgRating=rated.length?(rated.reduce((a,b)=>a+b.rating,0)/rated.length).toFixed(1):'—';
-  const ratioShots=shots.filter(s=>s.ratio);
-  const avgRatio=ratioShots.length?(ratioShots.reduce((a,b)=>a+b.ratio,0)/ratioShots.length).toFixed(2):null;
-  const ps={};shots.forEach(s=>{if(!s.process||!s.rating)return;if(!ps[s.process])ps[s.process]={total:0,count:0};ps[s.process].total+=s.rating;ps[s.process].count++;});
-  const pSorted=Object.entries(ps).sort((a,b)=>(b[1].total/b[1].count)-(a[1].total/a[1].count));
-  const top=[...shots].filter(s=>s.rating>=4).sort((a,b)=>b.rating-a.rating);
-  el.innerHTML=`<div class="insight-grid"><div class="insight-card"><div class="insight-label">Total shots</div><div class="insight-val">${shots.length}</div></div><div class="insight-card"><div class="insight-label">Average rating</div><div class="insight-val">${avgRating}${avgRating!=='—'?` <span style="font-size:18px;color:#d4880a;">★</span>`:''}</div><div class="insight-sub">${rated.length} rated shots</div></div><div class="insight-card"><div class="insight-label">Average ratio</div><div class="insight-val">${avgRatio?'1:'+avgRatio:'—'}</div></div><div class="insight-card"><div class="insight-label">Saved roasts</div><div class="insight-val">${roastLib.length}</div></div></div>
-  <div class="section-title">Grind setting over time</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-grind"></canvas></div>
-  <div class="section-title">Days off roast vs rating</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-days"></canvas></div>
-  <div class="section-title">Ratio over time</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-ratio"></canvas></div>
-  ${pSorted.length?`<div class="section-title">Process performance</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">${pSorted.map(([p,d])=>{const avg=(d.total/d.count).toFixed(1);const pct=(d.total/d.count)/5*100;return`<div class="profile-row"><div><div style="font-weight:500;">${p}</div><div style="font-size:12px;color:var(--muted);">${d.count} shot${d.count>1?'s':''}</div></div><div style="display:flex;align-items:center;gap:8px;min-width:140px;"><div class="ratio-bar"><div class="ratio-fill" style="width:${pct}%"></div></div><span style="font-size:13px;font-weight:600;min-width:28px;">${avg}★</span></div></div>`;}).join('')}</div>`:''}
-  ${top.length?`<div class="section-title">Best shots</div>${top.slice(0,3).map(s=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.75rem 1.25rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-family:var(--font-serif);font-size:14px;font-weight:500;">${s.roaster||'—'} · ${s.origin||'—'}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">${[s.process,s.varietal,s.roast].filter(Boolean).join(' · ')}${s.daysOffRoast?' · '+s.daysOffRoast+'d off roast':''} · ${fmtDate(s.date)}</div>${s.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${s.notes.slice(0,80)}${s.notes.length>80?'…':''}</div>`:''}</div><span style="font-size:18px;color:#d4880a;margin-left:12px;white-space:nowrap;">${'★'.repeat(s.rating)}</span></div>`).join('')}`:''}`;
+
+  el.innerHTML=`
+    <div class="section-title">User stats</div>
+    <div class="profile-section" style="margin-bottom:1.5rem;">
+      <table class="stats-table">
+        <tr><td>Total shots pulled</td><td>${shots.length}</td></tr>
+        <tr><td>Average rating</td><td>${avgRating}${avgRating!=='—'?' ★':''}</td></tr>
+        <tr><td>5★ shots</td><td>${fiveStars}</td></tr>
+        <tr><td>Favorite roaster</td><td style="font-size:14px;">${favRoaster}</td></tr>
+        <tr><td>Favorite origin</td><td style="font-size:14px;">${favOrigin}</td></tr>
+        <tr><td>Current daily streak</td><td>${streak} day${streak!==1?'s':''}</td></tr>
+        <tr><td>Bags in library</td><td>${roastLib.length}</td></tr>
+      </table>
+    </div>
+    <div class="section-title">Shot scatter — all bags</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Shot time (x) · Grind (left y) · Ratio (right y) · Color = rating</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#2a9d4e;display:inline-block;"></span>5★</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#7ab648;display:inline-block;"></span>4★</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#d4880a;display:inline-block;"></span>3★</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#e8783a;display:inline-block;"></span>2★</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>1★</span>
+      <span style="display:flex;align-items:center;gap:4px;color:var(--muted);"><span style="width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block;opacity:0.5;"></span>unrated</span>
+    </div>
+    <div class="chart-wrap" style="height:300px;"><canvas id="chart-scatter-all"></canvas></div>`;
+
   setTimeout(()=>{
-    const sorted=[...shots].filter(s=>s.grind).sort((a,b)=>new Date(a.date)-new Date(b.date));
-    const dR=[...shots].filter(s=>s.ratio).sort((a,b)=>new Date(a.date)-new Date(b.date));
-    const daysR=shots.filter(s=>s.daysOffRoast!=null&&s.rating>0);
     const{gc,tc,tt}=chartTheme();
-    const base=(yL)=>({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tt},scales:{x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:yL,color:tc,font:{size:11}}}}});
-    destroyChart('grind');if(sorted.length)chartInstances['grind']=new Chart(document.getElementById('chart-grind'),{type:'line',data:{labels:sorted.map(s=>fmtDate(s.date)),datasets:[{data:sorted.map(s=>parseFloat(s.grind)),borderColor:'#b85215',backgroundColor:'#b8521522',pointBackgroundColor:'#b85215',tension:0.3,fill:true,pointRadius:4,pointHoverRadius:6}]},options:base('Grind setting')});else document.getElementById('chart-grind').parentElement.innerHTML='<div class="empty" style="padding:1rem;">No grind data yet.</div>';
-    destroyChart('ratio');if(dR.length)chartInstances['ratio']=new Chart(document.getElementById('chart-ratio'),{type:'line',data:{labels:dR.map(s=>fmtDate(s.date)),datasets:[{data:dR.map(s=>s.ratio),borderColor:'#1a6b3a',backgroundColor:'#1a6b3a22',pointBackgroundColor:'#1a6b3a',tension:0.3,fill:true,pointRadius:4,pointHoverRadius:6}]},options:base('Ratio (out/in)')});else document.getElementById('chart-ratio').parentElement.innerHTML='<div class="empty" style="padding:1rem;">No ratio data yet.</div>';
-    destroyChart('days');if(daysR.length)chartInstances['days']=new Chart(document.getElementById('chart-days'),{type:'scatter',data:{datasets:[{data:daysR.map(s=>({x:s.daysOffRoast,y:s.rating,label:`${s.roaster||''} · ${s.origin||''}`})),backgroundColor:'#1a4fa0bb',pointRadius:6,pointHoverRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.label||'Shot'}: ${ctx.raw.x}d off roast, ${ctx.raw.y}★`}}},scales:{x:{title:{display:true,text:'Days off roast',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,grid:{color:gc},ticks:{color:tc,stepSize:1}}}}});else document.getElementById('chart-days').parentElement.innerHTML='<div class="empty" style="padding:1rem;">Log shots with roast dates and ratings to see this chart.</div>';
+    destroyChart('chart-scatter-all');
+    const scatterData=shots.filter(s=>s.time&&s.grind).map(s=>({
+      x:parseFloat(s.time),
+      y:parseFloat(s.grind),
+      ratio:s.ratio||null,
+      rating:s.rating||0,
+      label:`${s.roaster||'?'} · ${s.origin||'?'}`
+    }));
+    if(!scatterData.length){document.getElementById('chart-scatter-all').parentElement.innerHTML='<div class="empty" style="padding:1rem;">Log shots with shot time and grind setting to see this chart.</div>';return;}
+    // Group by rating for colored datasets
+    const byRating={0:[],1:[],2:[],3:[],4:[],5:[]};
+    scatterData.forEach(p=>byRating[p.rating].push(p));
+    const ratingLabels={0:'Unrated',1:'1★',2:'2★',3:'3★',4:'4★',5:'5★'};
+    const ratingColors={0:'rgba(150,150,150,0.5)',1:'#e24b4a',2:'#e8783a',3:'#d4880a',4:'#7ab648',5:'#2a9d4e'};
+    const datasets=Object.entries(byRating).filter(([r,pts])=>pts.length).map(([r,pts])=>({
+      label:ratingLabels[r],
+      data:pts,
+      backgroundColor:ratingColors[r]+'cc',
+      pointRadius:7,
+      pointHoverRadius:9,
+    }));
+    chartInstances['chart-scatter-all']=new Chart(document.getElementById('chart-scatter-all'),{
+      type:'scatter',
+      data:{datasets},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{...tt,callbacks:{label:(ctx)=>{const p=ctx.raw;return[`${p.label}`,`Time: ${p.x}s · Grind: ${p.y}${p.ratio?' · 1:'+p.ratio.toFixed(2):''}`,p.rating?`Rating: ${'★'.repeat(p.rating)}`:'Unrated'];}}}
+        },
+        scales:{
+          x:{title:{display:true,text:'Shot time (s)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
+          y:{title:{display:true,text:'Grind setting',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}}
+        }
+      }
+    });
   },100);
 }
 
@@ -875,6 +1048,113 @@ function renderBagInsights(){
 function flash(id,msg,type){const el=document.getElementById(id);if(!el)return;el.style.color=type==='danger'?'var(--danger-text)':type==='info'?'var(--muted)':'var(--success-text)';el.textContent=msg;if(type!=='info')setTimeout(()=>el.textContent='',3500);}
 function starsHTML(r){return r?`<span class="stars-display">${'★'.repeat(r)}${'☆'.repeat(5-r)}</span>`:'';}
 function fmtDate(iso){return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+
+// ─── PROFILE ───
+let userProfile = { username:'', location:'', machine:'', machine_other:'', grinder:'', coffee_prefs:'', fav_roasters:'', photo:null };
+
+async function loadProfile() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (data) {
+      userProfile = {
+        username: data.username||'',
+        location: data.location||'',
+        machine: data.machine||'',
+        machine_other: '',
+        grinder: data.grinder||'',
+        coffee_prefs: data.coffee_prefs||'',
+        fav_roasters: data.favorite_roasters||'',
+        photo: data.photo_url||null
+      };
+      // Update community shots display name
+      updateAvatarDisplay();
+    }
+  } catch(e) { /* no profile yet, fine */ }
+}
+
+function updateAvatarDisplay() {
+  const av = document.getElementById('user-avatar');
+  const lav = document.getElementById('profile-avatar-large');
+  if (userProfile.photo) {
+    if (av) av.innerHTML = `<img src="${userProfile.photo}" alt="">`;
+    if (lav) lav.innerHTML = `<img src="${userProfile.photo}" alt="">`;
+  } else {
+    const initial = userProfile.username ? userProfile.username[0].toUpperCase() : (currentUser?.email||'U')[0].toUpperCase();
+    if (av) av.textContent = initial;
+    if (lav) lav.textContent = initial;
+  }
+}
+
+function populateProfileForm() {
+  setField('p-username', userProfile.username);
+  setField('p-location', userProfile.location);
+  setField('p-coffee-prefs', userProfile.coffee_prefs);
+  setField('p-fav-roasters', userProfile.fav_roasters);
+  // Machine
+  const machSel = document.getElementById('p-machine');
+  const knownMachines = Array.from(machSel.options).map(o=>o.value);
+  if (userProfile.machine && !knownMachines.includes(userProfile.machine)) {
+    machSel.value = '__other__';
+    setField('p-machine-other', userProfile.machine);
+    document.getElementById('machine-other-field').style.display = 'flex';
+  } else {
+    machSel.value = userProfile.machine||'';
+  }
+  // Grinder dropdown — populate from grinderLib
+  const gSel = document.getElementById('p-grinder-profile');
+  gSel.innerHTML = '<option value="">Select grinder…</option>' + grinderLib.map(g=>`<option value="${g.name}"${g.name===userProfile.grinder?' selected':''}>${g.name}</option>`).join('');
+  updateAvatarDisplay();
+}
+
+document.getElementById('p-machine').addEventListener('change', function() {
+  document.getElementById('machine-other-field').style.display = this.value==='__other__' ? 'flex' : 'none';
+});
+
+function handleProfilePhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    userProfile.photo = e.target.result;
+    updateAvatarDisplay();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('profile-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const machSel = document.getElementById('p-machine');
+  const machine = machSel.value === '__other__' ? g('p-machine-other') : machSel.value;
+  const payload = {
+    id: currentUser.id,
+    username: g('p-username')||null,
+    location: g('p-location')||null,
+    machine: machine||null,
+    grinder: document.getElementById('p-grinder-profile').value||null,
+    coffee_prefs: g('p-coffee-prefs')||null,
+    favorite_roasters: g('p-fav-roasters')||null,
+    photo_url: userProfile.photo||null,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    const { error } = await sb.from('profiles').upsert(payload);
+    if (error) throw error;
+    userProfile.username = payload.username||'';
+    userProfile.location = payload.location||'';
+    userProfile.machine = machine||'';
+    userProfile.grinder = payload.grinder||'';
+    userProfile.coffee_prefs = payload.coffee_prefs||'';
+    userProfile.fav_roasters = payload.favorite_roasters||'';
+    updateAvatarDisplay();
+    flash('profile-save-msg', 'Profile saved!', 'success');
+  } catch(e) {
+    flash('profile-save-msg', 'Error saving profile — try again', 'danger');
+  }
+  btn.disabled = false; btn.textContent = 'Save profile';
+}
+
 
 initAuth();
 </script>

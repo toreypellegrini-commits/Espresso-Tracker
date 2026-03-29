@@ -112,8 +112,8 @@
     /* ─── ROAST LIBRARY (HOME) ─── */
     .lib-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; display: flex; gap: 0; align-items: stretch; cursor: pointer; transition: box-shadow 0.15s; overflow: hidden; }
     .lib-card:hover { box-shadow: var(--shadow); }
-    .lib-card-img { width: 80px; flex-shrink: 0; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; }
-    .lib-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .lib-card-img { width: 80px; height: 80px; flex-shrink: 0; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; }
+    .lib-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
     .lib-card-body { flex: 1; padding: 0.875rem 1rem; min-width: 0; }
     .lib-card-name { font-family: var(--font-serif); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
     .lib-card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
@@ -318,7 +318,6 @@
       <div id="library-list"></div>
       <div id="finished-section"></div>
     </div>
-    <button class="fab" onclick="navTo('log')"><span class="fab-icon">＋</span> Log Shot</button>
   </div>
 
   <!-- PAGE: ROAST DETAIL -->
@@ -603,7 +602,10 @@ function renderLibCard(r){
   let dc='';
   if(days!==null&&!r.finished){const cls=days<7?'days-fresh':days<=21?'days-peak':'days-old';const lbl=days<7?'resting':days<=21?'peak':'past peak';dc=`<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;}
   else if(days!==null&&r.finished){dc=`<span class="chip finished-chip">finished at ${days}d</span>`;}
-  const img=r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover;">`:`<span style="font-size:28px;">☕</span>`;
+  const img=r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover;object-position:center;">`:`<span style="font-size:28px;">☕</span>`;
+  const finishedTitle=r.finished?'Mark active':'Mark finished';
+  const finishedIcon=r.finished?'↩':'✓';
+  const finishedStyle=r.finished?'color:var(--success-text);':'';
   return`<div class="lib-card">
     <div class="lib-card-img" onclick="navTo('roast-detail',{roastId:${r.id}})">${img}</div>
     <div class="lib-card-body" onclick="navTo('roast-detail',{roastId:${r.id}})">
@@ -611,8 +613,9 @@ function renderLibCard(r){
       <div class="lib-card-meta">${chips}${dc}${sc?`<span class="chip highlight">${sc} shot${sc>1?'s':''}</span>`:''}</div>
       ${r.roastDate?`<div style="font-size:11px;color:var(--muted);margin-top:3px;">Roasted ${fmtDate(r.roastDate+'T12:00:00')}</div>`:''}
     </div>
-    <div class="lib-card-action">
+    <div class="lib-card-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding:0.75rem 0.875rem 0.75rem 0;">
       <button class="log-shot-btn" onclick="event.stopPropagation();navTo('log',{roastId:${r.id}})">Log Shot</button>
+      <button class="icon-btn" style="font-size:13px;padding:4px 8px;${finishedStyle}" title="${finishedTitle}" onclick="event.stopPropagation();toggleFinished(${r.id})">${finishedIcon} ${finishedTitle}</button>
     </div>
   </div>`;
 }
@@ -752,6 +755,7 @@ function openEditRoast(id){
   document.getElementById('modal-roast').classList.remove('modal-hidden');
 }
 
+function toggleFinished(id){const r=roastLib.find(x=>x.id==id);if(!r)return;r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;dbUpdate('roast_library',r._db_id,r).then(()=>{setDbStatus('ok','Saved');renderLibrary();populateRoastDropdown();}).catch(()=>setDbStatus('error','Error'));}
 function modalToggleFinished(){const r=roastLib.find(x=>x.id==editingRoastId);if(!r)return;r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;dbUpdate('roast_library',r._db_id,r).then(()=>{setDbStatus('ok','Saved');document.getElementById('modal-finish-btn').textContent=r.finished?'↩ Mark active':'✓ Mark finished';renderLibrary();populateRoastDropdown();}).catch(()=>setDbStatus('error','Error'));}
 
 function modalDeleteRoast(){if(!editingRoastId)return;const r=roastLib.find(x=>x.id==editingRoastId);if(!r)return;dbDelete('roast_library',r._db_id).then(()=>{roastLib=roastLib.filter(x=>x.id!==editingRoastId);closeModal('roast');renderLibrary();populateRoastDropdown();setDbStatus('ok','Saved');if(currentPage==='roast-detail')navTo('library');}).catch(()=>setDbStatus('error','Error'));}

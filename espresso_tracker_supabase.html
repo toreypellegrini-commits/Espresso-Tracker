@@ -1127,10 +1127,10 @@ async function saveProfile() {
   btn.disabled = true; btn.textContent = 'Saving…';
   const machSel = document.getElementById('p-machine');
   const machine = machSel.value === '__other__' ? g('p-machine-other') : machSel.value;
-  const payload = {
-    id: currentUser.id,
-    username: g('p-username')||null,
-    location: g('p-location')||null,
+  const username = g('p-username')||null;
+  const location = g('p-location')||null;
+  const fields = {
+    location,
     machine: machine||null,
     grinder: document.getElementById('p-grinder-profile').value||null,
     coffee_prefs: g('p-coffee-prefs')||null,
@@ -1138,19 +1138,32 @@ async function saveProfile() {
     photo_url: userProfile.photo||null,
     updated_at: new Date().toISOString()
   };
+  if (username) fields.username = username;
   try {
-    const { error } = await sb.from('profiles').upsert(payload);
-    if (error) throw error;
-    userProfile.username = payload.username||'';
-    userProfile.location = payload.location||'';
-    userProfile.machine = machine||'';
-    userProfile.grinder = payload.grinder||'';
-    userProfile.coffee_prefs = payload.coffee_prefs||'';
-    userProfile.fav_roasters = payload.favorite_roasters||'';
-    updateAvatarDisplay();
-    flash('profile-save-msg', 'Profile saved!', 'success');
+    // Check if row already exists
+    const { data: existing } = await sb.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+    let res;
+    if (existing) {
+      res = await sb.from('profiles').update(fields).eq('id', currentUser.id);
+    } else {
+      res = await sb.from('profiles').insert({ id: currentUser.id, ...fields });
+    }
+    if (res.error) {
+      console.error('Profile save error:', res.error);
+      flash('profile-save-msg', 'Error: ' + (res.error.message || res.error.code || 'unknown'), 'danger');
+    } else {
+      userProfile.username = username||'';
+      userProfile.location = location||'';
+      userProfile.machine = machine||'';
+      userProfile.grinder = fields.grinder||'';
+      userProfile.coffee_prefs = fields.coffee_prefs||'';
+      userProfile.fav_roasters = fields.favorite_roasters||'';
+      updateAvatarDisplay();
+      flash('profile-save-msg', 'Profile saved!', 'success');
+    }
   } catch(e) {
-    flash('profile-save-msg', 'Error saving profile — try again', 'danger');
+    console.error('Profile save exception:', e);
+    flash('profile-save-msg', 'Error: ' + (e.message||'unknown'), 'danger');
   }
   btn.disabled = false; btn.textContent = 'Save profile';
 }

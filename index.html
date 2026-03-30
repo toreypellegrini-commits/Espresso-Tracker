@@ -231,6 +231,24 @@
     .icon-btn:hover { background: var(--surface2); }
 
 
+
+    /* ─── HOME PAGE ─── */
+    .home-welcome { padding: 1.5rem 1rem 0.75rem; max-width: 680px; margin: 0 auto; }
+    .home-greeting { font-family: var(--font-serif); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; }
+    .home-greeting em { font-style: normal; color: var(--accent); }
+    .home-subtext { font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+    .home-stats-row { display: flex; gap: 10px; margin: 1.25rem 0; max-width: 680px; margin-left: auto; margin-right: auto; padding: 0 1rem; }
+    .home-stat-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.875rem 1rem; text-align: center; }
+    .home-stat-val { font-family: var(--font-serif); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; color: var(--accent); }
+    .home-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .home-stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .home-section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 1rem; max-width: 680px; margin: 0 auto 10px; }
+    .home-quick-actions { display: flex; gap: 8px; padding: 0 1rem; max-width: 680px; margin: 0 auto 1.5rem; flex-wrap: wrap; }
+    .home-action-btn { flex: 1; min-width: 120px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 14px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text); font-family: var(--font); transition: background 0.12s; -webkit-tap-highlight-color: transparent; }
+    .home-action-btn:hover { background: var(--surface2); }
+    .home-action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .home-action-btn.primary:hover { opacity: 0.88; }
+
     /* ─── PROFILE ─── */
     .profile-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 2rem; }
     .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: var(--accent-light); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 600; color: var(--accent); overflow: hidden; cursor: pointer; }
@@ -301,8 +319,9 @@
       <div class="drawer-user" id="drawer-user"></div>
     </div>
     <nav class="drawer-nav">
-      <button class="drawer-item active" id="nav-library" onclick="navTo('library')"><span class="drawer-item-icon">☕</span>Roast Library</button>
-      <button class="drawer-item" id="nav-log" onclick="navTo('log')"><span class="drawer-item-icon">＋</span>Log Shot</button>
+      <button class="drawer-item active" id="nav-home" onclick="navTo('home')"><span class="drawer-item-icon">🏠</span>Home</button>
+      <button class="drawer-item" id="nav-library" onclick="navTo('library')"><span class="drawer-item-icon">☕</span>Roast Library</button>
+      <button class="drawer-item" id="nav-myshots" onclick="navTo('myshots')"><span class="drawer-item-icon">📋</span>My Shots</button>
       <button class="drawer-item" id="nav-community" onclick="navTo('community')"><span class="drawer-item-icon">👥</span>Community Shots</button>
       <div class="drawer-divider"></div>
       <button class="drawer-item" id="nav-grinders" onclick="navTo('grinders')"><span class="drawer-item-icon">⚙</span>Grinders</button>
@@ -323,7 +342,7 @@
       </button>
       <button class="back-btn" id="back-btn" onclick="goBack()">‹</button>
       <div>
-        <div class="header-title" id="header-title"><em>EX</em>traction Tracker</div>
+        <div class="header-title" id="header-title" style="cursor:pointer;" onclick="navTo('home')"><em>EX</em>traction Tracker</div>
         <div class="header-subtitle" id="header-subtitle" style="display:none;"></div>
       </div>
     </div>
@@ -333,8 +352,39 @@
     </div>
   </header>
 
+  <!-- PAGE: HOME -->
+  <div class="page active" id="page-home">
+    <div class="home-welcome">
+      <div class="home-greeting" id="home-greeting">Welcome back</div>
+      <div class="home-subtext" id="home-subtext"></div>
+    </div>
+    <div class="home-stats-row">
+      <div class="home-stat-card">
+        <div class="home-stat-val" id="home-total-shots">—</div>
+        <div class="home-stat-lbl">Shots pulled</div>
+      </div>
+      <div class="home-stat-card">
+        <div class="home-stat-val" id="home-fav-roaster" style="font-size:15px;padding-top:4px;">—</div>
+        <div class="home-stat-lbl">Favorite roaster</div>
+      </div>
+    </div>
+    <div class="home-section-label" id="home-recent-label" style="display:none;">Most recent shot</div>
+    <div style="max-width:680px;margin:0 auto;padding:0 1rem;">
+      <div id="home-recent-shot"></div>
+    </div>
+    <div style="max-width:680px;margin:1.25rem auto 0;padding:0 1rem;">
+      <div class="home-section-label" style="padding:0;margin-bottom:10px;">Quick links</div>
+      <div class="home-quick-actions" style="padding:0;">
+        <button class="home-action-btn" onclick="navTo('library')">☕ Roast Library</button>
+        <button class="home-action-btn" onclick="navTo('myshots')">📋 My Shots</button>
+        <button class="home-action-btn" onclick="navTo('community')">👥 Community</button>
+        <button class="home-action-btn" onclick="navTo('insights')">◎ Insights</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PAGE: LIBRARY (HOME) -->
-  <div class="page active" id="page-library">
+  <div class="page" id="page-library">
     <div class="container">
       <button class="lib-add-btn" onclick="openModal('roast')">＋ Add new roast</button>
       <div id="library-list"></div>
@@ -356,7 +406,6 @@
       </div>
       <div id="roast-shots-list"></div>
     </div>
-    <button class="fab" onclick="logShotForCurrentRoast()"><span class="fab-icon">＋</span> Log Shot</button>
   </div>
 
   <!-- PAGE: LOG SHOT -->
@@ -404,6 +453,10 @@
   <!-- PAGE: COMMUNITY SHOTS -->
   <div class="page" id="page-community">
     <div class="container">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">
+        <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;margin-bottom:4px;">Community Shots</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">These are 4★+ shots shared by all users who logged with a grinder selected. Use this to dial in a new bag — find a similar coffee and see what grind settings, ratios, shot times, and temps other users are hitting. Tasting notes are always kept private.</div>
+      </div>
       <div class="comm-filters">
         <input type="text" id="cf-search" placeholder="Coffee, origin…" oninput="renderCommunity()" autocorrect="off">
         <select id="cf-grinder" onchange="renderCommunity()"><option value="">All grinders</option></select>
@@ -415,6 +468,26 @@
       <div id="community-list"></div>
     </div>
   </div>
+
+  <!-- PAGE: MY SHOTS -->
+  <div class="page" id="page-myshots">
+    <div class="container">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">
+        <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;margin-bottom:4px;">Your Shot History</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;">Every shot you've logged, sorted by date. Use the filters to dig into specific roasters, origins, or ratings.</div>
+      </div>
+      <div class="comm-filters">
+        <input type="text" id="ms-search" placeholder="Roaster, origin, notes…" oninput="renderMyShots()" autocorrect="off">
+        <select id="ms-process" onchange="renderMyShots()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select>
+        <select id="ms-roast" onchange="renderMyShots()"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
+        <select id="ms-rating" onchange="renderMyShots()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option><option value="3">3★+</option></select>
+        <select id="ms-grinder" onchange="renderMyShots()"><option value="">All grinders</option></select>
+        <select id="ms-sort" onchange="renderMyShots()"><option value="date-desc">Newest first</option><option value="date-asc">Oldest first</option><option value="rating-desc">Highest rated</option></select>
+      </div>
+      <div id="myshots-list"></div>
+    </div>
+  </div>
+
 
   <!-- PAGE: GRINDERS -->
   <div class="page" id="page-grinders">
@@ -517,6 +590,9 @@
     </div>
   </div>
 
+  <!-- GLOBAL FAB -->
+  <button class="fab" id="global-fab" onclick="globalFabClick()"><span class="fab-icon">＋</span> Log Shot</button>
+
 </div><!-- end main-app -->
 
 <!-- ROAST MODAL -->
@@ -573,7 +649,7 @@ let shots = [], roastLib = [], grinderLib = [], communityShots = [];
 let currentRating = 0, editingRoastId = null, editingGrinderId = null;
 let chartInstances = {}, currentInsightView = 'overview', selectedBagId = null;
 let finishedExpanded = false;
-let currentPage = 'library', previousPage = 'library';
+let currentPage = 'home', previousPage = 'home';
 let currentDetailRoastId = null;
 let authMode = 'signin';
 const SHARE_MIN_RATING = 4;
@@ -599,7 +675,7 @@ function showApp() {
   document.getElementById('drawer-user').textContent=currentUser?.email||'';
   loadProfile();
   initExtractionDate(); populateRoastDropdown(); populateGrinderDropdown();
-  renderLibrary();
+  renderHome();
 }
 
 async function signInWithGoogle() { showAuthMsg('Redirecting to Google…','info'); const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}}); if(error)showAuthMsg(error.message,'error'); }
@@ -673,23 +749,26 @@ function navTo(page, opts={}) {
   const backBtn=document.getElementById('back-btn');
   const hamburger=document.getElementById('hamburger-btn');
   const subtitle=document.getElementById('header-subtitle');
-  const titles={library:'<em>EX</em>traction Tracker',log:'Log Shot','roast-detail':'','community':'Community Shots',grinders:'Grinders',insights:'Insights',profile:'My Profile'};
+  const titles={home:'<em>EX</em>traction Tracker',library:'Roast Library',log:'Log Shot','roast-detail':'','community':'Community Shots',myshots:'My Shots',grinders:'Grinders',insights:'Insights',profile:'My Profile'};
   document.getElementById('header-title').innerHTML=titles[page]||page;
-  const isTopLevel=['library','community','grinders','insights','profile'].includes(page);
+  const isTopLevel=['home','library','community','myshots','grinders','insights','profile'].includes(page);
   backBtn.style.display=isTopLevel?'none':'block';
   hamburger.style.display=isTopLevel?'flex':'none';
   subtitle.style.display='none';
   if(page==='library'){renderLibrary();}
   if(page==='log'){populateRoastDropdown();populateGrinderDropdown();if(opts.roastId){const sel=document.getElementById('roast-select');sel.value=opts.roastId;loadRoast();}}
   if(page==='roast-detail'&&opts.roastId){currentDetailRoastId=opts.roastId;renderRoastDetail();}
+  if(page==='home'){renderHome();}
   if(page==='profile'){populateProfileForm();}
+  if(page==='myshots'){populateMyShotsGrinderFilter();renderMyShots();}
   if(page==='community'){loadCommunityShots().then(()=>{populateCommunityGrinderFilter();renderCommunity();});}
   if(page==='grinders')renderGrinders();
   if(page==='insights')renderInsights();
   window.scrollTo(0,0);
+  updateFabVisibility();
 }
 
-function goBack(){navTo(previousPage==='roast-detail'?'library':previousPage);}
+function goBack(){navTo(previousPage==='roast-detail'?'library':previousPage==='log'?'home':previousPage);}
 
 function logShotForCurrentRoast(){navTo('log',{roastId:currentDetailRoastId});}
 
@@ -716,7 +795,6 @@ function renderLibCard(r){
       ${r.roastDate?`<div style="font-size:11px;color:var(--muted);margin-top:3px;">Roasted ${fmtDate(r.roastDate+'T12:00:00')}</div>`:''}
     </div>
     <div class="lib-card-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding:0.75rem 0.875rem 0.75rem 0;">
-      <button class="log-shot-btn" onclick="event.stopPropagation();navTo('log',{roastId:${r.id}})">Log Shot</button>
       <button class="icon-btn" style="font-size:13px;padding:4px 8px;${finishedStyle}" title="${finishedTitle}" onclick="event.stopPropagation();toggleFinished(${r.id})">${finishedIcon} ${finishedTitle}</button>
     </div>
   </div>`;
@@ -836,7 +914,7 @@ async function saveShot(){
 
 function clearForm(){['f-roaster','f-origin','f-varietal','f-grind','f-dose','f-yield','f-temp','f-preinfusion','f-time','f-notes','f-roastdate'].forEach(id=>setField(id,''));document.getElementById('f-process').value='';document.getElementById('f-roast').value='';document.getElementById('roast-select').value='';document.getElementById('f-grinder').value='';currentRating=0;document.querySelectorAll('.star').forEach(x=>x.classList.remove('active'));document.getElementById('star-label').textContent='tap to rate';setField('f-extractdate',todayStr());updateExtractionHint();updateDaysOffRoast();updateRatio();updateShareNotice();}
 
-async function deleteShot(id){const s=shots.find(x=>x.id==id);if(!s)return;try{await dbDelete('shots',s._db_id);shots=shots.filter(x=>x.id!==id);setDbStatus('ok','Saved');if(currentPage==='roast-detail')renderRoastShots();}catch(e){setDbStatus('error','Error');}}
+async function deleteShot(id){const s=shots.find(x=>x.id==id);if(!s)return;try{await dbDelete('shots',s._db_id);shots=shots.filter(x=>x.id!==id);setDbStatus('ok','Saved');if(currentPage==='roast-detail')renderRoastShots();else if(currentPage==='home')renderHome();else if(currentPage==='myshots')renderMyShots();}catch(e){setDbStatus('error','Error');}}
 
 // ─── ROAST MODAL ───
 function previewPhoto(){const file=document.getElementById('m-photo').files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const img=document.getElementById('m-photo-preview');img.src=e.target.result;img.style.display='block';};reader.readAsDataURL(file);}
@@ -1049,6 +1127,158 @@ function flash(id,msg,type){const el=document.getElementById(id);if(!el)return;e
 function starsHTML(r){return r?`<span class="stars-display">${'★'.repeat(r)}${'☆'.repeat(5-r)}</span>`:'';}
 function fmtDate(iso){return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
+
+
+// ─── HOME PAGE ───
+const GREETINGS = [
+  d => `Happy ${d}!`,
+  d => `Good morning — happy ${d}!`,
+  d => `Ready to pull a great shot this ${d}?`,
+  d => `${d} calls for a great espresso.`,
+  d => `Hope your ${d} is going well!`,
+];
+const TIPS = [
+  'Tip: Try dropping your dose 0.5g and see if clarity improves.',
+  'Tip: Grind finer if your shot is running fast and tasting sour.',
+  'Tip: Letting a new bag rest 7–10 days off roast often hits the sweet spot.',
+  'Tip: A longer pre-infusion can help even out extraction on light roasts.',
+  'Tip: If your shot tastes bitter, try a slightly coarser grind or lower temp.',
+  'Tip: Consistency in tamping pressure matters more than the pressure amount.',
+];
+
+function renderHome() {
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const day = days[new Date().getDay()];
+  const name = userProfile.username ? userProfile.username.charAt(0).toUpperCase() + userProfile.username.slice(1) : '';
+
+  // Greeting
+  const greetingEl = document.getElementById('home-greeting');
+  const subtextEl = document.getElementById('home-subtext');
+  const greetingIdx = new Date().getDate() % GREETINGS.length;
+  const greetingText = GREETINGS[greetingIdx](day);
+  greetingEl.innerHTML = name
+    ? `Welcome back, <em>${name}</em> — ${greetingText.toLowerCase()}`
+    : `<em>${greetingText}</em>`;
+  const tipIdx = (new Date().getDate() + new Date().getMonth()) % TIPS.length;
+  subtextEl.textContent = TIPS[tipIdx];
+
+  // Stats
+  const roasterCounts = {};
+  shots.forEach(s => { if(s.roaster) roasterCounts[s.roaster]=(roasterCounts[s.roaster]||0)+1; });
+  const favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  document.getElementById('home-total-shots').textContent = shots.length || '0';
+  const favEl = document.getElementById('home-fav-roaster');
+  favEl.textContent = favRoaster;
+  favEl.style.fontSize = favRoaster.length > 12 ? '12px' : favRoaster.length > 8 ? '14px' : '15px';
+
+  // Most recent shot
+  const recentLabelEl = document.getElementById('home-recent-label');
+  const recentEl = document.getElementById('home-recent-shot');
+  if (!shots.length) {
+    recentLabelEl.style.display = 'none';
+    recentEl.innerHTML = '<div class="empty" style="padding:1.5rem 0;">No shots logged yet.<br>Tap ＋ Log Shot to get started.</div>';
+    return;
+  }
+  recentLabelEl.style.display = 'block';
+  const s = shots[0];
+  recentEl.innerHTML = `<div class="shot-card" style="cursor:pointer;" onclick="navTo('roast-detail',{roastId:${s.roastLibId||0}})">
+    <div class="shot-card-header">
+      <div>
+        <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roaster||'Unknown'}${s.origin?' · '+s.origin:''}</div>
+        <div class="shot-meta">${fmtDate(s.date)}${s.daysOffRoast!=null?' · '+s.daysOffRoast+'d off roast':''}${s.rating?' · '+starsHTML(s.rating):''}</div>
+      </div>
+    </div>
+    <div class="shot-stats">
+      <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>
+      <div class="stat"><div class="stat-val">${s.yield||'—'}g</div><div class="stat-lbl">Yield</div></div>
+      <div class="stat"><div class="stat-val">${s.ratio?'1:'+s.ratio:'—'}</div><div class="stat-lbl">Ratio</div></div>
+      <div class="stat"><div class="stat-val">${s.time?s.time+'s':'—'}</div><div class="stat-lbl">Time</div></div>
+    </div>
+    <div class="shot-stats" style="margin-top:6px;">
+      <div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div>
+      <div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div>
+      <div class="stat"><div class="stat-val">${s.grinderName||'—'}</div><div class="stat-lbl">Grinder</div></div>
+      <div class="stat"><div class="stat-val">${s.preinfusion?s.preinfusion+'s':'—'}</div><div class="stat-lbl">Pre-inf</div></div>
+    </div>
+    ${s.notes?`<div class="shot-note">${s.notes}</div>`:''}
+  </div>`;
+}
+
+// ─── MY SHOTS PAGE ───
+function populateMyShotsGrinderFilter() {
+  const sel = document.getElementById('ms-grinder');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">All grinders</option>' + grinderLib.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+  if (prev) sel.value = prev;
+}
+
+function renderMyShots() {
+  const search = document.getElementById('ms-search').value.toLowerCase();
+  const process = document.getElementById('ms-process').value;
+  const roast = document.getElementById('ms-roast').value;
+  const minRating = +document.getElementById('ms-rating').value||0;
+  const grinder = document.getElementById('ms-grinder').value;
+  const sortVal = document.getElementById('ms-sort').value;
+
+  let filtered = shots.filter(s => {
+    const text = [s.roaster,s.origin,s.varietal,s.notes,s.grinderName].join(' ').toLowerCase();
+    if (search && !text.includes(search)) return false;
+    if (process && s.process !== process) return false;
+    if (roast && s.roast !== roast) return false;
+    if (minRating && (s.rating||0) < minRating) return false;
+    if (grinder && s.grinderName !== grinder) return false;
+    return true;
+  });
+
+  if (sortVal==='date-desc') filtered.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  else if (sortVal==='date-asc') filtered.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  else if (sortVal==='rating-desc') filtered.sort((a,b)=>(b.rating||0)-(a.rating||0));
+
+  const el = document.getElementById('myshots-list');
+  if (!filtered.length) { el.innerHTML='<div class="empty">No shots match these filters.</div>'; return; }
+
+  el.innerHTML = filtered.map(s => {
+    const chips = [s.process,s.roast,s.varietal].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
+    return `<div class="shot-card">
+      <div class="shot-card-header">
+        <div>
+          <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roaster||'Unknown'}${s.origin?' · '+s.origin:''}</div>
+          <div class="shot-meta">${fmtDate(s.date)}${s.rating?' · '+starsHTML(s.rating):''}${s.grinderName?' · '+s.grinderName:''}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteShot(${s.id})">✕</button>
+      </div>
+      ${chips?`<div class="shot-chips">${chips}</div>`:''}
+      <div class="shot-stats">
+        <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>
+        <div class="stat"><div class="stat-val">${s.yield||'—'}g</div><div class="stat-lbl">Yield</div></div>
+        <div class="stat"><div class="stat-val">${s.ratio?'1:'+s.ratio:'—'}</div><div class="stat-lbl">Ratio</div></div>
+        <div class="stat"><div class="stat-val">${s.time?s.time+'s':'—'}</div><div class="stat-lbl">Time</div></div>
+      </div>
+      <div class="shot-stats" style="margin-top:6px;">
+        <div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div>
+        <div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div>
+        <div class="stat"><div class="stat-val">${s.preinfusion?s.preinfusion+'s':'—'}</div><div class="stat-lbl">Pre-inf</div></div>
+        <div class="stat"><div class="stat-val">${s.daysOffRoast!=null?s.daysOffRoast+'d':'—'}</div><div class="stat-lbl">Off roast</div></div>
+      </div>
+      ${s.notes?`<div class="shot-note">${s.notes}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ─── GLOBAL FAB ───
+function globalFabClick() {
+  if (currentPage === 'roast-detail' && currentDetailRoastId) {
+    navTo('log', {roastId: currentDetailRoastId});
+  } else {
+    navTo('log');
+  }
+}
+
+function updateFabVisibility() {
+  const fab = document.getElementById('global-fab');
+  if (!fab) return;
+  fab.style.display = currentPage === 'log' ? 'none' : 'flex';
+}
 
 // ─── PROFILE ───
 let userProfile = { username:'', location:'', machine:'', machine_other:'', grinder:'', coffee_prefs:'', fav_roasters:'', photo:null };

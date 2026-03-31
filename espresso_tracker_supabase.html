@@ -1254,19 +1254,22 @@ function renderBagInsights(){
       </div>
       <span style="font-size:16px;color:#d4880a;margin-left:12px;">${'★'.repeat(bestShot.rating)}</span>
     </div>`:''}
-    <div class="section-title">Chart 1 — Dial-In Progression</div>
+    <div class="section-title">Chart 1 — Grind Setting Over Time</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How your grind setting has changed across shots — track your dial-in journey</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="bag-c0"></canvas></div>
+    <div class="section-title">Chart 2 — Dial-In Progression</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Brew time and yield over shots — are you dialling in?</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="bag-c1"></canvas></div>
-    <div class="section-title">Chart 2 — Grind vs Shot Time (Calibration Curve)</div>
+    <div class="section-title">Chart 3 — Grind vs Shot Time (Calibration Curve)</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How grind setting affects extraction time for this coffee · requires ${MIN_SCATTER}+ shots</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="bag-c2"></canvas></div>
-    <div class="section-title">Chart 3 — Ratio vs Rating</div>
+    <div class="section-title">Chart 4 — Ratio vs Rating</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Which brew ratios are tasting best · requires ${MIN_SCATTER}+ shots</div>
     <div class="chart-wrap" style="height:240px;"><canvas id="bag-c3"></canvas></div>
-    <div class="section-title">Chart 4 — Shot Time vs Rating</div>
+    <div class="section-title">Chart 5 — Shot Time vs Rating</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Your sweet spot extraction time · requires ${MIN_SCATTER}+ shots</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="bag-c4"></canvas></div>
-    <div class="section-title">Chart 5 — Rating by Days Off Roast</div>
+    <div class="section-title">Chart 6 — Rating by Days Off Roast</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How ratings change as the bag rests — find your sweet spot</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="bag-c5"></canvas></div>
   `;
@@ -1277,7 +1280,37 @@ function renderBagInsights(){
     const dateLabels=bagShots.map(s=>fmtDate(s.date));
     const ratingColor=r=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][r]+'cc';
 
-    // ── CHART 1: Dial-In Progression ──
+    // ── CHART 0 (displayed as Chart 1): Grind Setting Over Time ──
+    destroyChart('bag-c0');
+    const c0grind=bagShots.map(s=>s.grind?parseFloat(s.grind):null);
+    if(c0grind.some(v=>v!==null)){
+      const c0vals=c0grind.filter(v=>v!==null);
+      const c0min=Math.floor(Math.min(...c0vals))-1;
+      const c0max=Math.ceil(Math.max(...c0vals))+1;
+      chartInstances['bag-c0']=new Chart(document.getElementById('bag-c0'),{
+        type:'line',
+        data:{labels:shotLabels,datasets:[{
+          label:'Grind setting',
+          data:c0grind,
+          borderColor:'#b85215',backgroundColor:'#b8521518',
+          pointBackgroundColor:'#b85215',
+          tension:0.3,pointRadius:5,pointHoverRadius:7,fill:true,spanGaps:true
+        }]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},
+            tooltip:{...tt,callbacks:{title:(items)=>`${shotLabels[items[0].dataIndex]} · ${dateLabels[items[0].dataIndex]}`,label:(ctx)=>`Grind: ${ctx.raw}`}}},
+          scales:{
+            x:{grid:{color:gc},ticks:{color:tc}},
+            y:{grid:{color:gc},min:c0min,max:c0max,
+              ticks:{color:tc,stepSize:1,callback:v=>Number.isInteger(v)?v:''},
+              title:{display:true,text:'Grind setting',color:tc,font:{size:11}}}
+          }}
+      });
+    } else {
+      document.getElementById('bag-c0').parentElement.innerHTML='<div class="empty" style="padding:1rem;">No grind data for this bag.</div>';
+    }
+
+    // ── CHART 2 (displayed as Chart 2): Dial-In Progression ──
     destroyChart('bag-c1');
     const c1time=bagShots.map(s=>s.time?parseFloat(s.time):null);
     const c1yield=bagShots.map(s=>s.yield?parseFloat(s.yield):null);
@@ -1285,15 +1318,15 @@ function renderBagInsights(){
       chartInstances['bag-c1']=new Chart(document.getElementById('bag-c1'),{
         type:'line',
         data:{labels:shotLabels,datasets:[
-          {label:'Brew time (s)',data:c1time,borderColor:'#b85215',backgroundColor:'transparent',pointBackgroundColor:'#b85215',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y'},
+          {label:'Shot time (s)',data:c1time,borderColor:'#b85215',backgroundColor:'transparent',pointBackgroundColor:'#b85215',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y'},
           {label:'Yield (g)',data:c1yield,borderColor:'#1a4fa0',backgroundColor:'transparent',pointBackgroundColor:'#1a4fa0',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y2',borderDash:[4,3]}
         ]},
         options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-          plugins:{legend:{display:true,labels:{color:tc,font:{size:11},boxWidth:12}},
+          plugins:{legend:{display:true,labels:{color:tc,font:{size:11},usePointStyle:true,pointStyle:'line',pointStyleWidth:24}},
             tooltip:{...tt,callbacks:{title:(items)=>`${shotLabels[items[0].dataIndex]} · ${dateLabels[items[0].dataIndex]}`}}},
           scales:{
             x:{grid:{color:gc},ticks:{color:tc}},
-            y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Brew time (s)',color:'#b85215',font:{size:11}},position:'left'},
+            y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Shot time (s)',color:'#b85215',font:{size:11}},position:'left'},
             y2:{grid:{display:false},ticks:{color:tc},title:{display:true,text:'Yield (g)',color:'#1a4fa0',font:{size:11}},position:'right'}
           }}
       });
@@ -1368,7 +1401,7 @@ function renderBagInsights(){
           scales:{
             x:{title:{display:true,text:'Ratio (yield ÷ dose)',color:tc,font:{size:11}},grid:{color:gc},min:1.0,max:4.0,
               ticks:{color:tc,stepSize:0.25,callback:v=>{const r=Math.round(v*4)/4;return Math.abs(v-r)<0.001?`1:${r%1===0?r.toFixed(0):r}`:'';}}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
           }}
       });
     } else {
@@ -1386,7 +1419,7 @@ function renderBagInsights(){
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.x}s · ${ctx.raw.y}★ · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
           scales:{
             x:{title:{display:true,text:'Shot time (s)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
           }}
       });
     } else {
@@ -1406,7 +1439,7 @@ function renderBagInsights(){
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.x}d off roast · ${ctx.raw.y}★ · ${ctx.raw.date}${ctx.raw.notes?' · '+ctx.raw.notes.slice(0,40):''}`}}},
           scales:{
             x:{title:{display:true,text:'Days off roast',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
           }}
       });
     } else if(c5all.length>=2){
@@ -1422,7 +1455,7 @@ function renderBagInsights(){
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw}★${c5all[ctx.dataIndex]?.notes?' · '+c5all[ctx.dataIndex].notes.slice(0,40):''}`}}},
           scales:{
             x:{grid:{color:gc},ticks:{color:tc}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
           }}
       });
     } else {

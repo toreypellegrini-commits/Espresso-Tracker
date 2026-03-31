@@ -2029,5 +2029,47 @@ async function saveProfile() {
 
 initAuth();
 </script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        // Check for updates every time the app gains focus
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available — show a subtle update banner
+              showUpdateBanner();
+            }
+          });
+        });
+      })
+      .catch(err => console.log('SW registration failed:', err));
+
+    // When new SW takes control, reload to get fresh content
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) { refreshing = true; window.location.reload(); }
+    });
+  });
+}
+
+function showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 18px;font-size:13px;font-weight:500;color:var(--text);z-index:35;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;white-space:nowrap;';
+  banner.innerHTML = '<span>Update available</span><button onclick="applyUpdate()" style="background:var(--accent);color:#fff;border:none;border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);">Refresh</button>';
+  document.body.appendChild(banner);
+}
+
+function applyUpdate() {
+  navigator.serviceWorker.getRegistration().then(reg => {
+    if (reg && reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  });
+}
+</script>
 </body>
 </html>

@@ -8,7 +8,7 @@ const CACHE_NAME = VERSION;
 // Files to cache for offline use
 const ASSETS = [
   './',
-  './extraction_tracker_p5.html',
+  './index.html',
 ];
 
 // ── INSTALL: cache core assets ──

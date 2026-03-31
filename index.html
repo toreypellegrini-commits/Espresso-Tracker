@@ -1401,7 +1401,7 @@ function renderBagInsights(){
           scales:{
             x:{title:{display:true,text:'Ratio (yield ÷ dose)',color:tc,font:{size:11}},grid:{color:gc},min:1.0,max:4.0,
               ticks:{color:tc,stepSize:0.25,callback:v=>{const r=Math.round(v*4)/4;return Math.abs(v-r)<0.001?`1:${r%1===0?r.toFixed(0):r}`:'';}}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1,callback:v=>v===6?'':v},grid:{color:gc}}
           }}
       });
     } else {
@@ -1419,7 +1419,7 @@ function renderBagInsights(){
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.x}s · ${ctx.raw.y}★ · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
           scales:{
             x:{title:{display:true,text:'Shot time (s)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1,callback:v=>v===6?'':v},grid:{color:gc}}
           }}
       });
     } else {
@@ -1439,7 +1439,7 @@ function renderBagInsights(){
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.x}d off roast · ${ctx.raw.y}★ · ${ctx.raw.date}${ctx.raw.notes?' · '+ctx.raw.notes.slice(0,40):''}`}}},
           scales:{
             x:{title:{display:true,text:'Days off roast',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1,callback:v=>v===6?'':v},grid:{color:gc}}
           }}
       });
     } else if(c5all.length>=2){
@@ -1455,7 +1455,7 @@ function renderBagInsights(){
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw}★${c5all[ctx.dataIndex]?.notes?' · '+c5all[ctx.dataIndex].notes.slice(0,40):''}`}}},
           scales:{
             x:{grid:{color:gc},ticks:{color:tc}},
-            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:5,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1,callback:v=>v===6?'':v},grid:{color:gc}}
           }}
       });
     } else {

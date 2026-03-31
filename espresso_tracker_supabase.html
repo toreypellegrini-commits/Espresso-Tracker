@@ -760,17 +760,59 @@ function hideAuthMsg(){const el=document.getElementById('auth-msg');el.className
 // ─── DATA ───
 async function loadUserData() {
   setDbStatus('saving','Loading…');
+  const timeout = new Promise((_,reject) => setTimeout(()=>reject(new Error('timeout')), 8000));
   try {
-    const [sR,rR,gR] = await Promise.all([
-      sb.from('shots').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
-      sb.from('roast_library').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
-      sb.from('grinders').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true})
+    const [sR,rR,gR] = await Promise.race([
+      Promise.all([
+        sb.from('shots').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+        sb.from('roast_library').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+        sb.from('grinders').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true})
+      ]),
+      timeout.then(()=>{ throw new Error('timeout'); })
     ]);
     shots=(sR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     roastLib=(rR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     grinderLib=(gR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     setDbStatus('ok','Saved');
-  } catch(e){setDbStatus('error','Load error');}
+  } catch(e) {
+    if (e.message === 'timeout') {
+      setDbStatus('error','Tap to retry');
+      // Make the status indicator tappable to retry
+      const dbLabel = document.getElementById('db-label');
+      if (dbLabel) {
+        dbLabel.style.cursor = 'pointer';
+        dbLabel.onclick = async () => {
+          dbLabel.style.cursor = '';
+          dbLabel.onclick = null;
+          await revalidateAndLoad();
+        };
+      }
+    } else {
+      setDbStatus('error','Load error');
+    }
+  }
+}
+
+// Re-validates the Supabase session then reloads data
+// Called on visibility change (return from background) and pull-to-refresh
+async function revalidateAndLoad() {
+  setDbStatus('saving','Reconnecting…');
+  try {
+    const { data: { session }, error } = await sb.auth.getSession();
+    if (error || !session) {
+      // Session truly expired — sign out cleanly
+      setDbStatus('error','Session expired');
+      setTimeout(() => sb.auth.signOut(), 1500);
+      return false;
+    }
+    // Session is valid — refresh the client and reload data
+    currentUser = session.user;
+    await loadUserData();
+    return true;
+  } catch(e) {
+    setDbStatus('error','No connection');
+    return false;
+  }
 }
 
 async function dbInsert(table,data){const{data:row,error}=await sb.from(table).insert({user_id:currentUser.id,data}).select().single();if(error)throw error;return row;}
@@ -1654,6 +1696,25 @@ async function installPWA() {
 }
 
 // ─── PULL TO REFRESH ───
+// ─── VISIBILITY CHANGE (return from background / screen unlock) ───
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && currentUser) {
+    // App just came back from background — revalidate session silently
+    // Only do this if we were showing the main app (not loading/auth screens)
+    const mainApp = document.getElementById('main-app');
+    if (mainApp && mainApp.style.display !== 'none') {
+      const ok = await revalidateAndLoad();
+      if (ok) {
+        // Re-render current page with fresh data
+        if (currentPage === 'home') renderHome();
+        else if (currentPage === 'library') renderLibrary();
+        else if (currentPage === 'insights') renderInsights();
+        else if (currentPage === 'myshots') renderMyShots();
+      }
+    }
+  }
+});
+
 (function() {
   let startY = 0, pulling = false, refreshed = false;
   const threshold = 80;
@@ -1683,11 +1744,11 @@ async function installPWA() {
     if (dy > threshold && !refreshed) {
       refreshed = true;
       if (ind) ind.querySelector('span').textContent = 'Refreshing…';
-      try {
-        await loadUserData();
+      const ok = await revalidateAndLoad();
+      if (ok) {
         if (currentPage === 'home') renderHome();
         if (currentPage === 'library') renderLibrary();
-      } catch(e) {}
+      }
     }
     if (ind) ind.classList.remove('visible');
   });

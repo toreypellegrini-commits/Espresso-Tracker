@@ -312,8 +312,9 @@
 
 <!-- LOADING -->
 <div id="loading-screen" class="loading-screen">
-  <div class="spinner"></div>
-  <div class="loading-text">Loading…</div>
+  <div class="spinner" id="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Loading…</div>
+  <button id="loading-retry-btn" onclick="retryAuth()" style="display:none;margin-top:1rem;padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);">Retry</button>
 </div>
 
 <!-- AUTH -->
@@ -727,13 +728,103 @@ const SHARE_MIN_RATING = 4;
 
 // ─── AUTH ───
 async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) { currentUser = session.user; await loadUserData(); showApp(); }
-  else showAuthScreen();
+  // Try to load from cached session first so UI shows instantly
+  const cachedUser = localStorage.getItem('ext_cached_user');
+  if (cachedUser) {
+    try {
+      const u = JSON.parse(cachedUser);
+      currentUser = u;
+      // Show app immediately with cached state, load data in background
+      shots = JSON.parse(localStorage.getItem('ext_cached_shots') || '[]');
+      roastLib = JSON.parse(localStorage.getItem('ext_cached_roasts') || '[]');
+      grinderLib = JSON.parse(localStorage.getItem('ext_cached_grinders') || '[]');
+      showApp();
+      // Then verify session and refresh data silently
+      refreshSessionAndData();
+      return;
+    } catch(e) { localStorage.removeItem('ext_cached_user'); }
+  }
+
+  // No cache — do normal auth with timeout
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), 10000)
+  );
+  try {
+    const { data: { session } } = await Promise.race([
+      sb.auth.getSession(),
+      timeout
+    ]);
+    if (session) {
+      currentUser = session.user;
+      cacheUser(session.user);
+      await loadUserData();
+      showApp();
+    } else {
+      showAuthScreen();
+    }
+  } catch(e) {
+    if (e.message === 'timeout') {
+      showLoadingError();
+    } else {
+      showAuthScreen();
+    }
+  }
+
   sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) { currentUser = session.user; await loadUserData(); showApp(); }
-    else if (event === 'SIGNED_OUT') { currentUser = null; shots=[]; roastLib=[]; grinderLib=[]; showAuthScreen(); }
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      cacheUser(session.user);
+      await loadUserData();
+      showApp();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      shots=[]; roastLib=[]; grinderLib=[];
+      clearCache();
+      showAuthScreen();
+    }
   });
+}
+
+async function refreshSessionAndData() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { clearCache(); showAuthScreen(); return; }
+    currentUser = session.user;
+    cacheUser(session.user);
+    await loadUserData();
+    // Re-render current page with fresh data
+    if (currentPage === 'home') renderHome();
+    if (currentPage === 'library') renderLibrary();
+  } catch(e) {
+    // Session refresh failed silently — user still sees cached data
+    console.warn('Background session refresh failed:', e.message);
+  }
+}
+
+function cacheUser(user) {
+  try {
+    localStorage.setItem('ext_cached_user', JSON.stringify({ id: user.id, email: user.email, user_metadata: user.user_metadata }));
+  } catch(e) {}
+}
+
+function clearCache() {
+  localStorage.removeItem('ext_cached_user');
+  localStorage.removeItem('ext_cached_shots');
+  localStorage.removeItem('ext_cached_roasts');
+  localStorage.removeItem('ext_cached_grinders');
+}
+
+function showLoadingError() {
+  document.getElementById('loading-spinner').style.display = 'none';
+  document.getElementById('loading-text').textContent = 'Connection timed out';
+  document.getElementById('loading-retry-btn').style.display = 'block';
+}
+
+function retryAuth() {
+  document.getElementById('loading-spinner').style.display = 'block';
+  document.getElementById('loading-text').textContent = 'Loading…';
+  document.getElementById('loading-retry-btn').style.display = 'none';
+  initAuth();
 }
 
 function showAuthScreen() { document.getElementById('loading-screen').style.display='none'; document.getElementById('auth-screen').style.display='block'; document.getElementById('main-app').style.display='none'; }
@@ -769,6 +860,12 @@ async function loadUserData() {
     shots=(sR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     roastLib=(rR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     grinderLib=(gR.data||[]).map(r=>({...r.data,_db_id:r.id}));
+    // Cache for instant load next time
+    try {
+      localStorage.setItem('ext_cached_shots', JSON.stringify(shots.slice(0,50)));
+      localStorage.setItem('ext_cached_roasts', JSON.stringify(roastLib));
+      localStorage.setItem('ext_cached_grinders', JSON.stringify(grinderLib));
+    } catch(e) {}
     setDbStatus('ok','Saved');
   } catch(e){setDbStatus('error','Load error');}
 }
@@ -1172,24 +1269,158 @@ function renderBagInsights(){
   const bagShots=shots.filter(s=>s.roastLibId==selectedBagId).sort((a,b)=>new Date(a.date)-new Date(b.date));
   const bagOptions=bagsWithShots.map(r=>`<option value="${r.id}"${selectedBagId==r.id?' selected':''}>${r.roaster} · ${r.origin}${r.varietal?' ('+r.varietal+')':''}${r.finished?' ✓':''}</option>`).join('');
   if(!bag||!bagShots.length){el.innerHTML=`<select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select><div class="empty">No shots for this bag yet.</div>`;return;}
-  const rated=bagShots.filter(s=>s.rating>0);const avgRating=rated.length?(rated.reduce((a,b)=>a+b.rating,0)/rated.length).toFixed(1):'—';
+
+  const rated=bagShots.filter(s=>s.rating>0);
+  const avgRating=rated.length?(rated.reduce((a,b)=>a+b.rating,0)/rated.length).toFixed(1):'—';
   const bestShot=rated.length?[...rated].sort((a,b)=>b.rating-a.rating)[0]:null;
   const lastShot=bagShots[bagShots.length-1];
-  el.innerHTML=`<select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;"><div style="font-family:var(--font-serif);font-size:15px;font-weight:500;">${bag.roaster} · ${bag.origin}${bag.varietal?' · '+bag.varietal:''}</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bag.process,bag.roast].filter(Boolean).join(' · ')}${bag.roastDate?' · Roasted '+fmtDate(bag.roastDate+'T12:00:00'):''}${bag.finished?` · <span style="color:var(--success-text);">Finished</span>`:''}</div></div>
-  <div class="insight-grid"><div class="insight-card"><div class="insight-label">Shots pulled</div><div class="insight-val">${bagShots.length}</div></div><div class="insight-card"><div class="insight-label">Average rating</div><div class="insight-val">${avgRating}${avgRating!=='—'?` <span style="font-size:16px;color:#d4880a;">★</span>`:''}</div><div class="insight-sub">${rated.length} rated</div></div><div class="insight-card"><div class="insight-label">Days spanned</div><div class="insight-val">${bagShots.length>1?calcDaysOffRoast(bagShots[0].date.slice(0,10),bagShots[bagShots.length-1].date.slice(0,10)):'—'}</div><div class="insight-sub">first to last shot</div></div><div class="insight-card"><div class="insight-label">Last pulled</div><div class="insight-val" style="font-size:14px;margin-top:4px;">${fmtDate(lastShot.date)}</div><div class="insight-sub">${lastShot.daysOffRoast!=null?lastShot.daysOffRoast+'d off roast':''}</div></div></div>
-  ${bestShot?`<div class="section-title">Best shot from this bag</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.875rem 1.25rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:600;">${fmtDate(bestShot.date)}${bestShot.daysOffRoast!=null?' · '+bestShot.daysOffRoast+'d off roast':''}</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bestShot.grind?'Grind '+bestShot.grind:null,bestShot.ratio?'1:'+bestShot.ratio:null,bestShot.temp?bestShot.temp+'°C':null,bestShot.time?bestShot.time+'s':null].filter(Boolean).join(' · ')}</div>${bestShot.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${bestShot.notes.slice(0,80)}</div>`:''}</div><span style="font-size:16px;color:#d4880a;margin-left:12px;">${'★'.repeat(bestShot.rating)}</span></div>`:''}
-  <div class="section-title">Grind · Ratio · Rating over time</div><div class="chart-wrap" style="height:220px;"><canvas id="bag-chart-main"></canvas></div>
-  <div class="section-title">Days off roast</div><div class="chart-wrap" style="height:180px;"><canvas id="bag-chart-days"></canvas></div>`;
+  const MIN_SCATTER=5;
+  const scatterNote=`<div style="font-size:11px;color:var(--hint);margin-top:4px;">Requires ${MIN_SCATTER}+ shots with this data</div>`;
+
+  el.innerHTML=`
+    <select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">
+      <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;">${bag.roaster} · ${bag.origin}${bag.varietal?' · '+bag.varietal:''}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bag.process,bag.roast].filter(Boolean).join(' · ')}${bag.roastDate?' · Roasted '+fmtDate(bag.roastDate+'T12:00:00'):''}${bag.finished?` · <span style="color:var(--success-text);">Finished</span>`:''}</div>
+    </div>
+    <div class="insight-grid">
+      <div class="insight-card"><div class="insight-label">Shots pulled</div><div class="insight-val">${bagShots.length}</div></div>
+      <div class="insight-card"><div class="insight-label">Average rating</div><div class="insight-val">${avgRating}${avgRating!=='—'?` <span style="font-size:16px;color:#d4880a;">★</span>`:''}</div><div class="insight-sub">${rated.length} rated</div></div>
+      <div class="insight-card"><div class="insight-label">Days spanned</div><div class="insight-val">${bagShots.length>1?calcDaysOffRoast(bagShots[0].date.slice(0,10),bagShots[bagShots.length-1].date.slice(0,10)):'—'}</div><div class="insight-sub">first to last</div></div>
+      <div class="insight-card"><div class="insight-label">Last pulled</div><div class="insight-val" style="font-size:14px;margin-top:4px;">${fmtDate(lastShot.date)}</div><div class="insight-sub">${lastShot.daysOffRoast!=null?lastShot.daysOffRoast+'d off roast':''}</div></div>
+    </div>
+    ${bestShot?`<div class="section-title">Best shot from this bag</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.875rem 1.25rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:13px;font-weight:600;">${fmtDate(bestShot.date)}${bestShot.daysOffRoast!=null?' · '+bestShot.daysOffRoast+'d off roast':''}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bestShot.grind?'Grind '+bestShot.grind:null,bestShot.ratio?'1:'+bestShot.ratio:null,bestShot.temp?bestShot.temp+'°C':null,bestShot.time?bestShot.time+'s':null].filter(Boolean).join(' · ')}</div>
+        ${bestShot.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${bestShot.notes.slice(0,80)}</div>`:''}
+      </div>
+      <span style="font-size:16px;color:#d4880a;margin-left:12px;">${'★'.repeat(bestShot.rating)}</span>
+    </div>`:''}
+
+    <div class="section-title">Chart 1 — Dial-In Progression</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Brew time and yield over shots — are you dialling in?</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="bag-c1"></canvas></div>
+
+    <div class="section-title">Chart 2 — Grind vs Shot Time (Calibration Curve)</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How grind setting affects extraction time for this coffee${bagShots.filter(s=>s.grind&&s.time).length<MIN_SCATTER?` · ${scatterNote}`:''}</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="bag-c2"></canvas></div>
+
+    <div class="section-title">Chart 3 — Ratio vs Rating</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Which brew ratios are tasting best${bagShots.filter(s=>s.ratio&&s.rating>0).length<MIN_SCATTER?` · ${scatterNote}`:''}</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="bag-c3"></canvas></div>
+
+    <div class="section-title">Chart 4 — Shot Time vs Rating</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Your sweet spot extraction time${bagShots.filter(s=>s.time&&s.rating>0).length<MIN_SCATTER?` · ${scatterNote}`:''}</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="bag-c4"></canvas></div>
+
+    <div class="section-title">Chart 5 — Taste Score Over Time</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How your ratings evolve as the bag rests and you dial in</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="bag-c5"></canvas></div>
+  `;
+
   setTimeout(()=>{
-    const{gc,tc,tt}=chartTheme();const labels=bagShots.map(s=>fmtDate(s.date));
-    destroyChart('bag-main');
-    if(bagShots.some(s=>s.grind||s.ratio)){
-      chartInstances['bag-main']=new Chart(document.getElementById('bag-chart-main'),{type:'line',data:{labels,datasets:[{label:'Grind',data:bagShots.map(s=>s.grind?parseFloat(s.grind):null),borderColor:'#b85215',backgroundColor:'transparent',pointBackgroundColor:'#b85215',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y'},{label:'Ratio',data:bagShots.map(s=>s.ratio||null),borderColor:'#1a6b3a',backgroundColor:'transparent',pointBackgroundColor:'#1a6b3a',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y2',borderDash:[4,3]}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:tc,font:{size:11},boxWidth:12}},tooltip:tt},scales:{x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Grind setting',color:'#b85215',font:{size:11}},position:'left'},y2:{grid:{display:false},ticks:{color:tc},title:{display:true,text:'Ratio (out/in)',color:'#1a6b3a',font:{size:11}},position:'right'}}}});
-    }else document.getElementById('bag-chart-main').parentElement.innerHTML='<div class="empty" style="padding:0.75rem;">No grind/ratio data for this bag.</div>';
-    destroyChart('bag-days');const dd=bagShots.map(s=>s.daysOffRoast!=null?s.daysOffRoast:null);
-    if(dd.some(v=>v!==null))chartInstances['bag-days']=new Chart(document.getElementById('bag-chart-days'),{type:'line',data:{labels,datasets:[{data:dd,borderColor:'#1a4fa0',backgroundColor:'#1a4fa022',pointBackgroundColor:'#1a4fa0',tension:0.3,fill:true,pointRadius:5,pointHoverRadius:7,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:tt},scales:{x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Days off roast',color:tc,font:{size:11}}}}}});
-    else document.getElementById('bag-chart-days').parentElement.innerHTML='<div class="empty" style="padding:0.75rem;">No roast date data for this bag.</div>';
+    const{gc,tc,tt}=chartTheme();
+    const labels=bagShots.map((_,i)=>`Shot ${i+1}`);
+    const dateLabels=bagShots.map(s=>fmtDate(s.date));
+
+    // Shared scatter tooltip
+    const scatterTT={...tt,callbacks:{label:(ctx)=>{const s=ctx.raw;return[`Shot ${s.shotNum||''} · ${s.date||''}`,`${ctx.dataset.label}: ${ctx.parsed.x} → ${ctx.parsed.y}${s.rating?' · '+s.rating+'★':''}`];}}};
+
+    // ── CHART 1: Dial-In Progression (line, dual axis: brew time + yield) ──
+    destroyChart('bag-c1');
+    const c1TimeData=bagShots.map(s=>s.time?parseFloat(s.time):null);
+    const c1YieldData=bagShots.map(s=>s.yield?parseFloat(s.yield):null);
+    if(c1TimeData.some(v=>v!==null)||c1YieldData.some(v=>v!==null)){
+      chartInstances['bag-c1']=new Chart(document.getElementById('bag-c1'),{
+        type:'line',
+        data:{labels,datasets:[
+          {label:'Brew time (s)',data:c1TimeData,borderColor:'#b85215',backgroundColor:'transparent',pointBackgroundColor:'#b85215',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y'},
+          {label:'Yield (g)',data:c1YieldData,borderColor:'#1a4fa0',backgroundColor:'transparent',pointBackgroundColor:'#1a4fa0',tension:0.3,pointRadius:5,pointHoverRadius:7,spanGaps:true,yAxisID:'y2',borderDash:[4,3]}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+          plugins:{legend:{display:true,labels:{color:tc,font:{size:11},boxWidth:12}},tooltip:{...tt,callbacks:{title:(items)=>`${labels[items[0].dataIndex]} · ${dateLabels[items[0].dataIndex]}`}}},
+          scales:{
+            x:{grid:{color:gc},ticks:{color:tc}},
+            y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Brew time (s)',color:'#b85215',font:{size:11}},position:'left'},
+            y2:{grid:{display:false},ticks:{color:tc},title:{display:true,text:'Yield (g)',color:'#1a4fa0',font:{size:11}},position:'right'}
+          }}
+      });
+    } else { document.getElementById('bag-c1').parentElement.innerHTML='<div class="empty" style="padding:1rem;">No brew time or yield data for this bag.</div>'; }
+
+    // ── CHART 2: Grind vs Shot Time (scatter/line) ──
+    destroyChart('bag-c2');
+    const c2Data=bagShots.filter(s=>s.grind&&s.time).map((s,i)=>({x:parseFloat(s.grind),y:parseFloat(s.time),date:fmtDate(s.date),shotNum:bagShots.indexOf(s)+1}));
+    if(c2Data.length>=MIN_SCATTER){
+      // Sort by grind for line
+      const c2Sorted=[...c2Data].sort((a,b)=>a.x-b.x);
+      chartInstances['bag-c2']=new Chart(document.getElementById('bag-c2'),{
+        type:'scatter',
+        data:{datasets:[{label:'Grind → Time',data:c2Sorted,backgroundColor:'#b8521599',pointRadius:7,pointHoverRadius:9}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`Grind ${ctx.raw.x} → ${ctx.raw.y}s · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
+          scales:{
+            x:{title:{display:true,text:'Grind setting',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
+            y:{title:{display:true,text:'Shot time (s)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}}
+          }}
+      });
+    } else { document.getElementById('bag-c2').parentElement.innerHTML=`<div class="empty" style="padding:1rem;">Need ${MIN_SCATTER}+ shots with grind + shot time data.<br>You have ${c2Data.length} so far.</div>`; }
+
+    // ── CHART 3: Ratio vs Rating (scatter) ──
+    destroyChart('bag-c3');
+    const c3Data=bagShots.filter(s=>s.ratio&&s.rating>0).map(s=>({x:parseFloat(s.ratio),y:s.rating,date:fmtDate(s.date),shotNum:bagShots.indexOf(s)+1}));
+    if(c3Data.length>=MIN_SCATTER){
+      chartInstances['bag-c3']=new Chart(document.getElementById('bag-c3'),{
+        type:'scatter',
+        data:{datasets:[{label:'Ratio vs Rating',data:c3Data,backgroundColor:c3Data.map(d=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][d.y]+'cc'),pointRadius:8,pointHoverRadius:10}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`Ratio 1:${ctx.raw.x.toFixed(2)} · ${ctx.raw.y}★ · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
+          scales:{
+            x:{title:{display:true,text:'Ratio (yield/dose)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc,callback:v=>`1:${v.toFixed(1)}`}},
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+          }}
+      });
+    } else { document.getElementById('bag-c3').parentElement.innerHTML=`<div class="empty" style="padding:1rem;">Need ${MIN_SCATTER}+ rated shots with ratio data.<br>You have ${c3Data.length} so far.</div>`; }
+
+    // ── CHART 4: Shot Time vs Rating (scatter) ──
+    destroyChart('bag-c4');
+    const c4Data=bagShots.filter(s=>s.time&&s.rating>0).map(s=>({x:parseFloat(s.time),y:s.rating,date:fmtDate(s.date),shotNum:bagShots.indexOf(s)+1}));
+    if(c4Data.length>=MIN_SCATTER){
+      chartInstances['bag-c4']=new Chart(document.getElementById('bag-c4'),{
+        type:'scatter',
+        data:{datasets:[{label:'Time vs Rating',data:c4Data,backgroundColor:c4Data.map(d=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][d.y]+'cc'),pointRadius:8,pointHoverRadius:10}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.x}s · ${ctx.raw.y}★ · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
+          scales:{
+            x:{title:{display:true,text:'Shot time (s)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+          }}
+      });
+    } else { document.getElementById('bag-c4').parentElement.innerHTML=`<div class="empty" style="padding:1rem;">Need ${MIN_SCATTER}+ rated shots with shot time data.<br>You have ${c4Data.length} so far.</div>`; }
+
+    // ── CHART 5: Taste Score Over Time (line) ──
+    destroyChart('bag-c5');
+    const c5Shots=bagShots.filter(s=>s.rating>0);
+    if(c5Shots.length>=2){
+      chartInstances['bag-c5']=new Chart(document.getElementById('bag-c5'),{
+        type:'line',
+        data:{labels:c5Shots.map(s=>fmtDate(s.date)),datasets:[{
+          label:'Rating',
+          data:c5Shots.map(s=>s.rating),
+          borderColor:'#d4880a',backgroundColor:'#d4880a18',
+          pointBackgroundColor:c5Shots.map(s=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][s.rating]),
+          pointRadius:7,pointHoverRadius:9,tension:0.3,fill:true
+        }]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw}★${c5Shots[ctx.dataIndex]?.notes?' · '+c5Shots[ctx.dataIndex].notes.slice(0,40):''}`}}},
+          scales:{
+            x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+          }}
+      });
+    } else { document.getElementById('bag-c5').parentElement.innerHTML='<div class="empty" style="padding:1rem;">Log at least 2 rated shots to see taste progression.</div>'; }
+
   },100);
 }
 

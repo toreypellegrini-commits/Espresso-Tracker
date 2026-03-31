@@ -728,24 +728,7 @@ const SHARE_MIN_RATING = 4;
 
 // ─── AUTH ───
 async function initAuth() {
-  // Try to load from cached session first so UI shows instantly
-  const cachedUser = localStorage.getItem('ext_cached_user');
-  if (cachedUser) {
-    try {
-      const u = JSON.parse(cachedUser);
-      currentUser = u;
-      // Show app immediately with cached state, load data in background
-      shots = JSON.parse(localStorage.getItem('ext_cached_shots') || '[]');
-      roastLib = JSON.parse(localStorage.getItem('ext_cached_roasts') || '[]');
-      grinderLib = JSON.parse(localStorage.getItem('ext_cached_grinders') || '[]');
-      showApp();
-      // Then verify session and refresh data silently
-      refreshSessionAndData();
-      return;
-    } catch(e) { localStorage.removeItem('ext_cached_user'); }
-  }
-
-  // No cache — do normal auth with timeout
+  // Always fetch a fresh session — just add a timeout so it can't hang forever
   const timeout = new Promise((_, reject) =>
     setTimeout(() => reject(new Error('timeout')), 10000)
   );
@@ -764,6 +747,13 @@ async function initAuth() {
     }
   } catch(e) {
     if (e.message === 'timeout') {
+      // On timeout, check if we have a cached user to show a retry with context
+      const cachedUser = localStorage.getItem('ext_cached_user');
+      if (cachedUser) {
+        try {
+          currentUser = JSON.parse(cachedUser);
+        } catch(err) {}
+      }
       showLoadingError();
     } else {
       showAuthScreen();
@@ -785,21 +775,7 @@ async function initAuth() {
   });
 }
 
-async function refreshSessionAndData() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { clearCache(); showAuthScreen(); return; }
-    currentUser = session.user;
-    cacheUser(session.user);
-    await loadUserData();
-    // Re-render current page with fresh data
-    if (currentPage === 'home') renderHome();
-    if (currentPage === 'library') renderLibrary();
-  } catch(e) {
-    // Session refresh failed silently — user still sees cached data
-    console.warn('Background session refresh failed:', e.message);
-  }
-}
+
 
 function cacheUser(user) {
   try {
@@ -809,6 +785,7 @@ function cacheUser(user) {
 
 function clearCache() {
   localStorage.removeItem('ext_cached_user');
+  // Clean up any old data cache keys from previous versions
   localStorage.removeItem('ext_cached_shots');
   localStorage.removeItem('ext_cached_roasts');
   localStorage.removeItem('ext_cached_grinders');
@@ -860,12 +837,8 @@ async function loadUserData() {
     shots=(sR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     roastLib=(rR.data||[]).map(r=>({...r.data,_db_id:r.id}));
     grinderLib=(gR.data||[]).map(r=>({...r.data,_db_id:r.id}));
-    // Cache for instant load next time
-    try {
-      localStorage.setItem('ext_cached_shots', JSON.stringify(shots.slice(0,50)));
-      localStorage.setItem('ext_cached_roasts', JSON.stringify(roastLib));
-      localStorage.setItem('ext_cached_grinders', JSON.stringify(grinderLib));
-    } catch(e) {}
+    // Cache user identity only (not data — data always loads fresh)
+    if (currentUser) cacheUser(currentUser);
     setDbStatus('ok','Saved');
   } catch(e){setDbStatus('error','Load error');}
 }

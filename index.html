@@ -1326,34 +1326,109 @@ function renderBagInsights(){
     destroyChart('bag-c2');
     const c2Data=bagShots.filter(s=>s.grind&&s.time).map((s,i)=>({x:parseFloat(s.grind),y:parseFloat(s.time),date:fmtDate(s.date),shotNum:bagShots.indexOf(s)+1}));
     if(c2Data.length>=MIN_SCATTER){
-      // Sort by grind for line
       const c2Sorted=[...c2Data].sort((a,b)=>a.x-b.x);
+      const c2XVals=c2Data.map(d=>d.x);
+      const c2XMin=Math.floor(Math.min(...c2XVals))-2;
+      const c2XMax=Math.ceil(Math.max(...c2XVals))+2;
       chartInstances['bag-c2']=new Chart(document.getElementById('bag-c2'),{
         type:'scatter',
         data:{datasets:[{label:'Grind → Time',data:c2Sorted,backgroundColor:'#b8521599',pointRadius:7,pointHoverRadius:9}]},
         options:{responsive:true,maintainAspectRatio:false,
           plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`Grind ${ctx.raw.x} → ${ctx.raw.y}s · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
           scales:{
-            x:{title:{display:true,text:'Grind setting',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
+            x:{title:{display:true,text:'Grind setting',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc,stepSize:1,callback:v=>Number.isInteger(v)?v:''},min:c2XMin,max:c2XMax},
             y:{title:{display:true,text:'Shot time (s)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}}
           }}
       });
     } else { document.getElementById('bag-c2').parentElement.innerHTML=`<div class="empty" style="padding:1rem;">Need ${MIN_SCATTER}+ shots with grind + shot time data.<br>You have ${c2Data.length} so far.</div>`; }
 
-    // ── CHART 3: Ratio vs Rating (scatter) ──
+    // ── CHART 3: Ratio vs Rating (scatter with zone shading) ──
     destroyChart('bag-c3');
     const c3Data=bagShots.filter(s=>s.ratio&&s.rating>0).map(s=>({x:parseFloat(s.ratio),y:s.rating,date:fmtDate(s.date),shotNum:bagShots.indexOf(s)+1}));
     if(c3Data.length>=MIN_SCATTER){
+      // Zone shading datasets (zero-height bands using fill between)
+      // Ristretto: 1.0–1.25 → darkest brown
+      // Standard:  1.25–2.0 → mid brown (actually 1.25–2.0 per spec note below)
+      // Note: spec says 1:2 to 1:1.25 = Standard — interpreted as 1.25 to 2.0
+      // Modern/Turbo: 2.0–4.0 → lightest brown
+      const zoneDataRistretto=[{x:1.0,y:0},{x:1.25,y:0}];
+      const zoneDataStandard=[{x:1.25,y:0},{x:2.0,y:0}];
+      const zoneDataModern=[{x:2.0,y:0},{x:4.0,y:0}];
+      const zoneFill=(color,label,zoneData)=>({
+        label,data:zoneData,
+        backgroundColor:color,borderColor:'transparent',
+        pointRadius:0,fill:{target:{value:6}},
+        tension:0,type:'line',order:10,
+        yAxisID:'y'
+      });
       chartInstances['bag-c3']=new Chart(document.getElementById('bag-c3'),{
         type:'scatter',
-        data:{datasets:[{label:'Ratio vs Rating',data:c3Data,backgroundColor:c3Data.map(d=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][d.y]+'cc'),pointRadius:8,pointHoverRadius:10}]},
+        data:{datasets:[
+          zoneFill('rgba(90,35,5,0.18)','Ristretto',zoneDataRistretto),
+          zoneFill('rgba(140,60,15,0.13)','Standard',zoneDataStandard),
+          zoneFill('rgba(184,82,21,0.08)','Modern / Turbo',zoneDataModern),
+          {label:'Ratio vs Rating',data:c3Data,
+           backgroundColor:c3Data.map(d=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][d.y]+'cc'),
+           pointRadius:8,pointHoverRadius:10,order:1}
+        ]},
         options:{responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`Ratio 1:${ctx.raw.x.toFixed(2)} · ${ctx.raw.y}★ · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`}}},
+          plugins:{
+            legend:{display:true,labels:{
+              color:tc,font:{size:11},boxWidth:12,
+              filter:(item)=>item.datasetIndex>=3?false:true  // only show zone labels
+            }},
+            tooltip:{...tt,callbacks:{
+              label:(ctx)=>{
+                if(ctx.datasetIndex<3)return null;
+                return `Ratio 1:${ctx.raw.x.toFixed(2)} · ${ctx.raw.y}★ · Shot ${ctx.raw.shotNum} · ${ctx.raw.date}`;
+              }
+            }}
+          },
           scales:{
-            x:{title:{display:true,text:'Ratio (yield/dose)',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc,callback:v=>`1:${v.toFixed(1)}`}},
+            x:{
+              title:{display:true,text:'Ratio (yield ÷ dose)',color:tc,font:{size:11}},
+              grid:{color:gc},
+              min:1.0,max:4.0,
+              ticks:{color:tc,stepSize:0.25,callback:v=>{
+                // Only show clean quarter increments, no repeats
+                const rounded=Math.round(v*4)/4;
+                if(Math.abs(v-rounded)>0.01)return '';
+                return `1:${rounded.toFixed(2).replace(/\.?0+$/,'')}`;
+              }}
+            },
             y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
           }}
       });
+
+      // Draw zone labels on canvas after render
+      const c3Canvas=document.getElementById('bag-c3');
+      const c3Chart=chartInstances['bag-c3'];
+      c3Canvas.addEventListener('afterRender',()=>{},false);
+      // Use Chart.js annotation-style via afterDraw plugin registered inline
+      chartInstances['bag-c3'].options.plugins.customZoneLabels={};
+      Chart.register({
+        id:'c3ZoneLabels',
+        afterDraw(chart){
+          if(chart.canvas.id!=='bag-c3')return;
+          const{ctx,scales:{x,y}}=chart;
+          const labels=[
+            {text:'Ristretto',from:1.0,to:1.25},
+            {text:'Standard',from:1.25,to:2.0},
+            {text:'Modern / Turbo',from:2.0,to:4.0}
+          ];
+          ctx.save();
+          ctx.font=`500 10px ${getComputedStyle(document.body).fontFamily}`;
+          ctx.fillStyle=tc==='rgba(255,255,255,0.4)'?'rgba(255,255,255,0.55)':'rgba(90,50,20,0.6)';
+          ctx.textAlign='center';
+          const yPos=y.getPixelForValue(5.6);
+          labels.forEach(z=>{
+            const xMid=(x.getPixelForValue(z.from)+x.getPixelForValue(z.to))/2;
+            ctx.fillText(z.text,xMid,yPos);
+          });
+          ctx.restore();
+        }
+      });
+
     } else { document.getElementById('bag-c3').parentElement.innerHTML=`<div class="empty" style="padding:1rem;">Need ${MIN_SCATTER}+ rated shots with ratio data.<br>You have ${c3Data.length} so far.</div>`; }
 
     // ── CHART 4: Shot Time vs Rating (scatter) ──

@@ -1316,7 +1316,7 @@ function renderBagInsights(){
     <div class="chart-wrap" style="height:220px;"><canvas id="bag-c4"></canvas></div>
 
     <div class="section-title">Chart 5 — Taste Score Over Time</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How your ratings evolve as the bag rests and you dial in</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">How your ratings change as the bag rests — find your sweet spot days off roast</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="bag-c5"></canvas></div>
   `;
 
@@ -1399,23 +1399,36 @@ function renderBagInsights(){
       });
     } else { document.getElementById('bag-c4').parentElement.innerHTML=`<div class="empty" style="padding:1rem;">Need ${MIN_SCATTER}+ rated shots with shot time data.<br>You have ${c4Data.length} so far.</div>`; }
 
-    // ── CHART 5: Taste Score Over Time (line) ──
+    // ── CHART 5: Taste Score by Days Off Roast (scatter) ──
     destroyChart('bag-c5');
-    const c5Shots=bagShots.filter(s=>s.rating>0);
+    const c5Shots=bagShots.filter(s=>s.rating>0&&s.daysOffRoast!=null);
+    const c5ShotsAll=bagShots.filter(s=>s.rating>0);
     if(c5Shots.length>=2){
+      const c5Data=c5Shots.map(s=>({x:s.daysOffRoast,y:s.rating,date:fmtDate(s.date),notes:s.notes||''}));
+      chartInstances['bag-c5']=new Chart(document.getElementById('bag-c5'),{
+        type:'scatter',
+        data:{datasets:[{label:'Rating',data:c5Data,backgroundColor:c5Shots.map(s=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][s.rating]+'cc'),pointRadius:7,pointHoverRadius:9}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw.x}d off roast · ${ctx.raw.y}★ · ${ctx.raw.date}${ctx.raw.notes?' · '+ctx.raw.notes.slice(0,40):''}`}}},
+          scales:{
+            x:{title:{display:true,text:'Days off roast',color:tc,font:{size:11}},grid:{color:gc},ticks:{color:tc}},
+            y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
+          }}
+      });
+    } else if(c5ShotsAll.length>=2){
+      // Fallback: no roast date data — show by shot number
       chartInstances['bag-c5']=new Chart(document.getElementById('bag-c5'),{
         type:'line',
-        data:{labels:c5Shots.map(s=>fmtDate(s.date)),datasets:[{
-          label:'Rating',
-          data:c5Shots.map(s=>s.rating),
+        data:{labels:c5ShotsAll.map((_,i)=>`Shot ${i+1}`),datasets:[{
+          label:'Rating',data:c5ShotsAll.map(s=>s.rating),
           borderColor:'#d4880a',backgroundColor:'#d4880a18',
-          pointBackgroundColor:c5Shots.map(s=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][s.rating]),
+          pointBackgroundColor:c5ShotsAll.map(s=>['','#e24b4a','#e8783a','#d4880a','#7ab648','#2a9d4e'][s.rating]),
           pointRadius:7,pointHoverRadius:9,tension:0.3,fill:true
         }]},
         options:{responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw}★${c5Shots[ctx.dataIndex]?.notes?' · '+c5Shots[ctx.dataIndex].notes.slice(0,40):''}`}}},
+          plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:(ctx)=>`${ctx.raw}★${c5ShotsAll[ctx.dataIndex]?.notes?' · '+c5ShotsAll[ctx.dataIndex].notes.slice(0,40):''}`}}},
           scales:{
-            x:{grid:{color:gc},ticks:{color:tc,maxRotation:45,autoSkip:true,maxTicksLimit:8}},
+            x:{grid:{color:gc},ticks:{color:tc}},
             y:{title:{display:true,text:'Rating',color:tc,font:{size:11}},min:0,max:6,ticks:{color:tc,stepSize:1},grid:{color:gc}}
           }}
       });

@@ -9,6 +9,7 @@ const CACHE_NAME = VERSION;
 const ASSETS = [
   './',
   './index.html',
+  './app.html',
 ];
 
 // ── INSTALL: cache core assets ──

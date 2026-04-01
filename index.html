@@ -347,8 +347,8 @@
     .dialed-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #b85215, #d4672a); color: #fff; border-radius: 99px; padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; }
 
     /* ─── ACHIEVEMENT TOAST ─── */
-    .achievement-toast { position: fixed; top: calc(var(--header-h) + 10px); left: 50%; transform: translateX(-50%) translateY(-120px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 18px; z-index: 35; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; min-width: 260px; max-width: 90vw; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-    .achievement-toast.show { transform: translateX(-50%) translateY(0); }
+    .achievement-toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(calc(-100% - 40px)); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 18px; z-index: 99; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; min-width: 260px; max-width: 90vw; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
+    .achievement-toast.show { transform: translateX(-50%) translateY(0); pointer-events: all; }
     .achievement-toast-icon { font-size: 28px; flex-shrink: 0; }
     .achievement-toast-title { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
     .achievement-toast-name { font-size: 14px; font-weight: 600; margin-top: 2px; }
@@ -786,7 +786,7 @@
         <div class="form-group full" id="modal-roast-extra" style="display:none;">
           <div style="border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
             <button class="btn" id="modal-finish-btn" onclick="modalToggleFinished()" style="font-size:13px;"></button>
-            <button class="btn" id="modal-dialed-btn" onclick="toggleDialed(editingRoastId)" style="font-size:13px;"></button>
+            <button class="btn" id="modal-dialed-btn" onclick="toggleDialed(editingRoastId)" style="font-size:13px;">🎯 Mark as Dialed</button>
             <button class="btn" style="color:var(--danger-text);font-size:13px;" onclick="modalDeleteRoast()">Delete roast</button>
           </div>
         </div>
@@ -1166,6 +1166,7 @@ function openEditRoast(id){
   document.getElementById('modal-roast-msg').textContent='';
   document.getElementById('modal-roast-extra').style.display='block';
   const finBtn=document.getElementById('modal-finish-btn');finBtn.textContent=r.finished?'↩ Mark active':'✓ Mark finished';
+  const dialBtn=document.getElementById('modal-dialed-btn');if(dialBtn)dialBtn.textContent=r.dialed?'🎯 Remove Dialed':'🎯 Mark as Dialed';
   document.getElementById('modal-roast').classList.remove('modal-hidden');
 }
 
@@ -2323,6 +2324,9 @@ async function toggleDialed(id) {
     setDbStatus('ok', 'Saved');
     renderLibrary();
     if (currentPage === 'roast-detail') renderRoastDetail();
+    // Update button text immediately
+    const dialBtn = document.getElementById('modal-dialed-btn');
+    if (dialBtn) dialBtn.textContent = r.dialed ? '🎯 Remove Dialed' : '🎯 Mark as Dialed';
     computeAchievements();
   } catch(e) { setDbStatus('error', 'Error'); }
 }

@@ -1701,13 +1701,41 @@ function renderProfileRankAndAchievements() {
 
 // ─── HOME PAGE ───
 const APP_NAME = 'Dialed';
-  const GREETINGS = [
-  d => `Happy ${d}!`,
-  d => `Good morning — happy ${d}!`,
-  d => `Ready to pull a great shot this ${d}?`,
-  d => `${d} calls for a great espresso.`,
-  d => `Hope your ${d} is going well!`,
-];
+  function getTimeGreeting(day) {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    const opts = [
+      `Good morning — happy ${day}!`,
+      `Rise and pull — happy ${day}!`,
+      `Morning! Happy ${day}.`,
+      `Happy ${day} morning!`,
+    ];
+    return opts[new Date().getDate() % opts.length];
+  } else if (hour >= 12 && hour < 17) {
+    const opts = [
+      `Good afternoon — happy ${day}!`,
+      `${day} afternoon — time for a shot?`,
+      `Hope your ${day} is going well!`,
+      `Happy ${day} afternoon.`,
+    ];
+    return opts[new Date().getDate() % opts.length];
+  } else if (hour >= 17 && hour < 21) {
+    const opts = [
+      `Good evening — happy ${day}!`,
+      `Evening shot? Happy ${day}.`,
+      `${day} evening — how'd the shots go today?`,
+      `Happy ${day} evening!`,
+    ];
+    return opts[new Date().getDate() % opts.length];
+  } else {
+    const opts = [
+      `Burning the midnight oil on a ${day}?`,
+      `Late night ${day} pull?`,
+      `Up late on ${day} — hope it's worth it!`,
+    ];
+    return opts[new Date().getDate() % opts.length];
+  }
+}
 const TIPS = [
   'Tip: Try dropping your dose 0.5g and see if clarity improves.',
   'Tip: Grind finer if your shot is running fast and tasting sour.',
@@ -1725,8 +1753,7 @@ function renderHome() {
   // Greeting
   const greetingEl = document.getElementById('home-greeting');
   const subtextEl = document.getElementById('home-subtext');
-  const greetingIdx = new Date().getDate() % GREETINGS.length;
-  const greetingText = GREETINGS[greetingIdx](day);
+  const greetingText = getTimeGreeting(day);
   greetingEl.innerHTML = name
     ? `Welcome back, <em>${name}</em> — ${greetingText.toLowerCase()}`
     : `<em>${greetingText}</em>`;
@@ -1922,12 +1949,14 @@ themeStyle.textContent = `
     --accent: #b85215; --accent-light: #fdf0e8;
   }
   @media (prefers-color-scheme: dark) {
-    #header-wordmark, .drawer-logo img, .auth-logo img { filter: invert(1) brightness(1.8); }
+    #header-wordmark, .header-title img, .drawer-logo img, .auth-logo img { filter: invert(1) brightness(1.8); }
   }
   [data-theme="dark"] #header-wordmark,
+  [data-theme="dark"] .header-title img,
   [data-theme="dark"] .drawer-logo img,
   [data-theme="dark"] .auth-logo img { filter: invert(1) brightness(1.8); }
   [data-theme="light"] #header-wordmark,
+  [data-theme="light"] .header-title img,
   [data-theme="light"] .drawer-logo img,
   [data-theme="light"] .auth-logo img { filter: none; }
 `;

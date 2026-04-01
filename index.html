@@ -332,6 +332,34 @@
     /* ─── EMPTY STATE ─── */
     .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 14px; line-height: 1.8; }
 
+    /* ─── RANKS + ACHIEVEMENTS ─── */
+    .rank-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(184,82,21,0.25); border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+    .rank-badge-icon { font-size: 14px; }
+    .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 0.5rem; }
+    .achievement { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px 8px; text-align: center; transition: all 0.2s; }
+    .achievement.unlocked { background: var(--accent-light); border-color: rgba(184,82,21,0.3); }
+    .achievement-icon { font-size: 22px; margin-bottom: 4px; }
+    .achievement-name { font-size: 10px; font-weight: 600; color: var(--muted); line-height: 1.3; }
+    .achievement.unlocked .achievement-name { color: var(--accent); }
+    .achievement-locked { filter: grayscale(1); opacity: 0.4; }
+
+    /* ─── DIALED BADGE ─── */
+    .dialed-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #b85215, #d4672a); color: #fff; border-radius: 99px; padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; }
+
+    /* ─── ACHIEVEMENT TOAST ─── */
+    .achievement-toast { position: fixed; top: calc(var(--header-h) + 10px); left: 50%; transform: translateX(-50%) translateY(-120px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 18px; z-index: 35; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; min-width: 260px; max-width: 90vw; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    .achievement-toast.show { transform: translateX(-50%) translateY(0); }
+    .achievement-toast-icon { font-size: 28px; flex-shrink: 0; }
+    .achievement-toast-title { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+    .achievement-toast-name { font-size: 14px; font-weight: 600; margin-top: 2px; }
+    .achievement-toast-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+    /* ─── DIALED CONFIRMATION MODAL ─── */
+    .dialed-modal { background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 2rem 1.5rem; width: 100%; max-width: 340px; margin: auto; box-shadow: var(--shadow); text-align: center; }
+    .dialed-modal-icon { font-size: 48px; margin-bottom: 0.75rem; }
+    .dialed-modal-title { font-family: var(--font-serif); font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .dialed-modal-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+
     @media (max-width: 480px) {
       .shot-stats { grid-template-columns: repeat(2, 1fr); }
       .form-grid { grid-template-columns: 1fr; }
@@ -422,6 +450,7 @@
     <div class="home-stats-row">
       <div class="home-stat-card">
         <div class="home-stat-val" id="home-total-shots">—</div>
+        <div id="home-rank-badge" style="margin-top:6px;display:flex;justify-content:center;"></div>
         <div class="home-stat-lbl">Shots pulled</div>
       </div>
       <div class="home-stat-card">
@@ -581,6 +610,15 @@
         <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhoto(this)">
       </div>
 
+      <!-- Rank display -->
+      <div id="profile-rank-section" style="text-align:center;margin-bottom:1.5rem;"></div>
+      <!-- Achievements -->
+      <div class="profile-section" style="margin-bottom:1rem;">
+        <div class="profile-section-title">Achievements</div>
+        <div style="padding:0.75rem 1.25rem 1rem;">
+          <div id="profile-achievements-grid" class="achievements-grid"></div>
+        </div>
+      </div>
       <div class="profile-section">
         <div class="profile-section-title">Identity</div>
         <div class="profile-field"><span class="profile-field-label">Username</span><input type="text" id="p-username" placeholder="e.g. jbrewing" autocorrect="off" autocapitalize="none"></div>
@@ -695,6 +733,31 @@
     <span>Refreshing…</span>
   </div>
 
+  <!-- ACHIEVEMENT TOAST -->
+  <div class="achievement-toast" id="achievement-toast">
+    <div class="achievement-toast-icon" id="achievement-toast-icon">🏆</div>
+    <div>
+      <div class="achievement-toast-title">Achievement Unlocked</div>
+      <div class="achievement-toast-name" id="achievement-toast-name"></div>
+      <div class="achievement-toast-desc" id="achievement-toast-desc"></div>
+    </div>
+  </div>
+
+  <!-- DIALED CONFIRMATION MODAL -->
+  <div id="modal-dialed" class="modal-hidden">
+    <div class="modal-backdrop">
+      <div class="dialed-modal">
+        <div class="dialed-modal-icon">🎯</div>
+        <div class="dialed-modal-title">Looks like you've got this dialed in!</div>
+        <div class="dialed-modal-desc">3 of your last 4 shots from this bag have been 4★ or better. Want to mark this roast as Dialed?</div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button class="btn" onclick="closeModal('dialed')">Not yet</button>
+          <button class="btn primary" onclick="confirmDialed()">Mark as Dialed 🎯</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PUBLIC PROFILE BOTTOM SHEET -->
   <div class="sheet-backdrop" id="profile-sheet-backdrop" onclick="closeProfileSheet()"></div>
   <div class="sheet" id="profile-sheet">
@@ -723,6 +786,7 @@
         <div class="form-group full" id="modal-roast-extra" style="display:none;">
           <div style="border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
             <button class="btn" id="modal-finish-btn" onclick="modalToggleFinished()" style="font-size:13px;"></button>
+            <button class="btn" id="modal-dialed-btn" onclick="toggleDialed(editingRoastId)" style="font-size:13px;"></button>
             <button class="btn" style="color:var(--danger-text);font-size:13px;" onclick="modalDeleteRoast()">Delete roast</button>
           </div>
         </div>
@@ -787,6 +851,7 @@ function showApp() {
   loadProfile();
   initExtractionDate(); populateRoastDropdown(); populateGrinderDropdown();
   renderHome();
+  setTimeout(computeAchievements, 1000);
 }
 
 async function signInWithGoogle() { showAuthMsg('Redirecting to Google…','info'); const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}}); if(error)showAuthMsg(error.message,'error'); }
@@ -925,7 +990,7 @@ function navTo(page, opts={}) {
   if(page==='log'){populateRoastDropdown();populateGrinderDropdown();if(opts.roastId){const sel=document.getElementById('roast-select');sel.value=opts.roastId;loadRoast();}}
   if(page==='roast-detail'&&opts.roastId){currentDetailRoastId=opts.roastId;renderRoastDetail();}
   if(page==='home'){renderHome();}
-  if(page==='profile'){populateProfileForm();const thSel=document.getElementById('p-theme');if(thSel)thSel.value=localStorage.getItem('ext_theme')||'auto';}
+  if(page==='profile'){populateProfileForm();const thSel=document.getElementById('p-theme');if(thSel)thSel.value=localStorage.getItem('ext_theme')||'auto';renderProfileRankAndAchievements();}
   if(page==='myshots'){populateMyShotsGrinderFilter();renderMyShots();}
   if(page==='community'){loadCommunityShots().then(()=>{populateCommunityGrinderFilter();renderCommunity();});}
   if(page==='grinders')renderGrinders();
@@ -961,6 +1026,7 @@ function renderLibCard(r){
       ${r.roastDate?`<div style="font-size:11px;color:var(--muted);margin-top:3px;">Roasted ${fmtDate(r.roastDate+'T12:00:00')}</div>`:''}
     </div>
     <div class="lib-card-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding:0.75rem 0.875rem 0.75rem 0;">
+      ${r.dialed?`<span class="dialed-badge">🎯 Dialed</span>`:''}
       <button class="icon-btn" style="font-size:13px;padding:4px 8px;${finishedStyle}" title="${finishedTitle}" onclick="event.stopPropagation();toggleFinished(${r.id})">${finishedIcon} ${finishedTitle}</button>
     </div>
   </div>`;
@@ -994,7 +1060,7 @@ function renderRoastDetail(){
       ${r.photo?`<img src="${r.photo}" style="width:64px;height:64px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);flex-shrink:0;">`:``}
       <div style="flex:1;min-width:0;">
         <div style="font-family:var(--font-serif);font-size:18px;font-weight:600;letter-spacing:-0.01em;">${r.roaster} · ${r.origin}${r.varietal?' · '+r.varietal:''}</div>
-        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;">${chips}${dc}</div>
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;">${chips}${dc}${r.dialed?'<span class="dialed-badge">🎯 Dialed</span>':''}</div>
         ${r.roastDate?`<div style="font-size:12px;color:var(--muted);margin-top:5px;">Roasted ${fmtDate(r.roastDate+'T12:00:00')}</div>`:''}
         ${r.desc?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${r.desc}</div>`:''}
       </div>
@@ -1067,6 +1133,8 @@ async function saveShot(){
     const row=await dbInsert('shots',shot);shot._db_id=row.id;
     shots.unshift(shot);shots.sort((a,b)=>new Date(b.date)-new Date(a.date));
     setDbStatus('ok','Saved');
+    // Check if this bag is now dialed
+    if(roastLibId) checkDialedCondition(parseInt(roastLibId));
     const willShare=grinderId&&grinderName&&currentRating>=SHARE_MIN_RATING;
     if(willShare)await publishCommunityShot(shot,grinderName);
     const msg=willShare?`Shot saved and shared (${currentRating}★).`:'Shot saved!';
@@ -1207,6 +1275,7 @@ async function openProfileSheet(userId) {
     });
     const favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
 
+    const pubRank = getRank(isMe ? shots.length : (count||0));
     document.getElementById('profile-sheet-content').innerHTML = `
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;">
         ${avatarHTML}
@@ -1216,6 +1285,8 @@ async function openProfileSheet(userId) {
         </div>
         ${isMe ? `<button class="btn" style="margin-left:auto;font-size:12px;padding:6px 12px;" onclick="closeProfileSheet();navTo('profile');">Edit profile</button>` : ''}
       </div>
+      <div id="pub-profile-rank" style="text-align:center;margin-bottom:1rem;"></div>
+      <div style="text-align:center;margin-bottom:1rem;"><span class="rank-badge"><span class="rank-badge-icon">${pubRank.icon}</span>${pubRank.name}</span></div>
       <div class="pub-stat-row">
         <div class="pub-stat">
           <div class="pub-stat-val">${count||0}</div>
@@ -1598,6 +1669,35 @@ function fmtDate(iso){return new Date(iso).toLocaleDateString('en-US',{month:'sh
 
 
 
+// ─── RANK + ACHIEVEMENTS RENDER ───
+function renderProfileRankAndAchievements() {
+  const rank = getRank(shots.length);
+  const rankEl = document.getElementById('profile-rank-section');
+  if (rankEl) {
+    rankEl.innerHTML = `
+      <div style="font-size:36px;margin-bottom:6px;">${rank.icon}</div>
+      <div class="rank-badge" style="font-size:14px;padding:6px 16px;">${rank.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;">${shots.length} shot${shots.length!==1?'s':''} pulled</div>
+      ${shots.length < 250 ? (() => {
+        const next = RANKS.find(r => r.min > shots.length);
+        return next ? `<div style="font-size:11px;color:var(--hint);margin-top:4px;">${next.min - shots.length} shots until ${next.name}</div>` : '';
+      })() : '<div style="font-size:11px;color:var(--accent);margin-top:4px;">Maximum rank achieved 👑</div>'}
+    `;
+  }
+
+  const unlocked = computeAchievements();
+  const gridEl = document.getElementById('profile-achievements-grid');
+  if (gridEl) {
+    gridEl.innerHTML = ACHIEVEMENTS.map(a => {
+      const isUnlocked = unlocked.has(a.id);
+      return `<div class="achievement ${isUnlocked?'unlocked':''}" title="${a.desc}">
+        <div class="achievement-icon ${isUnlocked?'':'achievement-locked'}">${a.icon}</div>
+        <div class="achievement-name">${a.name}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
 // ─── HOME PAGE ───
 const APP_NAME = 'Dialed';
   const GREETINGS = [
@@ -1637,6 +1737,9 @@ function renderHome() {
   shots.forEach(s => { if(s.roaster) roasterCounts[s.roaster]=(roasterCounts[s.roaster]||0)+1; });
   const favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
   document.getElementById('home-total-shots').textContent = shots.length || '0';
+  const rank = getRank(shots.length);
+  const rankBadgeEl = document.getElementById('home-rank-badge');
+  if (rankBadgeEl) rankBadgeEl.innerHTML = `<span class="rank-badge"><span class="rank-badge-icon">${rank.icon}</span>${rank.name}</span>`;
   const favEl = document.getElementById('home-fav-roaster');
   favEl.textContent = favRoaster;
   favEl.style.fontSize = favRoaster.length > 12 ? '12px' : favRoaster.length > 8 ? '14px' : '15px';
@@ -2032,6 +2135,196 @@ function showImportResult(msg, type) {
   el.style.display = 'block';
   el.style.color = type === 'error' ? 'var(--danger-text)' : 'var(--success-text)';
   el.textContent = msg;
+}
+
+
+// ─── RANKS ───
+const RANKS = [
+  { min: 0,   max: 0,   icon: '☕', name: 'Coffee Butler' },
+  { min: 1,   max: 9,   icon: '☕', name: 'Coffee Butler' },
+  { min: 10,  max: 24,  icon: '☕☕', name: 'Starbucks Barista' },
+  { min: 25,  max: 49,  icon: '☕☕☕', name: 'Home Barista' },
+  { min: 50,  max: 99,  icon: '🏅', name: 'Spro Pro' },
+  { min: 100, max: 249, icon: '🏆', name: 'Espresso God' },
+  { min: 250, max: Infinity, icon: '👑', name: 'Lance Hedrick' },
+];
+
+function getRank(shotCount) {
+  return RANKS.find(r => shotCount >= r.min && shotCount <= r.max) || RANKS[0];
+}
+
+// ─── ACHIEVEMENTS ───
+const ACHIEVEMENTS = [
+  { id:'first_pull',       icon:'☕', name:'First Pull',          desc:'Log your first shot' },
+  { id:'turbo_time',       icon:'⚡', name:"It's Turbo Time",     desc:'Log a shot with ratio 1:3 or higher' },
+  { id:'turbo_charged',    icon:'⚡⚡', name:'Turbo Charged',      desc:'Log 10 shots with ratio 1:3+' },
+  { id:'zuppa_lunga',      icon:'🫗', name:'Zuppa Lunga',         desc:'Log a shot with ratio 1:8 or higher' },
+  { id:'perfectionist',    icon:'⭐', name:'Perfectionist',       desc:'Log a 5★ shot' },
+  { id:'high_five',        icon:'🖐', name:'High Five',           desc:'Log 5 consecutive 5★ shots' },
+  { id:'dedicated',        icon:'📅', name:'The Dedicated',       desc:'Log shots 7 days in a row' },
+  { id:'dialed_in',        icon:'🎯', name:'Dialed In',           desc:'Dial your first bag' },
+  { id:'espresso_nerd',    icon:'🤓', name:'Espresso Nerd',       desc:'Dial 10 different bags' },
+  { id:'won_the_game',     icon:'🥇', name:'You Won the Game',    desc:'Dial 100 different bags' },
+  { id:'completionist',    icon:'✅', name:'Completionist',       desc:'Finish a bag' },
+  { id:'bag_whisperer',    icon:'👜', name:'Bag Whisperer',       desc:'Finish 10 bags' },
+  { id:'caffeine_junkie',  icon:'😬', name:'Caffeine Junkie',     desc:'Log 3 shots in one day' },
+  { id:'sleep_overrated',  icon:'😵', name:'Sleep is Overrated',  desc:'Log 4 shots in one day' },
+  { id:'certifiable',      icon:'🤪', name:'Certifiable',         desc:'Log 5 shots in one day' },
+  { id:'contributor',      icon:'🌍', name:'Community Contributor', desc:'Share your first community shot' },
+  { id:'comm_pillar',      icon:'🏛', name:'Community Pillar',    desc:'Share 100 community shots' },
+  { id:'ooey_gooey',       icon:'🍯', name:'Ooey Gooey',          desc:'Log a shot with ratio under 1:1.5' },
+  { id:'buonissimo',       icon:'🤌', name:'Buonissimo',          desc:'Log 10 ristretto shots' },
+  { id:'roaster_loyalist', icon:'❤️', name:'Roaster Loyalist',    desc:'Finish 10 bags from the same roaster' },
+  { id:'century_pull',     icon:'💯', name:'Century Pull',        desc:'Log 100 shots' },
+];
+
+// Compute which achievements are unlocked from current data
+function computeAchievements() {
+  const unlocked = new Set(JSON.parse(localStorage.getItem('dialed_achievements') || '[]'));
+
+  const check = (id, condition) => {
+    if (!unlocked.has(id) && condition) {
+      unlocked.add(id);
+      const a = ACHIEVEMENTS.find(a => a.id === id);
+      if (a) setTimeout(() => showAchievementToast(a), 800);
+    }
+  };
+
+  // Shot-based
+  check('first_pull', shots.length >= 1);
+  check('century_pull', shots.length >= 100);
+
+  // Ratio-based
+  const turboShots = shots.filter(s => s.ratio && parseFloat(s.ratio) >= 3);
+  check('turbo_time', turboShots.length >= 1);
+  check('turbo_charged', turboShots.length >= 10);
+  check('zuppa_lunga', shots.some(s => s.ratio && parseFloat(s.ratio) >= 8));
+  const ristrettoShots = shots.filter(s => s.ratio && parseFloat(s.ratio) < 1.5);
+  check('ooey_gooey', ristrettoShots.length >= 1);
+  check('buonissimo', ristrettoShots.length >= 10);
+
+  // Rating-based
+  check('perfectionist', shots.some(s => s.rating === 5));
+  // 5 consecutive 5★
+  let consec5 = 0, maxConsec5 = 0;
+  [...shots].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(s => {
+    if (s.rating === 5) { consec5++; maxConsec5 = Math.max(maxConsec5, consec5); }
+    else consec5 = 0;
+  });
+  check('high_five', maxConsec5 >= 5);
+
+  // Daily streak
+  check('dedicated', computeStreak() >= 7);
+
+  // Shots per day
+  const shotsByDay = {};
+  shots.forEach(s => {
+    const d = s.date.slice(0,10);
+    shotsByDay[d] = (shotsByDay[d]||0) + 1;
+  });
+  const maxPerDay = Math.max(0, ...Object.values(shotsByDay));
+  check('caffeine_junkie', maxPerDay >= 3);
+  check('sleep_overrated', maxPerDay >= 4);
+  check('certifiable', maxPerDay >= 5);
+
+  // Bag-based
+  const finishedBags = roastLib.filter(r => r.finished);
+  check('completionist', finishedBags.length >= 1);
+  check('bag_whisperer', finishedBags.length >= 10);
+
+  // Dialed bags
+  const dialedBags = roastLib.filter(r => r.dialed);
+  check('dialed_in', dialedBags.length >= 1);
+  check('espresso_nerd', dialedBags.length >= 10);
+  check('won_the_game', dialedBags.length >= 100);
+
+  // Roaster loyalist — 10 finished bags from same roaster
+  const roasterFinished = {};
+  finishedBags.forEach(r => {
+    if (r.roaster) roasterFinished[r.roaster] = (roasterFinished[r.roaster]||0) + 1;
+  });
+  check('roaster_loyalist', Object.values(roasterFinished).some(v => v >= 10));
+
+  // Community
+  const myCommShots = communityShots.filter(s => s.user_id === currentUser?.id);
+  check('contributor', myCommShots.length >= 1);
+  check('comm_pillar', myCommShots.length >= 100);
+
+  localStorage.setItem('dialed_achievements', JSON.stringify([...unlocked]));
+  return unlocked;
+}
+
+function computeStreak() {
+  if (!shots.length) return 0;
+  const dates = [...new Set(shots.map(s=>s.date.slice(0,10)))].sort().reverse();
+  let streak = 0, prev = null;
+  for (const d of dates) {
+    if (!prev) { streak = 1; prev = d; continue; }
+    const diff = (new Date(prev) - new Date(d)) / 86400000;
+    if (diff === 1) { streak++; prev = d; }
+    else break;
+  }
+  return streak;
+}
+
+// Show achievement toast
+let toastTimeout = null;
+function showAchievementToast(achievement) {
+  const toast = document.getElementById('achievement-toast');
+  document.getElementById('achievement-toast-icon').textContent = achievement.icon;
+  document.getElementById('achievement-toast-name').textContent = achievement.name;
+  document.getElementById('achievement-toast-desc').textContent = achievement.desc;
+  toast.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// ─── DIALED BADGE ───
+let pendingDialedRoastId = null;
+
+function checkDialedCondition(roastId) {
+  const r = roastLib.find(x => x.id == roastId);
+  if (!r || r.dialed) return; // already dialed
+  const bagShots = shots
+    .filter(s => s.roastLibId == roastId && s.rating > 0)
+    .sort((a,b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 4);
+  if (bagShots.length < 4) return;
+  const highRated = bagShots.filter(s => s.rating >= 4).length;
+  if (highRated >= 3) {
+    pendingDialedRoastId = roastId;
+    setTimeout(() => document.getElementById('modal-dialed').classList.remove('modal-hidden'), 600);
+  }
+}
+
+async function confirmDialed() {
+  if (!pendingDialedRoastId) return;
+  const r = roastLib.find(x => x.id == pendingDialedRoastId);
+  if (!r) return;
+  r.dialed = true;
+  try {
+    await dbUpdate('roast_library', r._db_id, r);
+    closeModal('dialed');
+    renderLibrary();
+    if (currentPage === 'roast-detail') renderRoastDetail();
+    // Check dialed achievement
+    computeAchievements();
+    setDbStatus('ok', 'Saved');
+  } catch(e) { setDbStatus('error', 'Error'); }
+  pendingDialedRoastId = null;
+}
+
+async function toggleDialed(id) {
+  const r = roastLib.find(x => x.id == id);
+  if (!r) return;
+  r.dialed = !r.dialed;
+  try {
+    await dbUpdate('roast_library', r._db_id, r);
+    setDbStatus('ok', 'Saved');
+    renderLibrary();
+    if (currentPage === 'roast-detail') renderRoastDetail();
+    computeAchievements();
+  } catch(e) { setDbStatus('error', 'Error'); }
 }
 
 // ─── PROFILE ───

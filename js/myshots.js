@@ -6,7 +6,7 @@
 function populateMyShotsGrinderFilter() {
   const sel = document.getElementById('ms-grinder');
   const prev = sel.value;
-  sel.innerHTML = '<option value="">All grinders</option>' + grinderLib.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+  sel.innerHTML = '<option value="">All grinders</option>' + [...new Set(shots.map(s=>s.grinderName).filter(Boolean))].sort().map(g=>`<option value="${g}">${g}</option>`).join('');
   if (prev) sel.value = prev;
 }
 

@@ -99,13 +99,17 @@ async function openProfileSheet(userId) {
     const { data: profile } = await sb.from('profiles').select('*').eq('id', userId).single();
 
     // Count their community shots
-    const { count } = await sb.from('community_shots')
+    const { count: communityCount } = await sb.from('community_shots')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    // Count their total shots (only if it's the current user — others' shots are private)
+    // Count their total shots (server-side for accurate rank)
+    const { count: totalCount } = await sb.from('shots')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
     const isMe = userId === currentUser?.id;
-    let totalShots = isMe ? shots.length : null;
+    const totalShots = totalCount || 0;
 
     // Build profile display
     const p = profile || {};
@@ -132,7 +136,7 @@ async function openProfileSheet(userId) {
     });
     const favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
 
-    const pubRank = getRank(isMe ? shots.length : (count||0));
+    const pubRank = getRank(totalShots);
     document.getElementById('profile-sheet-content').innerHTML = `
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;">
         ${avatarHTML}
@@ -146,10 +150,10 @@ async function openProfileSheet(userId) {
       <div style="text-align:center;margin-bottom:1rem;"><span class="rank-badge"><span class="rank-badge-icon">${pubRank.icon}</span>${pubRank.name}</span></div>
       <div class="pub-stat-row">
         <div class="pub-stat">
-          <div class="pub-stat-val">${count||0}</div>
+          <div class="pub-stat-val">${communityCount||0}</div>
           <div class="pub-stat-lbl">Shared shots</div>
         </div>
-        ${totalShots !== null ? `<div class="pub-stat"><div class="pub-stat-val">${totalShots}</div><div class="pub-stat-lbl">Total shots</div></div>` : ''}
+        <div class="pub-stat"><div class="pub-stat-val">${totalShots}</div><div class="pub-stat-lbl">Total shots</div></div>
         ${favRoaster ? `<div class="pub-stat"><div class="pub-stat-val" style="font-size:13px;padding-top:4px;">${favRoaster}</div><div class="pub-stat-lbl">Top roaster</div></div>` : ''}
       </div>
       ${machine||grinder ? `<div class="pub-profile-row"><span class="pub-profile-label">Setup</span><span class="pub-profile-val">${[machine,grinder].filter(Boolean).join(' · ')}</span></div>` : ''}

@@ -18,6 +18,8 @@ async function loadUserData() {
     roastLib = (rR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
     grinderLib = (gR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
     setDbStatus('ok', 'Saved');
+    // Sync shot count to profile for public visibility
+    syncShotCount();
   } catch (e) {
     if (e.message === 'timeout') {
       setDbStatus('error', 'Tap to retry');
@@ -77,5 +79,19 @@ function setDbStatus(state, label) {
   if (dot) {
     dot.className = 'db-dot ' + state;
     document.getElementById('db-label').textContent = label;
+  }
+}
+
+// Sync shot count to profiles table so other users can see accurate rank
+async function syncShotCount() {
+  if (!currentUser) return;
+  try {
+    await sb.from('profiles').upsert(
+      { id: currentUser.id, shot_count: shots.length, updated_at: new Date().toISOString() },
+      { onConflict: 'id' }
+    );
+  } catch (e) {
+    // Non-critical — don't surface this error to the user
+    console.log('Shot count sync failed:', e.message);
   }
 }

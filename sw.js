@@ -2,7 +2,7 @@
 // Service Worker v1
 // Bump the version string below every time you push a new build
 // to ensure all users get the update automatically.
-const VERSION = 'dialed-v12';
+const VERSION = 'dialed-v13';
 const CACHE_NAME = VERSION;
 
 // Files to cache for offline use
@@ -11,6 +11,9 @@ const ASSETS = [
   './index.html',
   './app.html',
   './css/app.css',
+  './js/config.js',
+  './js/state.js',
+  './js/utils.js',
 ];
 
 // ── INSTALL: cache core assets ──

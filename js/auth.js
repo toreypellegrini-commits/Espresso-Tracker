@@ -4,6 +4,10 @@
 
 async function initAuth() {
   const { data: { session } } = await sb.auth.getSession();
+  // Clean up OAuth tokens from URL hash so they don't interfere with future sign-ins
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    history.replaceState(null, '', window.location.pathname);
+  }
   if (session) { currentUser = session.user; await loadUserData(); showApp(); }
   else showAuthScreen();
   sb.auth.onAuthStateChange(async (event, session) => {

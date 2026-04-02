@@ -2,18 +2,27 @@
 // Rank system, achievement computation, dialed badge logic.
 // Loads after router.js.
 
-// ─── RANKS ───
-// ─── ACHIEVEMENTS ───
+// Per-user localStorage key for achievements
+function _achievementsKey() {
+  return currentUser ? 'dialed_achievements_' + currentUser.id : 'dialed_achievements';
+}
+
+// Track which achievements have already been toasted this session to prevent repeats
+let _toastedThisSession = new Set();
 
 // Compute which achievements are unlocked from current data
 function computeAchievements() {
-  const unlocked = new Set(JSON.parse(localStorage.getItem('dialed_achievements') || '[]'));
+  const unlocked = new Set(JSON.parse(localStorage.getItem(_achievementsKey()) || '[]'));
 
   const check = (id, condition) => {
     if (!unlocked.has(id) && condition) {
       unlocked.add(id);
-      const a = ACHIEVEMENTS.find(a => a.id === id);
-      if (a) setTimeout(() => showAchievementToast(a), 800);
+      // Only toast if we haven't already shown this achievement this session
+      if (!_toastedThisSession.has(id)) {
+        _toastedThisSession.add(id);
+        const a = ACHIEVEMENTS.find(a => a.id === id);
+        if (a) setTimeout(() => showAchievementToast(a), 800);
+      }
     }
   };
 
@@ -34,7 +43,7 @@ function computeAchievements() {
   check('perfectionist', shots.some(s => s.rating === 5));
   // 5 consecutive 5★
   let consec5 = 0, maxConsec5 = 0;
-  [...shots].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(s => {
+  [...shots].sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(s => {
     if (s.rating === 5) { consec5++; maxConsec5 = Math.max(maxConsec5, consec5); }
     else consec5 = 0;
   });
@@ -46,8 +55,8 @@ function computeAchievements() {
   // Shots per day
   const shotsByDay = {};
   shots.forEach(s => {
-    const d = s.date.slice(0,10);
-    shotsByDay[d] = (shotsByDay[d]||0) + 1;
+    const d = s.date.slice(0, 10);
+    shotsByDay[d] = (shotsByDay[d] || 0) + 1;
   });
   const maxPerDay = Math.max(0, ...Object.values(shotsByDay));
   check('caffeine_junkie', maxPerDay >= 3);
@@ -68,7 +77,7 @@ function computeAchievements() {
   // Roaster loyalist — 10 finished bags from same roaster
   const roasterFinished = {};
   finishedBags.forEach(r => {
-    if (r.roaster) roasterFinished[r.roaster] = (roasterFinished[r.roaster]||0) + 1;
+    if (r.roaster) roasterFinished[r.roaster] = (roasterFinished[r.roaster] || 0) + 1;
   });
   check('roaster_loyalist', Object.values(roasterFinished).some(v => v >= 10));
 
@@ -77,13 +86,18 @@ function computeAchievements() {
   check('contributor', myCommShots.length >= 1);
   check('comm_pillar', myCommShots.length >= 100);
 
-  localStorage.setItem('dialed_achievements', JSON.stringify([...unlocked]));
+  localStorage.setItem(_achievementsKey(), JSON.stringify([...unlocked]));
   return unlocked;
+}
+
+// Reset session toast tracking (call on sign-out so new user gets fresh toasts)
+function resetAchievementSession() {
+  _toastedThisSession = new Set();
 }
 
 function computeStreak() {
   if (!shots.length) return 0;
-  const dates = [...new Set(shots.map(s=>s.date.slice(0,10)))].sort().reverse();
+  const dates = [...new Set(shots.map(s => s.date.slice(0, 10)))].sort().reverse();
   let streak = 0, prev = null;
   for (const d of dates) {
     if (!prev) { streak = 1; prev = d; continue; }
@@ -132,7 +146,6 @@ async function confirmDialed() {
     closeModal('dialed');
     renderLibrary();
     if (currentPage === 'roast-detail') renderRoastDetail();
-    // Check dialed achievement
     computeAchievements();
     setDbStatus('ok', 'Saved');
   } catch(e) { setDbStatus('error', 'Error'); }
@@ -148,11 +161,8 @@ async function toggleDialed(id) {
     setDbStatus('ok', 'Saved');
     renderLibrary();
     if (currentPage === 'roast-detail') renderRoastDetail();
-    // Update button text immediately
     const dialBtn = document.getElementById('modal-dialed-btn');
     if (dialBtn) dialBtn.textContent = r.dialed ? 'Remove Dialed' : 'Mark as Dialed';
     computeAchievements();
   } catch(e) { setDbStatus('error', 'Error'); }
 }
-
-

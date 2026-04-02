@@ -3,16 +3,39 @@
 // Loads after config.js, state.js, utils.js, db.js.
 
 async function initAuth() {
+  // Check if we're returning from an OAuth redirect (hash contains tokens)
+  const isOAuthRedirect = window.location.hash && window.location.hash.includes('access_token');
+
+  // Get current session
   const { data: { session } } = await sb.auth.getSession();
+
   // Clean up OAuth tokens from URL hash so they don't interfere with future sign-ins
-  if (window.location.hash && window.location.hash.includes('access_token')) {
+  if (isOAuthRedirect) {
     history.replaceState(null, '', window.location.pathname);
   }
-  if (session) { currentUser = session.user; await loadUserData(); showApp(); }
-  else showAuthScreen();
+
+  if (session) {
+    currentUser = session.user;
+    await loadUserData();
+    showApp();
+  } else if (!isOAuthRedirect) {
+    // Only show auth screen if we're NOT in the middle of an OAuth redirect.
+    // If we are, onAuthStateChange will fire SIGNED_IN momentarily.
+    showAuthScreen();
+  }
+
   sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) { currentUser = session.user; await loadUserData(); showApp(); }
-    else if (event === 'SIGNED_OUT') { currentUser = null; shots = []; roastLib = []; grinderLib = []; showAuthScreen(); }
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await loadUserData();
+      showApp();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      shots = [];
+      roastLib = [];
+      grinderLib = [];
+      showAuthScreen();
+    }
   });
 }
 

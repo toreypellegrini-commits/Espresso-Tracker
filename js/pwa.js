@@ -83,40 +83,6 @@ themeStyle.textContent = `
 document.head.appendChild(themeStyle);
 initTheme();
 
-// ─── PWA INSTALL ───
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  // Show banner after 30s if not dismissed
-  const dismissed = localStorage.getItem('pwa_dismissed');
-  if (!dismissed && !window.matchMedia('(display-mode: standalone)').matches) {
-    setTimeout(showPWABanner, 30000);
-  }
-});
-
-function showPWABanner() {
-  const banner = document.getElementById('pwa-banner');
-  if (banner) banner.classList.add('show');
-}
-
-function dismissPWA() {
-  const banner = document.getElementById('pwa-banner');
-  if (banner) banner.classList.remove('show');
-  localStorage.setItem('pwa_dismissed', '1');
-}
-
-async function installPWA() {
-  if (!deferredInstallPrompt) {
-    // iOS fallback — show instructions
-    alert('To install on iPhone:\n1. Tap the Share button (box with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
-    dismissPWA();
-    return;
-  }
-  deferredInstallPrompt.prompt();
-  const result = await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  dismissPWA();
-}
 
 // ─── PULL TO REFRESH ───
 // ─── VISIBILITY CHANGE (return from background / screen unlock) ───

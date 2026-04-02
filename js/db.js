@@ -86,12 +86,11 @@ function setDbStatus(state, label) {
 async function syncShotCount() {
   if (!currentUser) return;
   try {
-    await sb.from('profiles').upsert(
-      { id: currentUser.id, shot_count: shots.length, updated_at: new Date().toISOString() },
-      { onConflict: 'id' }
-    );
+    const { error } = await sb.from('profiles')
+      .update({ shot_count: shots.length })
+      .eq('id', currentUser.id);
+    if (error) console.warn('Shot count sync error:', error.message, error);
   } catch (e) {
-    // Non-critical — don't surface this error to the user
-    console.log('Shot count sync failed:', e.message);
+    console.warn('Shot count sync failed:', e.message);
   }
 }

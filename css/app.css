@@ -166,6 +166,34 @@
     .roast-picker { background: var(--surface2); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border); }
     .roast-picker-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
 
+    /* ─── SHOT FORM (compact) ─── */
+    .shot-context { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.875rem 1rem; margin-bottom: 1rem; }
+    .shot-context-title { font-family: var(--font-serif); font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .shot-context-meta { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .shot-context-last { font-size: 12px; color: var(--hint); display: flex; flex-wrap: wrap; gap: 4px 8px; }
+    .shot-context-last span { white-space: nowrap; }
+    .shot-core { margin-bottom: 1rem; }
+    .shot-input-row { display: grid; gap: 10px; margin-bottom: 10px; }
+    .shot-input-row.quad { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .shot-input-group { display: flex; flex-direction: column; gap: 4px; }
+    .shot-input-group.full { grid-column: 1 / -1; }
+    .shot-input-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    .stepper { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+    .stepper input { flex: 1; border: none; background: transparent; text-align: center; font-size: 15px; font-weight: 600; color: var(--text); padding: 8px 2px; min-width: 0; font-family: var(--font); -moz-appearance: textfield; }
+    .stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .stepper-btn { width: 36px; background: var(--surface2); border: none; font-size: 18px; font-weight: 500; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; user-select: none; }
+    .stepper-btn:active { background: var(--border); }
+    .shot-ratio { text-align: center; font-size: 14px; font-weight: 600; color: var(--accent); padding: 6px 0; margin-bottom: 8px; }
+    .shot-ratio.dim { color: var(--hint); font-weight: 400; }
+    .shot-rating-section { display: flex; justify-content: center; margin-bottom: 10px; }
+    .taste-tags { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+    .taste-tag { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-family: var(--font); cursor: pointer; color: var(--muted); transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .taste-tag.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .shot-advanced { margin-bottom: 1rem; }
+    .shot-advanced summary { font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 10px 0; text-transform: uppercase; letter-spacing: 0.04em; -webkit-tap-highlight-color: transparent; }
+    .shot-advanced-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 8px; }
+    .save-shot-btn { width: 100%; padding: 14px; font-size: 15px; font-weight: 600; border-radius: var(--radius-lg); }
+
     /* ─── BUTTONS ─── */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 18px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: transparent; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text); font-family: var(--font); transition: background 0.12s; -webkit-tap-highlight-color: transparent; }
     .btn:hover { background: var(--surface2); }

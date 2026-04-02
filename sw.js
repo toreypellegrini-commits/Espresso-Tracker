@@ -2,7 +2,7 @@
 // Service Worker v1
 // Bump the version string below every time you push a new build
 // to ensure all users get the update automatically.
-const VERSION = 'dialed-v15';
+const VERSION = 'dialed-v16';
 const CACHE_NAME = VERSION;
 
 // Files to cache for offline use
@@ -17,6 +17,17 @@ const ASSETS = [
   './js/db.js',
   './js/auth.js',
   './js/router.js',
+  './js/community.js',
+  './js/roasts.js',
+  './js/shots.js',
+  './js/grinders.js',
+  './js/insights.js',
+  './js/home.js',
+  './js/myshots.js',
+  './js/pwa.js',
+  './js/import.js',
+  './js/achievements.js',
+  './js/profile.js',
 ];
 
 // ── INSTALL: cache core assets ──
@@ -25,7 +36,6 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS);
     }).then(() => {
-      // Activate immediately without waiting for old tabs to close
       self.skipWaiting();
     })
   );
@@ -44,7 +54,6 @@ self.addEventListener('activate', event => {
           })
       );
     }).then(() => {
-      // Take control of all open clients immediately
       return self.clients.claim();
     })
   );
@@ -54,28 +63,23 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Only handle same-origin requests
   if (url.origin !== location.origin) return;
 
-  // For the main HTML file: network-first so updates always come through
   if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/')) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Cache the fresh response
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
         })
         .catch(() => {
-          // Offline fallback — serve from cache
           return caches.match(event.request);
         })
     );
     return;
   }
 
-  // For everything else (fonts, scripts, images): cache-first
   event.respondWith(
     caches.match(event.request).then(cached => {
       return cached || fetch(event.request).then(response => {

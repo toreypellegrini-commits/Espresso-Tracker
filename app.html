@@ -161,41 +161,115 @@
   <!-- PAGE: LOG SHOT -->
   <div class="page" id="page-log">
     <div class="container">
+      <!-- ROAST SELECTOR -->
       <div class="roast-picker">
         <div class="roast-picker-label">Roast</div>
         <select id="roast-select" onchange="loadRoast()"><option value="">— choose a saved roast —</option></select>
       </div>
-      <div class="form-grid">
-        <div class="form-group full"><label>Extraction date</label><input type="date" id="f-extractdate"><div class="date-hint" id="extraction-date-hint"></div></div>
-        <div class="form-group"><label>Roaster</label><input type="text" id="f-roaster" placeholder="e.g. Onyx" autocorrect="off"></div>
-        <div class="form-group"><label>Origin</label><input type="text" id="f-origin" placeholder="e.g. Ethiopia" autocorrect="off"></div>
-        <div class="form-group"><label>Varietal</label><input type="text" id="f-varietal" placeholder="e.g. Gesha" autocorrect="off"></div>
-        <div class="form-group"><label>Process</label><select id="f-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select></div>
-        <div class="form-group"><label>Roast level</label><select id="f-roast"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>
-        <div class="form-group"><label>Roast date</label><input type="date" id="f-roastdate" onchange="updateDaysOffRoast()"></div>
-        <div class="form-group"><label>Days off roast</label><div class="computed-field dim" id="f-daysoffroast">Set roast date above</div></div>
-        <div class="form-group"><label>Grinder</label><select id="f-grinder" onchange="updateShareNotice()"><option value="">— none selected —</option></select></div>
-        <div class="form-group"><label>Grind setting</label><input type="number" id="f-grind" placeholder="e.g. 14" step="0.5" inputmode="decimal"></div>
-        <div class="form-group"><label>Dose (g in)</label><input type="number" id="f-dose" placeholder="e.g. 18" step="0.1" oninput="updateRatio()" inputmode="decimal"></div>
-        <div class="form-group"><label>Yield (g out)</label><input type="number" id="f-yield" placeholder="e.g. 36" step="0.1" oninput="updateRatio()" inputmode="decimal"></div>
-        <div class="form-group"><label>Ratio</label><div class="computed-field dim" id="f-ratio">Enter dose &amp; yield</div></div>
-        <div class="form-group"><label>Brew temp (°C)</label><input type="number" id="f-temp" placeholder="e.g. 93" step="0.5" inputmode="decimal"></div>
-        <div class="form-group"><label>Pre-infusion (s)</label><input type="number" id="f-preinfusion" placeholder="e.g. 5" step="1" inputmode="numeric"></div>
-        <div class="form-group"><label>Total shot time (s)</label><input type="number" id="f-time" placeholder="e.g. 28" step="1" inputmode="numeric"></div>
-        <div class="form-group full">
-          <label>Rating</label>
+
+      <!-- CONTEXT BLOCK: shows roast info + last shot summary -->
+      <div id="shot-context" class="shot-context" style="display:none;"></div>
+
+      <!-- HIDDEN FIELDS (populated from roast record) -->
+      <input type="hidden" id="f-roaster">
+      <input type="hidden" id="f-origin">
+      <input type="hidden" id="f-varietal">
+      <input type="hidden" id="f-roastdate">
+      <select id="f-process" style="display:none;"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select>
+      <select id="f-roast" style="display:none;"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
+      <input type="hidden" id="f-extractdate">
+      <div style="display:none;" id="extraction-date-hint"></div>
+
+      <!-- CORE SHOT CONTROLS -->
+      <div class="shot-core">
+        <div class="shot-input-row">
+          <div class="shot-input-group">
+            <label>Grinder</label>
+            <select id="f-grinder" onchange="updateShareNotice()"><option value="">— none —</option></select>
+          </div>
+        </div>
+        <div class="shot-input-row quad">
+          <div class="shot-input-group">
+            <label>Grind</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="stepField('f-grind',-0.5)">−</button>
+              <input type="number" id="f-grind" placeholder="14" step="0.5" inputmode="decimal">
+              <button class="stepper-btn" onclick="stepField('f-grind',0.5)">+</button>
+            </div>
+          </div>
+          <div class="shot-input-group">
+            <label>Dose</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="stepField('f-dose',-0.1)">−</button>
+              <input type="number" id="f-dose" placeholder="18" step="0.1" oninput="updateRatio()" inputmode="decimal">
+              <button class="stepper-btn" onclick="stepField('f-dose',0.1)">+</button>
+            </div>
+          </div>
+          <div class="shot-input-group">
+            <label>Yield</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="stepField('f-yield',-0.1)">−</button>
+              <input type="number" id="f-yield" placeholder="36" step="0.1" oninput="updateRatio()" inputmode="decimal">
+              <button class="stepper-btn" onclick="stepField('f-yield',0.1)">+</button>
+            </div>
+          </div>
+          <div class="shot-input-group">
+            <label>Time</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="stepField('f-time',-1)">−</button>
+              <input type="number" id="f-time" placeholder="28" step="1" inputmode="numeric">
+              <button class="stepper-btn" onclick="stepField('f-time',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RATIO (live) -->
+        <div class="shot-ratio" id="f-ratio">Enter dose &amp; yield</div>
+
+        <!-- RATING -->
+        <div class="shot-rating-section">
           <div class="rating-row">
             <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
             <span id="star-label">tap to rate</span>
           </div>
         </div>
-        <div class="form-group full" id="share-notice-wrap" style="display:none;"><div class="notice" id="share-notice"></div></div>
-        <div class="form-group full"><label>Tasting notes</label><textarea id="f-notes" placeholder="e.g. bright citrus, jasmine — try finer next time"></textarea></div>
+
+        <!-- TASTE TAGS -->
+        <div class="taste-tags">
+          <button class="taste-tag" data-tag="sour" onclick="toggleTag(this)">🍋 Sour</button>
+          <button class="taste-tag" data-tag="balanced" onclick="toggleTag(this)">⚖️ Balanced</button>
+          <button class="taste-tag" data-tag="bitter" onclick="toggleTag(this)">🫠 Bitter</button>
+        </div>
+
+        <!-- SHARE NOTICE -->
+        <div id="share-notice-wrap" style="display:none;"><div class="notice" id="share-notice"></div></div>
       </div>
-      <div class="btn-row">
-        <button class="btn" onclick="clearForm()">Clear</button>
-        <button class="btn primary" onclick="saveShot()" id="save-shot-btn">Save shot</button>
-      </div>
+
+      <!-- ADVANCED (COLLAPSED) -->
+      <details class="shot-advanced" id="shot-advanced">
+        <summary>Advanced</summary>
+        <div class="shot-advanced-grid">
+          <div class="shot-input-group">
+            <label>Extraction date</label>
+            <input type="date" id="f-extractdate-visible" onchange="syncExtractionDate()">
+          </div>
+          <div class="shot-input-group">
+            <label>Temp (°C)</label>
+            <input type="number" id="f-temp" placeholder="93" step="0.5" inputmode="decimal">
+          </div>
+          <div class="shot-input-group">
+            <label>Pre-infusion (s)</label>
+            <input type="number" id="f-preinfusion" placeholder="5" step="1" inputmode="numeric">
+          </div>
+          <div class="shot-input-group full">
+            <label>Notes</label>
+            <textarea id="f-notes" placeholder="e.g. bright citrus, jasmine — try finer next time" rows="2"></textarea>
+          </div>
+        </div>
+      </details>
+
+      <!-- SAVE -->
+      <button class="btn primary save-shot-btn" onclick="saveShot()" id="save-shot-btn">Save shot</button>
       <div class="save-msg" id="save-msg"></div>
     </div>
   </div>

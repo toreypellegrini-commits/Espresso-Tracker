@@ -34,7 +34,7 @@ function showApp() {
 
 async function signInWithGoogle() {
   showAuthMsg('Redirecting to Google…', 'info');
-  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
   if (error) showAuthMsg(error.message, 'error');
 }
 
@@ -70,7 +70,7 @@ async function submitAuth() {
 async function sendPasswordReset() {
   const email = document.getElementById('auth-email').value.trim();
   if (!email) { showAuthMsg('Enter your email above first.', 'error'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
   if (error) showAuthMsg(error.message, 'error');
   else showAuthMsg('Password reset email sent.', 'success');
 }

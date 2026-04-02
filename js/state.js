@@ -11,7 +11,6 @@ let currentPage = 'home', previousPage = 'home';
 let currentDetailRoastId = null;
 let authMode = 'signin';
 let profileCache = {};
-let deferredInstallPrompt = null;
 let toastTimeout = null;
 let pendingDialedRoastId = null;
 let userProfile = { username:'', location:'', machine:'', machine_other:'', grinder:'', coffee_prefs:'', fav_roasters:'', photo:null };

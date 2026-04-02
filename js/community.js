@@ -103,13 +103,9 @@ async function openProfileSheet(userId) {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    // Count their total shots (server-side for accurate rank)
-    const { count: totalCount } = await sb.from('shots')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
-
+    // Get total shot count from their profile (publicly visible)
     const isMe = userId === currentUser?.id;
-    const totalShots = totalCount || 0;
+    const totalShots = isMe ? shots.length : (profile?.shot_count || 0);
 
     // Build profile display
     const p = profile || {};

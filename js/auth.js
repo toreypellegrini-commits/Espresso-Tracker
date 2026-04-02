@@ -34,6 +34,7 @@ async function initAuth() {
       shots = [];
       roastLib = [];
       grinderLib = [];
+      resetAchievementSession();
       showAuthScreen();
     }
   });

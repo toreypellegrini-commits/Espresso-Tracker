@@ -13,9 +13,14 @@ localStorage.removeItem('dialed_achievements');
 // Track which achievements have already been toasted this session to prevent repeats
 let _toastedThisSession = new Set();
 
+// Toast queue — achievements are shown one at a time
+let _toastQueue = [];
+let _toastActive = false;
+
 // Compute which achievements are unlocked from current data
 function computeAchievements() {
   const unlocked = new Set(JSON.parse(localStorage.getItem(_achievementsKey()) || '[]'));
+  const newlyUnlocked = [];
 
   const check = (id, condition) => {
     if (!unlocked.has(id) && condition) {
@@ -24,7 +29,7 @@ function computeAchievements() {
       if (!_toastedThisSession.has(id)) {
         _toastedThisSession.add(id);
         const a = ACHIEVEMENTS.find(a => a.id === id);
-        if (a) setTimeout(() => showAchievementToast(a), 800);
+        if (a) newlyUnlocked.push(a);
       }
     }
   };
@@ -90,12 +95,21 @@ function computeAchievements() {
   check('comm_pillar', myCommShots.length >= 100);
 
   localStorage.setItem(_achievementsKey(), JSON.stringify([...unlocked]));
+
+  // Queue any newly unlocked achievements for display
+  if (newlyUnlocked.length > 0) {
+    queueAchievementToasts(newlyUnlocked);
+  }
+
   return unlocked;
 }
 
 // Reset session toast tracking (call on sign-out so new user gets fresh toasts)
 function resetAchievementSession() {
   _toastedThisSession = new Set();
+  _toastQueue = [];
+  _toastActive = false;
+  if (toastTimeout) clearTimeout(toastTimeout);
 }
 
 function computeStreak() {
@@ -111,15 +125,38 @@ function computeStreak() {
   return streak;
 }
 
-// Show achievement toast
-function showAchievementToast(achievement) {
+// Queue multiple achievements and show them one at a time
+function queueAchievementToasts(achievements) {
+  _toastQueue.push(...achievements);
+  if (!_toastActive) {
+    // Small initial delay so it doesn't pop immediately on page load
+    setTimeout(showNextToast, 800);
+  }
+}
+
+function showNextToast() {
+  if (_toastQueue.length === 0) {
+    _toastActive = false;
+    return;
+  }
+  _toastActive = true;
+  const achievement = _toastQueue.shift();
   const toast = document.getElementById('achievement-toast');
   document.getElementById('achievement-toast-icon').textContent = achievement.icon;
   document.getElementById('achievement-toast-name').textContent = achievement.name;
   document.getElementById('achievement-toast-desc').textContent = achievement.desc;
   toast.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => toast.classList.remove('show'), 4000);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+    // Show next toast after a brief gap
+    setTimeout(showNextToast, 500);
+  }, 3500);
+}
+
+// Legacy function name kept for compatibility
+function showAchievementToast(achievement) {
+  queueAchievementToasts([achievement]);
 }
 
 // ─── DIALED BADGE ───

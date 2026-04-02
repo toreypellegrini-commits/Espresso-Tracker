@@ -7,6 +7,9 @@ function _achievementsKey() {
   return currentUser ? 'dialed_achievements_' + currentUser.id : 'dialed_achievements';
 }
 
+// Clean up the old shared key from before per-user fix
+localStorage.removeItem('dialed_achievements');
+
 // Track which achievements have already been toasted this session to prevent repeats
 let _toastedThisSession = new Set();
 

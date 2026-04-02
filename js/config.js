@@ -51,3 +51,20 @@ const TIPS = [
   'Tip: If your shot tastes bitter, try a slightly coarser grind or lower temp.',
   'Tip: Consistency in tamping pressure matters more than the pressure amount.',
 ];
+
+const GRINDERS = {
+  'Flat Burr Electric': [
+    'Eureka Mignon Specialita', 'Eureka Mignon XL', 'Eureka Oro Single Dose',
+    'Fellow Ode', 'DF64', 'DF83', 'Lagom P64', 'Lagom P100',
+    'Mazzer Mini', 'Mazzer Philos', 'Mahlkönig X54', 'Weber EG-1',
+  ],
+  'Conical Burr Electric': [
+    'Niche Zero', 'Niche Duo', 'Eureka Mignon Crono',
+    'Baratza Sette 270', 'Baratza Vario', 'Breville Smart Grinder Pro',
+    'Ceado E5P', 'Fiorenzato AllGround',
+  ],
+  'Hand Grinders': [
+    '1Zpresso JX-Pro', '1Zpresso J-Max', '1Zpresso K-Max', '1Zpresso K-Ultra',
+    'Comandante C40', 'Kinu M47', 'Timemore Chestnut X',
+  ],
+};

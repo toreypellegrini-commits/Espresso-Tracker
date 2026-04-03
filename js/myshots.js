@@ -19,7 +19,7 @@ function renderMyShots() {
   const sortVal = document.getElementById('ms-sort').value;
 
   let filtered = shots.filter(s => {
-    const text = [s.roaster,s.origin,s.varietal,s.notes,s.grinderName].join(' ').toLowerCase();
+    const text = [s.roaster,s.roastName,s.origin,s.varietal,s.notes,s.grinderName].join(' ').toLowerCase();
     if (search && !text.includes(search)) return false;
     if (process && s.process !== process) return false;
     if (roast && s.roast !== roast) return false;
@@ -36,11 +36,11 @@ function renderMyShots() {
   if (!filtered.length) { el.innerHTML='<div class="empty">No shots match these filters.</div>'; return; }
 
   el.innerHTML = filtered.map(s => {
-    const chips = [s.process,s.roast,s.varietal].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
+    const chips = [s.origin,s.varietal,s.process,s.roast].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
     return `<div class="shot-card">
       <div class="shot-card-header">
         <div>
-          <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roaster||'Unknown'}${s.origin?' · '+s.origin:''}</div>
+          <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roastName ? s.roaster + ' · ' + s.roastName : s.roaster||'Unknown'}</div>
           <div class="shot-meta">${fmtDate(s.date)}${s.rating?' · '+starsHTML(s.rating):''}${s.grinderName?' · '+s.grinderName:''}</div>
         </div>
         <button class="delete-btn" onclick="deleteShot(${s.id})">✕</button>

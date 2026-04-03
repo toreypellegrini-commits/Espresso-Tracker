@@ -42,13 +42,13 @@ function updateShareNotice() {
   wrap.style.display = 'block';
   if (currentRating >= SHARE_MIN_RATING) {
     notice.className = 'notice notice-success';
-    notice.textContent = `This shot will be shared with the community for ${grinderName} — rated ${currentRating}★, params only, no tasting notes.`;
+    notice.textContent = `Rated ${currentRating}★ — this shot will be shared with the community. Params only, no tasting notes.`;
   } else if (currentRating > 0) {
     notice.className = 'notice notice-warning';
-    notice.textContent = `Rated ${currentRating}★ — only shots rated ${SHARE_MIN_RATING}★+ are shared for ${grinderName}.`;
+    notice.textContent = `Rated ${currentRating}★ — only shots rated ${SHARE_MIN_RATING}★+ are shared with the community.`;
   } else {
     notice.className = 'notice notice-info';
-    notice.textContent = `Rate this shot ${SHARE_MIN_RATING}★+ to share extraction params with the community for ${grinderName}. Tasting notes stay private.`;
+    notice.textContent = `Rate this shot ${SHARE_MIN_RATING}★+ to share with the community. Tasting notes stay private.`;
   }
 }
 

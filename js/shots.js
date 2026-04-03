@@ -42,13 +42,13 @@ function updateShareNotice() {
   wrap.style.display = 'block';
   if (currentRating >= SHARE_MIN_RATING) {
     notice.className = 'notice notice-success';
-    notice.textContent = `This shot will be shared with the community for ${grinderName} — rated ${currentRating}★, params only, no tasting notes.`;
+    notice.textContent = `Rated ${currentRating}★ — this shot will be shared with the community. Params only, no tasting notes.`;
   } else if (currentRating > 0) {
     notice.className = 'notice notice-warning';
-    notice.textContent = `Rated ${currentRating}★ — only shots rated ${SHARE_MIN_RATING}★+ are shared for ${grinderName}.`;
+    notice.textContent = `Rated ${currentRating}★ — only shots rated ${SHARE_MIN_RATING}★+ are shared with the community.`;
   } else {
     notice.className = 'notice notice-info';
-    notice.textContent = `Rate this shot ${SHARE_MIN_RATING}★+ to share extraction params with the community for ${grinderName}. Tasting notes stay private.`;
+    notice.textContent = `Rate this shot ${SHARE_MIN_RATING}★+ to share with the community. Tasting notes stay private.`;
   }
 }
 
@@ -78,6 +78,9 @@ function clearTags() {
 }
 
 // ─── STEPPER ───
+// Store reference values from last shot for change indicators
+let _refValues = {};
+
 function stepField(id, delta) {
   const input = document.getElementById(id);
   const step = Math.abs(delta);
@@ -85,6 +88,39 @@ function stepField(id, delta) {
   const decimals = step < 1 ? 1 : 0;
   input.value = (current + delta).toFixed(decimals);
   input.dispatchEvent(new Event('input'));
+  updateChangeIndicator(id);
+}
+
+function updateChangeIndicator(id) {
+  const input = document.getElementById(id);
+  const stepper = input.closest('.stepper');
+  if (!stepper) return;
+  const ref = _refValues[id];
+  const current = parseFloat(input.value);
+  const indicator = stepper.parentElement.querySelector('.change-indicator');
+
+  if (ref == null || isNaN(current) || current === ref) {
+    stepper.classList.remove('changed');
+    if (indicator) indicator.textContent = '';
+    return;
+  }
+
+  stepper.classList.add('changed');
+  const diff = current - ref;
+  const decimals = (diff % 1 !== 0) ? 1 : 0;
+  const sign = diff > 0 ? '▲' : '▼';
+  const absDiff = Math.abs(diff).toFixed(decimals);
+  if (indicator) {
+    indicator.textContent = `${sign} ${absDiff}`;
+    indicator.className = 'change-indicator ' + (diff > 0 ? 'up' : 'down');
+  }
+}
+
+// Format a value cleanly — no trailing .0 for whole numbers
+function cleanNum(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '';
+  return n % 1 === 0 ? n.toFixed(0) : n.toString();
 }
 
 // ─── DROPDOWNS ───
@@ -170,6 +206,7 @@ function loadRoast() {
   `;
 
   // Prefill from most recent shot for this roast
+  _refValues = {};
   if (lastShot) {
     if (lastShot.grinderName) {
       const sel = document.getElementById('f-grinder');
@@ -179,14 +216,17 @@ function loadRoast() {
       }
       sel.value = lastShot.grinderName;
     }
-    if (lastShot.grind) setField('f-grind', lastShot.grind);
-    if (lastShot.dose) setField('f-dose', lastShot.dose);
-    if (lastShot.yield) setField('f-yield', lastShot.yield);
-    if (lastShot.time) setField('f-time', lastShot.time);
-    if (lastShot.temp) setField('f-temp', lastShot.temp);
-    if (lastShot.preinfusion) setField('f-preinfusion', lastShot.preinfusion);
+    if (lastShot.grind) { setField('f-grind', cleanNum(lastShot.grind)); _refValues['f-grind'] = parseFloat(lastShot.grind); }
+    if (lastShot.dose) { setField('f-dose', cleanNum(lastShot.dose)); _refValues['f-dose'] = parseFloat(lastShot.dose); }
+    if (lastShot.yield) { setField('f-yield', cleanNum(lastShot.yield)); _refValues['f-yield'] = parseFloat(lastShot.yield); }
+    if (lastShot.time) { setField('f-time', cleanNum(lastShot.time)); _refValues['f-time'] = parseFloat(lastShot.time); }
+    if (lastShot.temp) setField('f-temp', cleanNum(lastShot.temp));
+    if (lastShot.preinfusion) setField('f-preinfusion', cleanNum(lastShot.preinfusion));
     updateRatio();
     updateShareNotice();
+    // Clear any change indicators from previous form use
+    document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
+    document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
   }
 
   // Do NOT prefill: rating, notes, tags — those are shot-specific
@@ -301,6 +341,9 @@ function clearForm() {
   document.getElementById('shot-context').style.display = 'none';
   const adv = document.getElementById('shot-advanced');
   if (adv) adv.removeAttribute('open');
+  _refValues = {};
+  document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
+  document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
 }
 
 // ─── DELETE ───

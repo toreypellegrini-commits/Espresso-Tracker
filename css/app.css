@@ -178,13 +178,17 @@
     .shot-input-group { display: flex; flex-direction: column; gap: 4px; }
     .shot-input-group.full { grid-column: 1 / -1; }
     .shot-input-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
-    .stepper { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+    .stepper { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); transition: border-color 0.15s, background 0.15s; }
+    .stepper.changed { border-color: var(--accent); background: var(--accent-light); }
     .stepper input { flex: 1; border: none; background: transparent; text-align: center; font-size: 18px; font-weight: 600; color: var(--text); padding: 10px 2px; min-width: 0; font-family: var(--font); -moz-appearance: textfield; }
     .stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; }
     .stepper-btn { width: 40px; background: var(--surface2); border: none; font-size: 20px; font-weight: 500; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; user-select: none; }
     .stepper-btn:active { background: var(--border); }
-    .shot-ratio { text-align: center; font-size: 14px; font-weight: 600; color: var(--accent); padding: 6px 0; margin-bottom: 8px; }
-    .shot-ratio.dim { color: var(--hint); font-weight: 400; }
+    .change-indicator { font-size: 11px; font-weight: 600; text-align: center; min-height: 16px; line-height: 16px; }
+    .change-indicator.up { color: var(--accent); }
+    .change-indicator.down { color: #5a8f5a; }
+    .shot-ratio { text-align: center; font-size: 20px; font-weight: 700; color: var(--accent); padding: 8px 0; margin-bottom: 8px; letter-spacing: 0.02em; }
+    .shot-ratio.dim { color: var(--hint); font-weight: 400; font-size: 14px; }
     .shot-rating-section { display: flex; justify-content: center; margin-bottom: 10px; }
     .taste-tags { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
     .taste-tag { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-family: var(--font); cursor: pointer; color: var(--muted); transition: all 0.15s; -webkit-tap-highlight-color: transparent; }

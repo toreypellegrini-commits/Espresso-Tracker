@@ -1,12 +1,8 @@
 // ─── Dialed — Home ───
-// Home page rendering, greeting, rank display.
+// Home page: rank progress card, open bags, greeting.
 // Loads after router.js.
 
-// ─── UTILS ───
-
-
-
-// ─── RANK + ACHIEVEMENTS RENDER ───
+// ─── RANK + ACHIEVEMENTS RENDER (Profile page) ───
 function renderProfileRankAndAchievements() {
   const rank = getRank(shots.length);
   const rankEl = document.getElementById('profile-rank-section');
@@ -35,8 +31,8 @@ function renderProfileRankAndAchievements() {
   }
 }
 
-// ─── HOME PAGE ───
-  function getTimeGreeting(day) {
+// ─── GREETING ───
+function getTimeGreeting(day) {
   const hour = new Date().getHours();
   if (hour >= 5 && hour < 12) {
     const opts = [
@@ -71,6 +67,110 @@ function renderProfileRankAndAchievements() {
     return opts[new Date().getDate() % opts.length];
   }
 }
+
+// ─── RANK PROGRESS CARD ───
+function renderRankCard() {
+  const el = document.getElementById('home-rank-card');
+  if (!el) return;
+
+  const rank = getRank(shots.length);
+  const dialedCount = roastLib.filter(r => r.dialed).length;
+  const nextRank = RANKS.find(r => r.min > shots.length);
+  const isMaxRank = !nextRank || rank.max === Infinity;
+
+  let progressPct = 100;
+  let progressLabel = 'Max rank achieved!';
+  if (!isMaxRank && nextRank) {
+    const rangeTotal = nextRank.min - rank.min;
+    const rangeDone = shots.length - rank.min;
+    progressPct = Math.min(100, Math.max(2, (rangeDone / rangeTotal) * 100));
+    progressLabel = `${shots.length} / ${nextRank.min} shots`;
+  }
+
+  el.innerHTML = `
+    <div class="rank-card">
+      <div class="rank-card-top">
+        <div class="rank-card-stats">
+          <div class="rank-card-stat">
+            <div class="rank-card-stat-val">${shots.length}</div>
+            <div class="rank-card-stat-lbl">Shots</div>
+          </div>
+          <div class="rank-card-stat">
+            <div class="rank-card-stat-val">${dialedCount}</div>
+            <div class="rank-card-stat-lbl">Dialed</div>
+          </div>
+        </div>
+        <div class="rank-card-rank">
+          <div class="rank-card-rank-icon">${rank.icon}</div>
+          <div class="rank-card-rank-name">${rank.name}</div>
+        </div>
+      </div>
+      <div class="rank-progress">
+        <div class="rank-progress-bar">
+          <div class="rank-progress-fill" style="width:${progressPct}%"></div>
+        </div>
+        <div class="rank-progress-label">
+          <span>${progressLabel}</span>
+          ${!isMaxRank ? `<span>Next: ${nextRank.name}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── OPEN BAGS ───
+function renderOpenBags() {
+  const container = document.getElementById('home-open-bags');
+  const label = document.getElementById('home-bags-label');
+  if (!container) return;
+
+  const activeBags = roastLib.filter(r => !r.finished);
+
+  if (!activeBags.length) {
+    label.style.display = 'none';
+    container.innerHTML = `<div class="bag-card-empty">No open bags yet.<br>Add a roast from the library to get started.</div>`;
+    return;
+  }
+
+  label.style.display = 'block';
+  container.innerHTML = activeBags.map(r => {
+    const days = calcDaysOffRoast(r.roastDate, todayStr());
+    const daysHTML = days !== null ? (() => {
+      const cls = days < 7 ? 'days-fresh' : days <= 21 ? 'days-peak' : 'days-old';
+      const lbl = days < 7 ? 'resting' : days <= 21 ? 'peak' : 'past peak';
+      return `<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;
+    })() : '';
+
+    const chips = [r.process, r.roast, r.varietal].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
+    const dialedBadge = r.dialed ? '<span class="chip highlight">🎯 Dialed</span>' : '';
+
+    // Find most recent shot for this roast
+    const lastShot = shots.find(s => s.roastLibId == r.id);
+    let lastHTML = '';
+    if (lastShot) {
+      const parts = [];
+      if (lastShot.dose) parts.push(`<span>${lastShot.dose}g in</span>`);
+      if (lastShot.yield) parts.push(`<span>${lastShot.yield}g out</span>`);
+      if (lastShot.time) parts.push(`<span>${lastShot.time}s</span>`);
+      if (lastShot.grind) parts.push(`<span>grind ${lastShot.grind}</span>`);
+      if (lastShot.rating) parts.push(`<span>${'★'.repeat(lastShot.rating)}</span>`);
+      if (parts.length) {
+        lastHTML = `<div class="bag-card-last">Last: ${parts.join(' · ')}</div>`;
+      }
+    }
+
+    const shotCount = shots.filter(s => s.roastLibId == r.id).length;
+
+    return `<div class="bag-card">
+      <div class="bag-card-title">${r.roaster} · ${r.origin}</div>
+      <div class="bag-card-meta">${chips} ${daysHTML} ${dialedBadge} ${shotCount ? `<span>${shotCount} shot${shotCount>1?'s':''}</span>` : ''}</div>
+      ${lastHTML}
+      <button class="bag-card-btn" onclick="navTo('log',{roastId:${r.id}})">＋ Pull a shot</button>
+    </div>`;
+  }).join('');
+}
+
+// ─── RENDER HOME ───
 function renderHome() {
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const day = days[new Date().getDay()];
@@ -86,49 +186,9 @@ function renderHome() {
   const tipIdx = (new Date().getDate() + new Date().getMonth()) % TIPS.length;
   subtextEl.textContent = TIPS[tipIdx];
 
-  // Stats
-  const roasterCounts = {};
-  shots.forEach(s => { if(s.roaster) roasterCounts[s.roaster]=(roasterCounts[s.roaster]||0)+1; });
-  const favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
-  document.getElementById('home-total-shots').textContent = shots.length || '0';
-  const rank = getRank(shots.length);
-  const rankBadgeEl = document.getElementById('home-rank-badge');
-  if (rankBadgeEl) rankBadgeEl.innerHTML = `<span class="rank-badge"><span class="rank-badge-icon">${rank.icon}</span>${rank.name}</span>`;
-  const favEl = document.getElementById('home-fav-roaster');
-  favEl.textContent = favRoaster;
-  favEl.style.fontSize = favRoaster.length > 12 ? '12px' : favRoaster.length > 8 ? '14px' : '15px';
+  // Rank card
+  renderRankCard();
 
-  // Most recent shot
-  const recentLabelEl = document.getElementById('home-recent-label');
-  const recentEl = document.getElementById('home-recent-shot');
-  if (!shots.length) {
-    recentLabelEl.style.display = 'none';
-    recentEl.innerHTML = '<div class="empty" style="padding:1.5rem 0;">No shots logged yet.<br>Tap ＋ Log Shot to get started.</div>';
-    return;
-  }
-  recentLabelEl.style.display = 'block';
-  const s = shots[0];
-  recentEl.innerHTML = `<div class="shot-card" style="cursor:pointer;" onclick="navTo('roast-detail',{roastId:${s.roastLibId||0}})">
-    <div class="shot-card-header">
-      <div>
-        <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roaster||'Unknown'}${s.origin?' · '+s.origin:''}</div>
-        <div class="shot-meta">${fmtDate(s.date)}${s.daysOffRoast!=null?' · '+s.daysOffRoast+'d off roast':''}${s.rating?' · '+starsHTML(s.rating):''}</div>
-      </div>
-    </div>
-    <div class="shot-stats">
-      <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>
-      <div class="stat"><div class="stat-val">${s.yield||'—'}g</div><div class="stat-lbl">Yield</div></div>
-      <div class="stat"><div class="stat-val">${s.ratio?'1:'+s.ratio:'—'}</div><div class="stat-lbl">Ratio</div></div>
-      <div class="stat"><div class="stat-val">${s.time?s.time+'s':'—'}</div><div class="stat-lbl">Time</div></div>
-    </div>
-    <div class="shot-stats" style="margin-top:6px;">
-      <div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div>
-      <div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div>
-      <div class="stat"><div class="stat-val">${s.grinderName||'—'}</div><div class="stat-lbl">Grinder</div></div>
-      <div class="stat"><div class="stat-val">${s.preinfusion?s.preinfusion+'s':'—'}</div><div class="stat-lbl">Pre-inf</div></div>
-    </div>
-    ${s.notes?`<div class="shot-note">${s.notes}</div>`:''}
-  </div>`;
+  // Open bags
+  renderOpenBags();
 }
-
-

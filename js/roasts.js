@@ -47,7 +47,7 @@ function renderRoastDetail(){
   if(!r){navTo('library');return;}
   document.getElementById('header-title').textContent='Roast Details';
   document.getElementById('header-subtitle').style.display='block';
-  document.getElementById('header-subtitle').textContent=[r.origin,r.varietal,r.process,r.roast].filter(Boolean).join(' · ')||'';
+  document.getElementById('header-subtitle').textContent=r.roastName||r.roaster;
   const chips=[r.origin,r.varietal,r.process,r.roast].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
   const sc=shots.filter(s=>s.roastLibId==r.id).length;
   const days=calcDaysOffRoast(r.roastDate,r.finished&&r.finishedDate?r.finishedDate:null);
@@ -61,7 +61,8 @@ function renderRoastDetail(){
     <div style="display:flex;align-items:flex-start;gap:12px;max-width:680px;margin:0 auto;padding:0 1rem;">
       ${r.photo?`<img src="${r.photo}" style="width:64px;height:64px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);flex-shrink:0;">`:``}
       <div style="flex:1;min-width:0;">
-        <div style="font-family:var(--font-serif);font-size:18px;font-weight:600;letter-spacing:-0.01em;">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}</div>
+        <div style="font-family:var(--font-serif);font-size:18px;font-weight:600;letter-spacing:-0.01em;">${r.roastName||r.roaster}</div>
+        ${r.roastName?`<div style="font-size:13px;color:var(--muted);margin-top:2px;">${r.roaster}</div>`:''}
         <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;">${chips}${dc}${dialedChip}${shotCountChip}</div>
         ${r.roastDate?`<div style="font-size:12px;color:var(--muted);margin-top:5px;">Roasted ${fmtDate(r.roastDate+'T12:00:00')}</div>`:''}
         ${r.desc?`<div style="font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;">${r.desc}</div>`:''}

@@ -168,6 +168,7 @@
 
       <!-- HIDDEN FIELDS (populated from roast record) -->
       <input type="hidden" id="f-roaster">
+      <input type="hidden" id="f-roastname">
       <input type="hidden" id="f-origin">
       <input type="hidden" id="f-varietal">
       <input type="hidden" id="f-roastdate">
@@ -282,7 +283,7 @@
         <div style="font-size:13px;color:var(--muted);line-height:1.6;">These are 4★+ shots shared by all users who logged with a grinder selected. Use this to dial in a new bag — find a similar coffee and see what grind settings, ratios, shot times, and temps other users are hitting. Tasting notes are always kept private.</div>
       </div>
       <div class="comm-filters">
-        <input type="text" id="cf-search" placeholder="Coffee, origin…" oninput="renderCommunity()" autocorrect="off">
+        <input type="text" id="cf-search" placeholder="Roaster, roast name…" oninput="renderCommunity()" autocorrect="off">
         <select id="cf-grinder" onchange="renderCommunity()"><option value="">All grinders</option></select>
         <select id="cf-process" onchange="renderCommunity()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option></select>
         <select id="cf-roast" onchange="renderCommunity()"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
@@ -311,7 +312,7 @@
         <div id="import-results" style="display:none;" class="import-results"></div>
       </div>
       <div class="comm-filters">
-        <input type="text" id="ms-search" placeholder="Roaster, origin, notes…" oninput="renderMyShots()" autocorrect="off">
+        <input type="text" id="ms-search" placeholder="Roaster, roast name, notes…" oninput="renderMyShots()" autocorrect="off">
         <select id="ms-process" onchange="renderMyShots()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select>
         <select id="ms-roast" onchange="renderMyShots()"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
         <select id="ms-rating" onchange="renderMyShots()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option><option value="3">3★+</option></select>
@@ -497,7 +498,8 @@
       <div class="modal-title" id="modal-roast-title">Add roast</div>
       <div class="form-grid">
         <div class="form-group"><label>Roaster *</label><input type="text" id="m-roaster" autocorrect="off"></div>
-        <div class="form-group"><label>Origin *</label><input type="text" id="m-origin" autocorrect="off"></div>
+        <div class="form-group"><label>Roast name *</label><input type="text" id="m-roastname" placeholder="e.g. Geometry" autocorrect="off"></div>
+        <div class="form-group"><label>Origin</label><input type="text" id="m-origin" autocorrect="off"></div>
         <div class="form-group"><label>Varietal</label><input type="text" id="m-varietal" autocorrect="off"></div>
         <div class="form-group"><label>Process</label><select id="m-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select></div>
         <div class="form-group"><label>Roast level</label><select id="m-roast-level"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>

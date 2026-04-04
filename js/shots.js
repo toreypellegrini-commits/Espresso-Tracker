@@ -129,7 +129,7 @@ function populateRoastDropdown() {
   const prev = sel.value;
   sel.innerHTML = '<option value="">— choose a saved roast —</option>';
   roastLib.filter(r => !r.finished).forEach(r => {
-    sel.innerHTML += `<option value="${r.id}">${r.roaster} · ${r.origin}${r.varietal ? ' (' + r.varietal + ')' : ''}</option>`;
+    sel.innerHTML += `<option value="${r.id}">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}${r.origin ? ' (' + r.origin + ')' : ''}</option>`;
   });
   if (prev) sel.value = prev;
 }
@@ -165,6 +165,7 @@ function loadRoast() {
 
   // Set hidden fields from roast record
   setField('f-roaster', r.roaster);
+  setField('f-roastname', r.roastName || '');
   setField('f-origin', r.origin);
   setField('f-varietal', r.varietal || '');
   setField('f-roastdate', r.roastDate || '');
@@ -196,11 +197,11 @@ function loadRoast() {
     }
   }
 
-  const chips = [r.process, r.roast, r.varietal].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
+  const chips = [r.origin, r.varietal, r.process, r.roast].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
   const ctx = document.getElementById('shot-context');
   ctx.style.display = 'block';
   ctx.innerHTML = `
-    <div class="shot-context-title">${r.roaster} · ${r.origin}</div>
+    <div class="shot-context-title">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}</div>
     <div class="shot-context-meta">${chips} ${daysHTML}</div>
     ${lastShotHTML}
   `;
@@ -251,6 +252,7 @@ async function saveShot() {
     date: extractDate + 'T12:00:00.000Z',
     roastLibId,
     roaster: g('f-roaster'),
+    roastName: g('f-roastname'),
     origin: g('f-origin'),
     varietal: g('f-varietal'),
     process: g('f-process'),
@@ -326,7 +328,7 @@ function getSaveMessage(shot, willShare) {
 
 // ─── CLEAR ───
 function clearForm() {
-  ['f-roaster', 'f-origin', 'f-varietal', 'f-grind', 'f-dose', 'f-yield', 'f-temp', 'f-preinfusion', 'f-time', 'f-notes', 'f-roastdate'].forEach(id => setField(id, ''));
+  ['f-roaster', 'f-roastname', 'f-origin', 'f-varietal', 'f-grind', 'f-dose', 'f-yield', 'f-temp', 'f-preinfusion', 'f-time', 'f-notes', 'f-roastdate'].forEach(id => setField(id, ''));
   document.getElementById('f-process').value = '';
   document.getElementById('f-roast').value = '';
   document.getElementById('roast-select').value = '';

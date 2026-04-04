@@ -27,7 +27,7 @@ async function handleCSVFile(file) {
 
   // Map header names to our field names
   const fieldMap = {
-    date:'date', roaster:'roaster', origin:'origin', varietal:'varietal',
+    date:'date', roaster:'roaster', roastname:'roastName', origin:'origin', varietal:'varietal',
     process:'process', roastlevel:'roast', roastdate:'roastDate',
     daysoffroast:'daysOffRoast', grinder:'grinderName', grindsetting:'grind',
     doseg:'dose', yieldg:'yield', ratio:'ratio', tempc:'temp',
@@ -69,6 +69,7 @@ async function handleCSVFile(file) {
       date: dateStr + 'T12:00:00.000Z',
       roastLibId: null,
       roaster: row.roaster||'',
+      roastName: row.roastName||'',
       origin: row.origin||'',
       varietal: row.varietal||'',
       process: row.process||'',

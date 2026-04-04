@@ -19,7 +19,8 @@ function renderLibCard(r){
   return`<div class="lib-card-compact" onclick="navTo('roast-detail',{roastId:${r.id}})">
     <div class="lib-card-compact-img">${img}</div>
     <div class="lib-card-compact-body">
-      <div class="lib-card-compact-name">${heading}</div>
+      <div class="lib-card-compact-name">${r.roastName||r.roaster}</div>
+      ${r.roastName?`<div class="lib-card-compact-roaster">${r.roaster}</div>`:''}
       <div class="lib-card-compact-meta">${dc}</div>
     </div>
     <div class="lib-card-compact-right">

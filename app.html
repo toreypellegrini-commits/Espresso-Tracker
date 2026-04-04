@@ -189,9 +189,9 @@
           <div class="shot-input-group">
             <label>Grind</label>
             <div class="stepper">
-              <button class="stepper-btn" onclick="stepField('f-grind',-1)">−</button>
-              <input type="number" id="f-grind" placeholder="14" step="1" inputmode="numeric" oninput="updateChangeIndicator('f-grind')">
-              <button class="stepper-btn" onclick="stepField('f-grind',1)">+</button>
+              <button class="stepper-btn" onclick="stepGrind(-1)">−</button>
+              <input type="number" id="f-grind" placeholder="14" step="0.1" inputmode="decimal" oninput="updateChangeIndicator('f-grind')">
+              <button class="stepper-btn" onclick="stepGrind(1)">+</button>
             </div>
             <div class="change-indicator"></div>
           </div>

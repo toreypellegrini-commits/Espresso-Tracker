@@ -119,7 +119,7 @@ function renderRankCard() {
         </div>
         <div class="rank-progress-label">
           <span>${progressLabel}</span>
-          ${!isMaxRank ? `<span>Next: ${nextRank.name}</span>` : ''}
+          ${!isMaxRank ? `<span>Next Rank: ${nextRank.name}</span>` : ''}
         </div>
       </div>
     </div>
@@ -149,7 +149,7 @@ function renderOpenBags() {
       return `<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;
     })() : '';
 
-    const chips = [r.process, r.roast, r.varietal].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
+    const chips = [r.origin, r.varietal, r.process, r.roast].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
     const dialedBadge = r.dialed ? '<span class="chip highlight">🎯 Dialed</span>' : '';
 
     // Find most recent shot for this roast
@@ -170,7 +170,7 @@ function renderOpenBags() {
     const shotCount = shots.filter(s => s.roastLibId == r.id).length;
 
     return `<div class="bag-card">
-      <div class="bag-card-title">${r.roaster} · ${r.origin}</div>
+      <div class="bag-card-title">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}</div>
       <div class="bag-card-meta">${chips} ${daysHTML} ${dialedBadge} ${shotCount ? `<span>${shotCount} shot${shotCount>1?'s':''}</span>` : ''}</div>
       ${lastHTML}
       <button class="bag-card-btn" onclick="navTo('log',{roastId:${r.id}})">＋ Pull a shot</button>

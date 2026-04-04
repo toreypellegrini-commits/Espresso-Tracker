@@ -112,7 +112,7 @@ function renderBagInsights(){
   if(!bagsWithShots.length){el.innerHTML='<div class="empty">No shots linked to a roast yet.</div>';return;}
   if(!selectedBagId||!bagsWithShots.find(r=>r.id==selectedBagId))selectedBagId=bagsWithShots[0].id;
   const bag=roastLib.find(r=>r.id==selectedBagId);
-  const bagShots=shots.filter(s=>s.roastLibId==selectedBagId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const bagShots=shots.filter(s=>s.roastLibId==selectedBagId).sort((a,b)=>new Date(a.date)-new Date(b.date)||(a.id||0)-(b.id||0));
   const bagOptions=bagsWithShots.map(r=>`<option value="${r.id}"${selectedBagId==r.id?' selected':''}>${r.roaster} · ${r.origin}${r.varietal?' ('+r.varietal+')':''}${r.finished?' ✓':''}</option>`).join('');
   if(!bag||!bagShots.length){el.innerHTML=`<select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select><div class="empty">No shots for this bag yet.</div>`;return;}
 

@@ -99,14 +99,18 @@
     .container { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
 
     /* ─── ROAST LIBRARY (HOME) ─── */
-    .lib-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; display: flex; gap: 0; align-items: stretch; cursor: pointer; transition: box-shadow 0.15s; overflow: hidden; }
-    .lib-card:hover { box-shadow: var(--shadow); }
-    .lib-card-img { width: 80px; height: 80px; flex-shrink: 0; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; }
-    .lib-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
-    .lib-card-body { flex: 1; padding: 0.875rem 1rem; min-width: 0; }
-    .lib-card-name { font-family: var(--font-serif); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
-    .lib-card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-    .lib-card-action { display: flex; align-items: center; padding: 0 1rem 0 0; flex-shrink: 0; }
+    .lib-card-compact { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 8px; display: flex; align-items: center; gap: 0; cursor: pointer; transition: box-shadow 0.15s; overflow: hidden; }
+    .lib-card-compact:hover { box-shadow: var(--shadow); }
+    .lib-card-compact-img { width: 52px; height: 52px; flex-shrink: 0; background: var(--surface2); display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 8px; margin-right: 0; border-radius: var(--radius); }
+    .lib-card-compact-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    .lib-card-placeholder { font-size: 22px; }
+    .lib-card-compact-body { flex: 1; padding: 10px 12px; min-width: 0; }
+    .lib-card-compact-name { font-family: var(--font-serif); font-weight: 500; font-size: 14px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lib-card-compact-meta { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    .lib-card-compact-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 8px 10px; flex-shrink: 0; }
+    .lib-card-dialed { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-light); border: 1px solid rgba(184,82,21,0.25); border-radius: 99px; padding: 2px 8px; white-space: nowrap; }
+    .lib-card-fin-btn { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 3px 8px; cursor: pointer; font-family: var(--font); -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .lib-card-fin-btn:active { background: var(--surface2); }
     .log-shot-btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius); padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); white-space: nowrap; -webkit-tap-highlight-color: transparent; }
     .log-shot-btn:hover { opacity: 0.88; }
     .chip { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); display: inline-block; }

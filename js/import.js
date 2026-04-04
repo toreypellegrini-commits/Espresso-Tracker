@@ -112,5 +112,55 @@ function showImportResult(msg, type) {
   el.textContent = msg;
 }
 
+// ─── CSV TEMPLATE DOWNLOAD ───
+function downloadImportTemplate() {
+  const headers = ['Date','Roaster','Roast Name','Origin','Varietal','Process','Roast Level','Roast Date','Days Off Roast','Grinder','Grind Setting','Dose (g)','Yield (g)','Ratio','Temp (C)','Pre-infusion (s)','Shot Time (s)','Rating','Notes'];
+  const example = ['2025-04-01','Onyx Coffee Lab','Tropical Weather','Ethiopia','Heirloom','Washed','Light','2025-03-15','17','Niche Zero','20','18','36','2.0','93','5','28','4','Sweet and floral'];
+  const csv = headers.join(',') + '\n' + example.join(',') + '\n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'dialed-import-template.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ─── CSV EXPORT ───
+function exportShotsCSV() {
+  if (!shots.length) { alert('No shots to export.'); return; }
+  const headers = ['Date','Roaster','Roast Name','Origin','Varietal','Process','Roast Level','Roast Date','Days Off Roast','Grinder','Grind Setting','Dose (g)','Yield (g)','Ratio','Temp (C)','Pre-infusion (s)','Shot Time (s)','Rating','Notes'];
+  const escCSV = v => { const s = String(v ?? ''); return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const rows = shots.map(s => [
+    s.date ? s.date.slice(0,10) : '',
+    s.roaster || '',
+    s.roastName || '',
+    s.origin || '',
+    s.varietal || '',
+    s.process || '',
+    s.roast || '',
+    s.roastDate || '',
+    s.daysOffRoast ?? '',
+    s.grinderName || '',
+    s.grind || '',
+    s.dose ?? '',
+    s.yield ?? '',
+    s.ratio ?? '',
+    s.temp || '',
+    s.preinfusion || '',
+    s.time || '',
+    s.rating || '',
+    s.notes || ''
+  ].map(escCSV).join(','));
+  const csv = headers.join(',') + '\n' + rows.join('\n') + '\n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `dialed-shots-${todayStr()}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 
 

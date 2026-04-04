@@ -120,10 +120,11 @@ function updateChangeIndicator(id) {
 function stepGrind(direction) {
   const input = document.getElementById('f-grind');
   const current = parseFloat(input.value) || 0;
-  const hasDecimal = input.value.includes('.') && current % 1 !== 0;
-  const delta = hasDecimal ? direction * 0.1 : direction * 1;
+  const hasDecimal = String(input.value).includes('.');
+  const step = hasDecimal ? 0.1 : 1;
+  const delta = direction * step;
   const decimals = hasDecimal ? 1 : 0;
-  input.value = (current + delta).toFixed(decimals);
+  input.value = (Math.round((current + delta) * 10) / 10).toFixed(decimals);
   input.dispatchEvent(new Event('input'));
   updateChangeIndicator('f-grind');
 }

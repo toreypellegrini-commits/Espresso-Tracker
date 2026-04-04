@@ -300,13 +300,16 @@
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">
         <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;margin-bottom:4px;">Your Shot History</div>
         <div style="font-size:13px;color:var(--muted);line-height:1.5;">Every shot you've logged, sorted by date. Use the filters to dig into specific roasters, origins, or ratings.</div>
-        <button class="btn info" style="margin-top:10px;font-size:12px;padding:6px 12px;" onclick="toggleImportPanel()">⬆ Import CSV</button>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn info" style="font-size:12px;padding:6px 12px;" onclick="toggleImportPanel()">⬆ Import CSV</button>
+          <button class="btn info" style="font-size:12px;padding:6px 12px;" onclick="exportShotsCSV()">⬇ Export CSV</button>
+        </div>
       </div>
       <div id="import-panel" style="display:none;margin-bottom:1.25rem;">
         <div class="import-drop-zone" id="import-drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleCSVDrop(event)">
           <div class="import-drop-zone-icon">📄</div>
           <div class="import-drop-zone-text">Click to choose a CSV file or drag and drop here</div>
-          <div style="font-size:12px;color:var(--hint);margin-top:4px;">Exported from EXtraction Tracker or any compatible format</div>
+          <div style="font-size:12px;color:var(--hint);margin-top:4px;">Upload a CSV with your shot data. Columns should match Dialed's format — <a href="#" onclick="event.stopPropagation();downloadImportTemplate();return false;" style="color:var(--accent);text-decoration:underline;">download a template</a> to get started.</div>
         </div>
         <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCSVFile(this.files[0])">
         <div id="import-results" style="display:none;" class="import-results"></div>

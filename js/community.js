@@ -8,7 +8,7 @@ async function publishCommunityShot(shot,grinderName){
   try{
     await sb.from('community_shots').insert({
       user_id:currentUser.id,grinder_name:grinderName,
-      coffee:[shot.roaster,shot.roastName,shot.origin].filter(Boolean).join(' · '),
+      coffee:[shot.roaster,shot.origin,shot.varietal].filter(Boolean).join(' · '),
       process:shot.process||null,roast:shot.roast||null,
       days_off_roast:shot.daysOffRoast!=null?parseInt(shot.daysOffRoast):null,
       grind:shot.grind||null,
@@ -79,6 +79,7 @@ function renderCommunity(){
           ${s.rating?`<span class="rating-stars-sm">${'★'.repeat(s.rating)}</span>`:''}
           ${s.extraction_date?`<span>${fmtDate(s.extraction_date+'T12:00:00')}</span>`:''}
           ${usernameTag}
+          ${isMe?`<button class="delete-btn" onclick="deleteCommunityShot('${s.id}')" title="Remove from community">✕</button>`:''}
         </div>
       </div>
       <div style="font-size:12px;color:var(--muted);">${s.grinder_name}${[s.process,s.roast].filter(Boolean).length?' · '+[s.process,s.roast].filter(Boolean).join(' · '):''}</div>
@@ -159,6 +160,18 @@ async function openProfileSheet(userId) {
     `;
   } catch(e) {
     document.getElementById('profile-sheet-content').innerHTML = '<div class="empty" style="padding:2rem;">Could not load profile.</div>';
+  }
+}
+
+async function deleteCommunityShot(id) {
+  if (!confirm('Remove this shot from the community?')) return;
+  try {
+    const { error } = await sb.from('community_shots').delete().eq('id', id).eq('user_id', currentUser.id);
+    if (error) throw error;
+    communityShots = communityShots.filter(s => s.id !== id);
+    renderCommunity();
+  } catch (e) {
+    console.error('Delete community shot failed:', e.message);
   }
 }
 

@@ -111,7 +111,7 @@ function renderRankCard() {
         </div>
         <div class="rank-progress-label">
           <span>${progressLabel}</span>
-          ${!isMaxRank ? `<span>Next: ${nextRank.name}</span>` : ''}
+          ${!isMaxRank ? `<span>Next Rank: ${nextRank.name}</span>` : ''}
         </div>
       </div>
     </div>

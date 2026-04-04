@@ -347,13 +347,6 @@
 
       <!-- Rank display -->
       <div id="profile-rank-section" style="text-align:center;margin-bottom:1.5rem;"></div>
-      <!-- Achievements -->
-      <div class="profile-section" style="margin-bottom:1rem;">
-        <div class="profile-section-title">Achievements</div>
-        <div style="padding:0.75rem 1.25rem 1rem;">
-          <div id="profile-achievements-grid" class="achievements-grid"></div>
-        </div>
-      </div>
       <div class="profile-section">
         <div class="profile-section-title">Identity</div>
         <div class="profile-field"><span class="profile-field-label">Username</span><input type="text" id="p-username" placeholder="e.g. jbrewing" autocorrect="off" autocapitalize="none"></div>
@@ -414,6 +407,14 @@
           <textarea id="p-fav-roasters" placeholder="e.g. Onyx Coffee Lab, Heart, Stumptown…"></textarea>
         </div>
       </div>
+
+      <!-- Achievements (collapsible) -->
+      <details class="profile-section achievements-section">
+        <summary class="profile-section-title">Achievements</summary>
+        <div style="padding:0.75rem 1.25rem 1rem;">
+          <div id="profile-achievements-grid" class="achievements-grid"></div>
+        </div>
+      </details>
 
       <div class="profile-section">
         <div class="profile-section-title">Display</div>

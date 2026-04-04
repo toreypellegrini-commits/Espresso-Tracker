@@ -352,13 +352,20 @@
     /* ─── RANKS + ACHIEVEMENTS ─── */
     .rank-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(184,82,21,0.25); border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
     .rank-badge-icon { font-size: 14px; }
-    .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 0.5rem; }
-    .achievement { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px 8px; text-align: center; transition: all 0.2s; }
-    .achievement.unlocked { background: var(--accent-light); border-color: rgba(184,82,21,0.3); }
-    .achievement-icon { font-size: 22px; margin-bottom: 4px; }
-    .achievement-name { font-size: 10px; font-weight: 600; color: var(--muted); line-height: 1.3; }
-    .achievement.unlocked .achievement-name { color: var(--accent); }
-    .achievement-locked { filter: grayscale(1); opacity: 0.4; }
+    .achievements-grid { display: flex; flex-direction: column; gap: 6px; margin-top: 0.5rem; }
+    .achievement-row { display: flex; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; opacity: 0.45; }
+    .achievement-row.unlocked { opacity: 1; background: var(--accent-light); border-color: rgba(184,82,21,0.3); }
+    .achievement-row-icon { font-size: 24px; flex-shrink: 0; width: 32px; text-align: center; }
+    .achievement-row-text { flex: 1; min-width: 0; }
+    .achievement-row-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .achievement-row.unlocked .achievement-row-name { color: var(--accent); }
+    .achievement-row-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .achievements-section { margin-bottom: 1rem; }
+    .achievements-section summary.profile-section-title { cursor: pointer; -webkit-tap-highlight-color: transparent; list-style: none; }
+    .achievements-section summary.profile-section-title::-webkit-details-marker { display: none; }
+    .achievements-section summary.profile-section-title::after { content: '▼'; font-size: 10px; color: var(--muted); float: right; margin-top: 2px; }
+    .achievements-section[open] summary.profile-section-title::after { content: '▲'; }
+    .achievement-locked { filter: grayscale(1); opacity: 0.5; }
 
     /* ─── DIALED BADGE ─── */
     .dialed-badge { display: inline-flex; align-items: center; }

@@ -22,8 +22,8 @@ function renderProfileRankAndAchievements() {
   const gridEl = document.getElementById('profile-achievements-grid');
   if (gridEl) {
     // Split into unlocked and locked for ordering
-    const unlockedList = ACHIEVEMENTS.filter(a => unlocked.has(a.id));
-    const lockedList = ACHIEVEMENTS.filter(a => !unlocked.has(a.id));
+    const unlockedList = ACHIEVEMENTS.filter(a => unlocked.has(a.id)).sort((a, b) => a.name.localeCompare(b.name));
+    const lockedList = ACHIEVEMENTS.filter(a => !unlocked.has(a.id)).sort((a, b) => a.name.localeCompare(b.name));
     const ordered = [...unlockedList, ...lockedList];
 
     gridEl.innerHTML = ordered.map(a => {

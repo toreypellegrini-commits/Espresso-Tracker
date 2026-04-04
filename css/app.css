@@ -106,6 +106,7 @@
     .lib-card-placeholder { font-size: 22px; }
     .lib-card-compact-body { flex: 1; padding: 10px 12px; min-width: 0; }
     .lib-card-compact-name { font-family: var(--font-serif); font-weight: 500; font-size: 14px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lib-card-compact-roaster { font-size: 11px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .lib-card-compact-meta { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
     .lib-card-compact-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 8px 10px; flex-shrink: 0; }
     .lib-card-dialed { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-light); border: 1px solid rgba(184,82,21,0.25); border-radius: 99px; padding: 2px 8px; white-space: nowrap; }

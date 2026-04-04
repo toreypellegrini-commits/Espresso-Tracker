@@ -124,14 +124,25 @@ async function openProfileSheet(userId) {
       ? `<div class="pub-profile-avatar"><img src="${photo}" alt="${username}"></div>`
       : `<div class="pub-profile-avatar">${avatarInitial}</div>`;
 
-    // Compute fav roaster/origin from community shots for this user
-    const userShots = communityShots.filter(s => s.user_id === userId);
-    const roasterCounts = {};
-    userShots.forEach(s => {
-      const parts = (s.coffee||'').split(' · ');
-      if(parts[0]) roasterCounts[parts[0]] = (roasterCounts[parts[0]]||0) + 1;
-    });
-    const favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+    // Compute top roaster for this user
+    // For current user: use their full shots array (same as insights page)
+    // For other users: parse from their community shots
+    let favRoaster = null;
+    if (isMe) {
+      const roasterCounts = {};
+      shots.forEach(s => {
+        if (s.roaster) roasterCounts[s.roaster] = (roasterCounts[s.roaster]||0) + 1;
+      });
+      favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+    } else {
+      const userShots = communityShots.filter(s => s.user_id === userId);
+      const roasterCounts = {};
+      userShots.forEach(s => {
+        const parts = (s.coffee||'').split(' · ');
+        if(parts[0]) roasterCounts[parts[0]] = (roasterCounts[parts[0]]||0) + 1;
+      });
+      favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+    }
 
     const pubRank = getRank(totalShots);
     document.getElementById('profile-sheet-content').innerHTML = `

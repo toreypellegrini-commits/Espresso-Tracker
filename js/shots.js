@@ -116,6 +116,18 @@ function updateChangeIndicator(id) {
   }
 }
 
+// Smart grind stepper: if current value has a decimal, step by 0.1; otherwise step by 1
+function stepGrind(direction) {
+  const input = document.getElementById('f-grind');
+  const current = parseFloat(input.value) || 0;
+  const hasDecimal = input.value.includes('.') && current % 1 !== 0;
+  const delta = hasDecimal ? direction * 0.1 : direction * 1;
+  const decimals = hasDecimal ? 1 : 0;
+  input.value = (current + delta).toFixed(decimals);
+  input.dispatchEvent(new Event('input'));
+  updateChangeIndicator('f-grind');
+}
+
 // Format a value cleanly — no trailing .0 for whole numbers
 function cleanNum(val) {
   const n = parseFloat(val);

@@ -360,7 +360,7 @@
     .achievement-row-name { font-size: 13px; font-weight: 600; color: var(--text); }
     .achievement-row.unlocked .achievement-row-name { color: var(--accent); }
     .achievement-row-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    .achievements-section { margin-bottom: 0; }
+    .achievements-section { margin-bottom: 1rem; }
     .achievements-section summary.profile-section-title { cursor: pointer; -webkit-tap-highlight-color: transparent; list-style: none; }
     .achievements-section summary.profile-section-title::-webkit-details-marker { display: none; }
     .achievements-section summary.profile-section-title::after { content: '▼'; font-size: 10px; color: var(--muted); float: right; margin-top: 2px; }

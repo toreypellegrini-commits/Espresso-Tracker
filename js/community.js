@@ -124,9 +124,7 @@ async function openProfileSheet(userId) {
       ? `<div class="pub-profile-avatar"><img src="${photo}" alt="${username}"></div>`
       : `<div class="pub-profile-avatar">${avatarInitial}</div>`;
 
-    // Compute top roaster for this user
-    // For current user: use their full shots array (same as insights page)
-    // For other users: parse from their community shots
+    // Top roaster: for current user compute from local shots, for others read from profile
     let favRoaster = null;
     if (isMe) {
       const roasterCounts = {};
@@ -135,13 +133,7 @@ async function openProfileSheet(userId) {
       });
       favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
     } else {
-      const userShots = communityShots.filter(s => s.user_id === userId);
-      const roasterCounts = {};
-      userShots.forEach(s => {
-        const parts = (s.coffee||'').split(' · ');
-        if(parts[0]) roasterCounts[parts[0]] = (roasterCounts[parts[0]]||0) + 1;
-      });
-      favRoaster = Object.entries(roasterCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+      favRoaster = p.top_roaster || null;
     }
 
     const pubRank = getRank(totalShots);

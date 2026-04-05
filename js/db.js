@@ -82,15 +82,23 @@ function setDbStatus(state, label) {
   }
 }
 
-// Sync shot count to profiles table so other users can see accurate rank
+// Sync shot count and top roaster to profiles table for public visibility
 async function syncShotCount() {
   if (!currentUser) return;
   try {
+    // Compute top roaster from full shots array
+    const roasterCounts = {};
+    shots.forEach(s => {
+      const r = s.roaster;
+      if (r) roasterCounts[r] = (roasterCounts[r] || 0) + 1;
+    });
+    const topRoaster = Object.entries(roasterCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
     const { error } = await sb.from('profiles')
-      .update({ shot_count: shots.length })
+      .update({ shot_count: shots.length, top_roaster: topRoaster })
       .eq('id', currentUser.id);
-    if (error) console.warn('Shot count sync error:', error.message, error);
+    if (error) console.warn('Profile sync error:', error.message, error);
   } catch (e) {
-    console.warn('Shot count sync failed:', e.message);
+    console.warn('Profile sync failed:', e.message);
   }
 }

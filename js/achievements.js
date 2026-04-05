@@ -42,7 +42,6 @@ function computeAchievements() {
   const turboShots = shots.filter(s => s.ratio && parseFloat(s.ratio) >= 3);
   check('turbo_time', turboShots.length >= 1);
   check('turbo_charged', turboShots.length >= 10);
-  check('zuppa_lunga', shots.some(s => s.ratio && parseFloat(s.ratio) >= 8));
   const ristrettoShots = shots.filter(s => s.ratio && parseFloat(s.ratio) < 1.5);
   check('ooey_gooey', ristrettoShots.length >= 1);
   check('buonissimo', ristrettoShots.length >= 10);
@@ -68,7 +67,6 @@ function computeAchievements() {
   });
   const maxPerDay = Math.max(0, ...Object.values(shotsByDay));
   check('caffeine_junkie', maxPerDay >= 3);
-  check('sleep_overrated', maxPerDay >= 4);
   check('certifiable', maxPerDay >= 5);
 
   // Bag-based
@@ -92,6 +90,7 @@ function computeAchievements() {
   // Community
   const myCommShots = communityShots.filter(s => s.user_id === currentUser?.id);
   check('contributor', myCommShots.length >= 1);
+  check('comm_regular', myCommShots.length >= 10);
   check('comm_pillar', myCommShots.length >= 100);
 
   localStorage.setItem(_achievementsKey(), JSON.stringify([...unlocked]));

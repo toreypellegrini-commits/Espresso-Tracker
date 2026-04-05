@@ -8,7 +8,7 @@ async function publishCommunityShot(shot,grinderName){
   try{
     await sb.from('community_shots').insert({
       user_id:currentUser.id,grinder_name:grinderName,
-      coffee:[shot.roaster,shot.origin,shot.varietal].filter(Boolean).join(' · '),
+      coffee:[shot.roaster,shot.roastName,shot.origin,shot.varietal].filter(Boolean).join(' · '),
       process:shot.process||null,roast:shot.roast||null,
       days_off_roast:shot.daysOffRoast!=null?parseInt(shot.daysOffRoast):null,
       grind:shot.grind||null,

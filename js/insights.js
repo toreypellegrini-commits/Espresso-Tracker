@@ -113,7 +113,7 @@ function renderBagInsights(){
   if(!selectedBagId||!bagsWithShots.find(r=>r.id==selectedBagId))selectedBagId=bagsWithShots[0].id;
   const bag=roastLib.find(r=>r.id==selectedBagId);
   const bagShots=shots.filter(s=>s.roastLibId==selectedBagId).sort((a,b)=>new Date(a.date)-new Date(b.date)||(a.id||0)-(b.id||0));
-  const bagOptions=bagsWithShots.map(r=>`<option value="${r.id}"${selectedBagId==r.id?' selected':''}>${r.roaster} · ${r.origin}${r.varietal?' ('+r.varietal+')':''}${r.finished?' ✓':''}</option>`).join('');
+  const bagOptions=bagsWithShots.map(r=>`<option value="${r.id}"${selectedBagId==r.id?' selected':''}>${r.roastName ? r.roaster+' · '+r.roastName : r.roaster}${r.finished?' ✓':''}</option>`).join('');
   if(!bag||!bagShots.length){el.innerHTML=`<select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select><div class="empty">No shots for this bag yet.</div>`;return;}
 
   const rated=bagShots.filter(s=>s.rating>0);
@@ -125,8 +125,8 @@ function renderBagInsights(){
   el.innerHTML=`
     <select onchange="selectedBagId=+this.value;renderBagInsights();" style="width:100%;font-size:13px;margin-bottom:1rem;">${bagOptions}</select>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;">
-      <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;">${bag.roaster} · ${bag.origin}${bag.varietal?' · '+bag.varietal:''}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bag.process,bag.roast].filter(Boolean).join(' · ')}${bag.roastDate?' · Roasted '+fmtDate(bag.roastDate+'T12:00:00'):''}${bag.finished?` · <span style="color:var(--success-text);">Finished</span>`:''}</div>
+      <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;">${bag.roastName ? bag.roaster+' · '+bag.roastName : bag.roaster}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px;">${[bag.origin,bag.varietal,bag.process,bag.roast].filter(Boolean).join(' · ')}${bag.roastDate?' · Roasted '+fmtDate(bag.roastDate+'T12:00:00'):''}${bag.finished?` · <span style="color:var(--success-text);">Finished</span>`:''}</div>
     </div>
     <div class="insight-grid">
       <div class="insight-card"><div class="insight-label">Shots pulled</div><div class="insight-val">${bagShots.length}</div></div>

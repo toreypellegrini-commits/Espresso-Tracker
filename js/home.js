@@ -7,14 +7,47 @@ function renderProfileRankAndAchievements() {
   const rank = getRank(shots.length);
   const rankEl = document.getElementById('profile-rank-section');
   if (rankEl) {
+    const dialedCount = roastLib.filter(r => r.dialed).length;
+    const nextRank = RANKS.find(r => r.min > shots.length);
+    const isMaxRank = !nextRank || rank.max === Infinity;
+
+    let progressPct = 100;
+    let progressLabel = 'Max rank achieved!';
+    if (!isMaxRank && nextRank) {
+      const rangeTotal = nextRank.min - rank.min;
+      const rangeDone = shots.length - rank.min;
+      progressPct = Math.min(100, Math.max(2, (rangeDone / rangeTotal) * 100));
+      progressLabel = `${shots.length} / ${nextRank.min} shots`;
+    }
+
     rankEl.innerHTML = `
-      <div style="font-size:36px;margin-bottom:6px;">${rank.icon}</div>
-      <div class="rank-badge" style="font-size:14px;padding:6px 16px;">${rank.name}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:8px;">${shots.length} shot${shots.length!==1?'s':''} pulled</div>
-      ${shots.length < 250 ? (() => {
-        const next = RANKS.find(r => r.min > shots.length);
-        return next ? `<div style="font-size:11px;color:var(--hint);margin-top:4px;">${next.min - shots.length} shots until ${next.name}</div>` : '';
-      })() : '<div style="font-size:11px;color:var(--accent);margin-top:4px;">Maximum rank achieved 👑</div>'}
+      <div class="rank-card">
+        <div class="rank-card-top">
+          <div class="rank-card-stats">
+            <div class="rank-card-stat">
+              <div class="rank-card-stat-val">${shots.length}</div>
+              <div class="rank-card-stat-lbl">Shots</div>
+            </div>
+            <div class="rank-card-stat">
+              <div class="rank-card-stat-val">${dialedCount}</div>
+              <div class="rank-card-stat-lbl">Dialed</div>
+            </div>
+          </div>
+          <div class="rank-card-rank">
+            <div class="rank-card-rank-icon">${rank.icon}</div>
+            <div class="rank-card-rank-name">${rank.name}</div>
+          </div>
+        </div>
+        <div class="rank-progress">
+          <div class="rank-progress-bar">
+            <div class="rank-progress-fill" style="width:${progressPct}%"></div>
+          </div>
+          <div class="rank-progress-label">
+            <span>${progressLabel}</span>
+            ${!isMaxRank ? `<span>Next Rank: ${nextRank.name}</span>` : ''}
+          </div>
+        </div>
+      </div>
     `;
   }
 

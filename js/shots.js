@@ -305,6 +305,9 @@ async function saveShot() {
     const msg = getSaveMessage(shot, willShare);
     flash('save-msg', msg, 'success');
 
+    // Check for new achievements
+    computeAchievements();
+
     clearForm();
 
     // Navigate back to roast detail

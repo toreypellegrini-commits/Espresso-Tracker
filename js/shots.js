@@ -206,7 +206,8 @@ function loadRoast() {
     if (lastShot.rating) parts.push(`<span>${'★'.repeat(lastShot.rating)}</span>`);
     if (lastShot.tags && lastShot.tags.length) parts.push(`<span>${lastShot.tags.join(', ')}</span>`);
     if (parts.length) {
-      lastShotHTML = `<div class="shot-context-last">Last: ${parts.join(' · ')}</div>`;
+      const notesHTML = lastShot.notes ? `<div class="shot-context-notes">${lastShot.notes}</div>` : '';
+      lastShotHTML = `<div class="shot-context-last">Last: ${parts.join(' · ')}</div>${notesHTML}`;
     }
   }
 

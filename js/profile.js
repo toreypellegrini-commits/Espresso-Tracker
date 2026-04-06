@@ -64,9 +64,18 @@ function populateProfileForm() {
   } else {
     machSel.value = userProfile.machine||'';
   }
-  // Grinder dropdown — populate from grinderLib
+  // Grinder dropdown — use GRINDERS config with user's custom grinders
   const gSel = document.getElementById('p-grinder-profile');
-  gSel.innerHTML = '<option value="">Select grinder…</option>' + grinderLib.map(g=>`<option value="${g.name}"${g.name===userProfile.grinder?' selected':''}>${g.name}</option>`).join('');
+  gSel.innerHTML = buildGrinderOptionsHTML(userProfile.grinder);
+  // If saved grinder isn't in the dropdown options, show Other field
+  const grinderOtherField = document.getElementById('p-grinder-other-field');
+  if (userProfile.grinder && !Array.from(gSel.options).some(o => o.value === userProfile.grinder)) {
+    gSel.value = '__other__';
+    setField('p-grinder-other', userProfile.grinder);
+    if (grinderOtherField) grinderOtherField.style.display = 'flex';
+  } else {
+    if (grinderOtherField) grinderOtherField.style.display = 'none';
+  }
   updateAvatarDisplay();
 }
 
@@ -89,12 +98,15 @@ async function saveProfile() {
   btn.disabled = true; btn.textContent = 'Saving…';
   const machSel = document.getElementById('p-machine');
   const machine = machSel.value === '__other__' ? g('p-machine-other') : machSel.value;
+  const grinderSel = document.getElementById('p-grinder-profile');
+  let grinderName = grinderSel.value;
+  if (grinderName === '__other__') grinderName = document.getElementById('p-grinder-other').value.trim();
   const username = g('p-username')||null;
   const location = g('p-location')||null;
   const fields = {
     location,
     machine: machine||null,
-    grinder: document.getElementById('p-grinder-profile').value||null,
+    grinder: grinderName||null,
     coffee_prefs: g('p-coffee-prefs')||null,
     favorite_roasters: g('p-fav-roasters')||null,
     photo_url: userProfile.photo||null,
@@ -117,10 +129,20 @@ async function saveProfile() {
       userProfile.username = username||'';
       userProfile.location = location||'';
       userProfile.machine = machine||'';
-      userProfile.grinder = fields.grinder||'';
+      userProfile.grinder = grinderName||'';
       userProfile.coffee_prefs = fields.coffee_prefs||'';
       userProfile.fav_roasters = fields.favorite_roasters||'';
       updateAvatarDisplay();
+      // Ensure grinder exists in grinderLib for shot log dropdown
+      if (grinderName && !grinderLib.some(gr => gr.name === grinderName)) {
+        try {
+          const ne = { id: Date.now(), name: grinderName, notes: '' };
+          const row = await dbInsert('grinders', ne);
+          ne._db_id = row.id;
+          grinderLib.push(ne);
+          populateGrinderDropdown();
+        } catch(e) { console.warn('Auto-add grinder failed:', e.message); }
+      }
       flash('profile-save-msg', 'Profile saved!', 'success');
     }
   } catch(e) {

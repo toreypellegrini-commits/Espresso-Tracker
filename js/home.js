@@ -211,6 +211,146 @@ function renderOpenBags() {
   }).join('');
 }
 
+// ─── ONBOARDING (new users) ───
+function renderOnboarding() {
+  const el = document.getElementById('home-onboarding');
+  if (!el) return;
+
+  // Determine which steps are done
+  const hasUsername = !!userProfile.username;
+  const hasGrinder = grinderLib.length > 0;
+  const hasRoast = roastLib.length > 0;
+  const hasShotsLogged = shots.length > 0;
+
+  // If user has logged shots, onboarding is complete
+  if (hasShotsLogged) {
+    el.style.display = 'none';
+    return;
+  }
+
+  el.style.display = 'block';
+
+  // Build grinder options from GRINDERS config
+  let grinderOptions = '<option value="">Select your grinder…</option>';
+  Object.entries(GRINDERS).forEach(([group, names]) => {
+    grinderOptions += `<optgroup label="${group}">`;
+    names.forEach(n => { grinderOptions += `<option value="${n}">${n}</option>`; });
+    grinderOptions += '</optgroup>';
+  });
+  grinderOptions += '<option value="__other__">Other…</option>';
+
+  const stepsComplete = (hasUsername ? 1 : 0) + (hasGrinder ? 1 : 0) + (hasRoast ? 1 : 0);
+
+  el.innerHTML = `
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <div class="onboarding-title">Welcome to Dialed ☕</div>
+        <div class="onboarding-subtitle">Let's get you set up in three quick steps.</div>
+        <div class="onboarding-progress">
+          <div class="onboarding-progress-bar">
+            <div class="onboarding-progress-fill" style="width:${(stepsComplete / 3) * 100}%"></div>
+          </div>
+          <div class="onboarding-progress-label">${stepsComplete} of 3 complete</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Username -->
+      <div class="onboarding-step ${hasUsername ? 'done' : ''}">
+        <div class="onboarding-step-header">
+          <span class="onboarding-check">${hasUsername ? '✓' : '1'}</span>
+          <span class="onboarding-step-title">Choose your username</span>
+        </div>
+        ${!hasUsername ? `
+          <div class="onboarding-step-body">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="onboard-username" placeholder="e.g. jbrewing" autocorrect="off" autocapitalize="none" style="flex:1;font-size:14px;padding:8px 12px;">
+              <button class="btn primary" style="font-size:13px;padding:8px 16px;white-space:nowrap;" onclick="saveOnboardUsername()">Save</button>
+            </div>
+            <div id="onboard-username-msg" class="save-msg" style="font-size:12px;margin-top:4px;"></div>
+          </div>
+        ` : `<div class="onboarding-step-done">@${userProfile.username}</div>`}
+      </div>
+
+      <!-- Step 2: Grinder -->
+      <div class="onboarding-step ${hasGrinder ? 'done' : ''}">
+        <div class="onboarding-step-header">
+          <span class="onboarding-check">${hasGrinder ? '✓' : '2'}</span>
+          <span class="onboarding-step-title">Add your grinder</span>
+        </div>
+        ${!hasGrinder ? `
+          <div class="onboarding-step-body">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="onboard-grinder" style="flex:1;font-size:14px;padding:8px 12px;" onchange="document.getElementById('onboard-grinder-other').style.display=this.value==='__other__'?'block':'none'">
+                ${grinderOptions}
+              </select>
+              <button class="btn primary" style="font-size:13px;padding:8px 16px;white-space:nowrap;" onclick="saveOnboardGrinder()">Save</button>
+            </div>
+            <input type="text" id="onboard-grinder-other" placeholder="Enter grinder name…" style="display:none;margin-top:8px;font-size:14px;padding:8px 12px;width:100%;box-sizing:border-box;" autocorrect="off">
+            <div id="onboard-grinder-msg" class="save-msg" style="font-size:12px;margin-top:4px;"></div>
+          </div>
+        ` : `<div class="onboarding-step-done">${grinderLib[0]?.name || 'Added'}</div>`}
+      </div>
+
+      <!-- Step 3: Add a roast -->
+      <div class="onboarding-step ${hasRoast ? 'done' : ''}">
+        <div class="onboarding-step-header">
+          <span class="onboarding-check">${hasRoast ? '✓' : '3'}</span>
+          <span class="onboarding-step-title">Add a roast to your library</span>
+        </div>
+        ${!hasRoast ? `
+          <div class="onboarding-step-body">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Add the coffee bag you're currently brewing.</div>
+            <button class="btn primary" style="font-size:13px;padding:8px 16px;" onclick="openModal('roast')">＋ Add roast</button>
+          </div>
+        ` : `<div class="onboarding-step-done">${roastLib[0]?.roastName ? roastLib[0].roaster + ' · ' + roastLib[0].roastName : roastLib[0]?.roaster || 'Added'}</div>`}
+      </div>
+
+      ${hasRoast ? `
+        <div style="text-align:center;margin-top:1rem;">
+          <div style="font-size:14px;font-weight:600;color:var(--accent);margin-bottom:8px;">You're all set! Time to pull your first shot.</div>
+          <button class="btn primary" style="font-size:14px;padding:10px 24px;" onclick="navTo('log')">☕ Pull a shot</button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function saveOnboardUsername() {
+  const input = document.getElementById('onboard-username');
+  const username = input.value.trim();
+  if (!username) { flash('onboard-username-msg', 'Enter a username', 'danger'); return; }
+  try {
+    const { data: existing } = await sb.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+    const fields = { username, updated_at: new Date().toISOString() };
+    let res;
+    if (existing) {
+      res = await sb.from('profiles').update(fields).eq('id', currentUser.id);
+    } else {
+      res = await sb.from('profiles').insert({ id: currentUser.id, ...fields });
+    }
+    if (res.error) { flash('onboard-username-msg', 'Error: ' + res.error.message, 'danger'); return; }
+    userProfile.username = username;
+    updateAvatarDisplay();
+    renderOnboarding();
+    renderHome();
+  } catch(e) { flash('onboard-username-msg', 'Error saving', 'danger'); }
+}
+
+async function saveOnboardGrinder() {
+  const sel = document.getElementById('onboard-grinder');
+  let name = sel.value;
+  if (name === '__other__') name = document.getElementById('onboard-grinder-other').value.trim();
+  if (!name) { flash('onboard-grinder-msg', 'Select or enter a grinder', 'danger'); return; }
+  try {
+    const grinder = { id: Date.now(), name, notes: '' };
+    const row = await dbInsert('grinders', grinder);
+    grinder._db_id = row.id;
+    grinderLib.push(grinder);
+    populateGrinderDropdown();
+    renderOnboarding();
+  } catch(e) { flash('onboard-grinder-msg', 'Error saving', 'danger'); }
+}
+
 // ─── RENDER HOME ───
 function renderHome() {
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -226,6 +366,13 @@ function renderHome() {
     : `<em>${greetingText}</em>`;
   const tipIdx = (new Date().getDate() + new Date().getMonth()) % TIPS.length;
   subtextEl.textContent = TIPS[tipIdx];
+
+  // Onboarding for new users
+  renderOnboarding();
+
+  // Hide normal content if onboarding is showing
+  const isNewUser = shots.length === 0;
+  document.getElementById('home-rank-card').style.display = isNewUser ? 'none' : '';
 
   // Rank card
   renderRankCard();

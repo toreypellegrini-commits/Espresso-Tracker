@@ -21,6 +21,17 @@ async function loadProfile() {
       };
       // Update community shots display name
       updateAvatarDisplay();
+      // Re-render onboarding and greeting now that profile data is available
+      if (typeof renderOnboarding === 'function') renderOnboarding();
+      if (typeof renderHome === 'function' && currentPage === 'home') {
+        const greetingEl = document.getElementById('home-greeting');
+        if (greetingEl && userProfile.username) {
+          const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+          const day = days[new Date().getDay()];
+          const name = userProfile.username.charAt(0).toUpperCase() + userProfile.username.slice(1);
+          greetingEl.innerHTML = `Welcome back, <em>${name}</em> — ${getTimeGreeting(day).toLowerCase()}`;
+        }
+      }
     }
   } catch(e) { /* no profile yet, fine */ }
 }

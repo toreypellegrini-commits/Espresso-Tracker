@@ -14,14 +14,26 @@ async function initAuth() {
     history.replaceState(null, '', window.location.pathname);
   }
 
+  let appShown = false;
+
   if (session) {
     currentUser = session.user;
     await loadUserData();
     showApp();
+    appShown = true;
   } else if (!isOAuthRedirect) {
     // Only show auth screen if we're NOT in the middle of an OAuth redirect.
     // If we are, onAuthStateChange will fire SIGNED_IN momentarily.
     showAuthScreen();
+  } else {
+    // OAuth redirect but no session yet — set a timeout fallback
+    // Safari private browsing can block cookies and prevent session from resolving
+    setTimeout(() => {
+      if (!appShown) {
+        console.warn('OAuth redirect timed out — showing auth screen');
+        showAuthScreen();
+      }
+    }, 4000);
   }
 
   sb.auth.onAuthStateChange(async (event, session) => {
@@ -29,6 +41,7 @@ async function initAuth() {
       currentUser = session.user;
       await loadUserData();
       showApp();
+      appShown = true;
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
       shots = [];

@@ -342,11 +342,20 @@ async function saveOnboardGrinder() {
   if (name === '__other__') name = document.getElementById('onboard-grinder-other').value.trim();
   if (!name) { flash('onboard-grinder-msg', 'Select or enter a grinder', 'danger'); return; }
   try {
+    // Add to grinders table
     const grinder = { id: Date.now(), name, notes: '' };
     const row = await dbInsert('grinders', grinder);
     grinder._db_id = row.id;
     grinderLib.push(grinder);
     populateGrinderDropdown();
+    // Also save to profile so it shows on profile page
+    userProfile.grinder = name;
+    const { data: existing } = await sb.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+    if (existing) {
+      await sb.from('profiles').update({ grinder: name }).eq('id', currentUser.id);
+    } else {
+      await sb.from('profiles').insert({ id: currentUser.id, grinder: name });
+    }
     renderOnboarding();
   } catch(e) { flash('onboard-grinder-msg', 'Error saving', 'danger'); }
 }

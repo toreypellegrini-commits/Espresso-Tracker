@@ -64,9 +64,16 @@ function populateProfileForm() {
   } else {
     machSel.value = userProfile.machine||'';
   }
-  // Grinder dropdown — populate from grinderLib
-  const gSel = document.getElementById('p-grinder-profile');
-  gSel.innerHTML = '<option value="">Select grinder…</option>' + grinderLib.map(g=>`<option value="${g.name}"${g.name===userProfile.grinder?' selected':''}>${g.name}</option>`).join('');
+  // Grinder display — show all grinders from grinderLib
+  const gDisplay = document.getElementById('p-grinder-display');
+  if (gDisplay) {
+    if (grinderLib.length) {
+      gDisplay.innerHTML = grinderLib.map(gr => `<span class="chip">${gr.name}</span>`).join(' ') +
+        ` <a href="#" onclick="event.preventDefault();navTo('grinders');" style="font-size:12px;color:var(--accent);margin-left:4px;">Manage</a>`;
+    } else {
+      gDisplay.innerHTML = `<span style="color:var(--muted);font-size:13px;">None added yet.</span> <a href="#" onclick="event.preventDefault();navTo('grinders');" style="font-size:12px;color:var(--accent);">Add grinder</a>`;
+    }
+  }
   updateAvatarDisplay();
 }
 
@@ -91,10 +98,12 @@ async function saveProfile() {
   const machine = machSel.value === '__other__' ? g('p-machine-other') : machSel.value;
   const username = g('p-username')||null;
   const location = g('p-location')||null;
+  // Grinder is managed on the grinders page — save the first grinder name for profile display
+  const grinderName = grinderLib.length ? grinderLib[0].name : (userProfile.grinder || null);
   const fields = {
     location,
     machine: machine||null,
-    grinder: document.getElementById('p-grinder-profile').value||null,
+    grinder: grinderName||null,
     coffee_prefs: g('p-coffee-prefs')||null,
     favorite_roasters: g('p-fav-roasters')||null,
     photo_url: userProfile.photo||null,
@@ -117,7 +126,7 @@ async function saveProfile() {
       userProfile.username = username||'';
       userProfile.location = location||'';
       userProfile.machine = machine||'';
-      userProfile.grinder = fields.grinder||'';
+      userProfile.grinder = grinderName||'';
       userProfile.coffee_prefs = fields.coffee_prefs||'';
       userProfile.fav_roasters = fields.favorite_roasters||'';
       updateAvatarDisplay();

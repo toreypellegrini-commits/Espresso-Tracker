@@ -396,10 +396,11 @@
         </div>
         <div class="profile-field" id="machine-other-field" style="display:none;"><span class="profile-field-label">Machine (custom)</span><input type="text" id="p-machine-other" placeholder="Enter machine name" autocorrect="off"></div>
         <div class="profile-field"><span class="profile-field-label">Grinder</span>
-          <select id="p-grinder-profile">
+          <select id="p-grinder-profile" onchange="document.getElementById('p-grinder-other-field').style.display=this.value==='__other__'?'flex':'none'">
             <option value="">Select grinder…</option>
           </select>
         </div>
+        <div class="profile-field" id="p-grinder-other-field" style="display:none;"><span class="profile-field-label">Grinder (custom)</span><input type="text" id="p-grinder-other" placeholder="Enter grinder name" autocorrect="off"></div>
       </div>
 
       <div class="profile-section">
@@ -533,7 +534,12 @@
     <div class="modal">
       <div class="modal-title" id="modal-grinder-title">Add grinder</div>
       <div class="form-grid">
-        <div class="form-group full"><label>Grinder name *</label><input type="text" id="mg-name" placeholder="e.g. Niche Zero" autocorrect="off"></div>
+        <div class="form-group full"><label>Grinder *</label>
+          <select id="mg-name-select" onchange="document.getElementById('mg-name-other-wrap').style.display=this.value==='__other__'?'block':'none'">
+            <option value="">Select grinder…</option>
+          </select>
+          <div id="mg-name-other-wrap" style="display:none;margin-top:8px;"><input type="text" id="mg-name-other" placeholder="Enter grinder name" autocorrect="off"></div>
+        </div>
         <div class="form-group full"><label>Notes (optional)</label><textarea id="mg-notes" style="min-height:52px;"></textarea></div>
       </div>
       <div class="save-msg" id="modal-grinder-msg"></div>

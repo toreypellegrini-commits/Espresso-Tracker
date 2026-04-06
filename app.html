@@ -395,12 +395,9 @@
           </select>
         </div>
         <div class="profile-field" id="machine-other-field" style="display:none;"><span class="profile-field-label">Machine (custom)</span><input type="text" id="p-machine-other" placeholder="Enter machine name" autocorrect="off"></div>
-        <div class="profile-field"><span class="profile-field-label">Grinder</span>
-          <select id="p-grinder-profile" onchange="document.getElementById('p-grinder-other-field').style.display=this.value==='__other__'?'flex':'none'">
-            <option value="">Select grinder…</option>
-          </select>
+        <div class="profile-field"><span class="profile-field-label">Grinder(s)</span>
+          <div id="p-grinder-display" style="font-size:14px;color:var(--text);padding:8px 0;"></div>
         </div>
-        <div class="profile-field" id="p-grinder-other-field" style="display:none;"><span class="profile-field-label">Grinder (custom)</span><input type="text" id="p-grinder-other" placeholder="Enter grinder name" autocorrect="off"></div>
       </div>
 
       <div class="profile-section">

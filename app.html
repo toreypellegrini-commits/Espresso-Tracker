@@ -175,7 +175,7 @@
       <input type="hidden" id="f-origin">
       <input type="hidden" id="f-varietal">
       <input type="hidden" id="f-roastdate">
-      <select id="f-process" style="display:none;"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select>
+      <select id="f-process" style="display:none;"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option><option>Other</option></select>
       <select id="f-roast" style="display:none;"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
       <input type="hidden" id="f-extractdate">
       <div style="display:none;" id="extraction-date-hint"></div>
@@ -288,7 +288,7 @@
       <div class="comm-filters">
         <input type="text" id="cf-search" placeholder="Roaster, roast name…" oninput="renderCommunity()" autocorrect="off">
         <select id="cf-grinder" onchange="renderCommunity()"><option value="">All grinders</option></select>
-        <select id="cf-process" onchange="renderCommunity()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option></select>
+        <select id="cf-process" onchange="renderCommunity()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option></select>
         <select id="cf-roast" onchange="renderCommunity()"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
         <select id="cf-rating" onchange="renderCommunity()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option><option value="3">3★+</option></select>
         <select id="cf-sort" onchange="renderCommunity()"><option value="date-desc">Newest first</option><option value="date-asc">Oldest first</option><option value="rating-desc">Highest rated</option></select>
@@ -319,7 +319,7 @@
       </div>
       <div class="comm-filters">
         <input type="text" id="ms-search" placeholder="Roaster, roast name, notes…" oninput="renderMyShots()" autocorrect="off">
-        <select id="ms-process" onchange="renderMyShots()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select>
+        <select id="ms-process" onchange="renderMyShots()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option><option>Other</option></select>
         <select id="ms-roast" onchange="renderMyShots()"><option value="">All roast levels</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
         <select id="ms-rating" onchange="renderMyShots()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option><option value="3">3★+</option></select>
         <select id="ms-grinder" onchange="renderMyShots()"><option value="">All grinders</option></select>
@@ -416,6 +416,7 @@
       <details class="profile-section achievements-section">
         <summary class="profile-section-title">Achievements</summary>
         <div style="padding:0.75rem 1.25rem 1rem;">
+          <div id="profile-achievements-header"></div>
           <div id="profile-achievements-grid" class="achievements-grid"></div>
         </div>
       </details>
@@ -506,7 +507,7 @@
         <div class="form-group"><label>Roast name *</label><input type="text" id="m-roastname" placeholder="e.g. Geometry" autocorrect="off"></div>
         <div class="form-group"><label>Origin</label><input type="text" id="m-origin" autocorrect="off"></div>
         <div class="form-group"><label>Varietal</label><input type="text" id="m-varietal" autocorrect="off"></div>
-        <div class="form-group"><label>Process</label><select id="m-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Wet-hulled</option><option>Other</option></select></div>
+        <div class="form-group"><label>Process</label><select id="m-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option><option>Other</option></select></div>
         <div class="form-group"><label>Roast level</label><select id="m-roast-level"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>
         <div class="form-group"><label>Roast date</label><input type="date" id="m-roastdate"></div>
         <div class="form-group full"><label>Bag photo</label><input type="file" id="m-photo" accept="image/*" onchange="previewPhoto()"><div class="upload-hint">Upload a photo of the bag or label</div><img id="m-photo-preview" style="display:none;margin-top:8px;width:80px;height:80px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);"></div>

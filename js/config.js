@@ -8,6 +8,23 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
+const CURRENT_VERSION = '1.0.0';
+
+const CHANGELOG = [
+  {
+    version: '1.0.0',
+    date: 'April 2026',
+    title: 'Reddit Launch',
+    changes: [
+      'Guided onboarding flow for new users',
+      'Achievements progress bar on profile page',
+      'Co-ferment and Anaerobic Washed added to process options',
+      'Delete confirmations on shot cards',
+      'Unified grinder picker across the app',
+      'Shot log shows last shot tags and notes for context',
+    ],
+  },
+];
 
 const RANKS = [
   { min: 0,   max: 0,   icon: '☕', name: 'Coffee Butler' },

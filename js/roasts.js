@@ -86,7 +86,7 @@ function renderRoastShots(){
         <div class="shot-date">${fmtDate(s.date)}${s.daysOffRoast!=null?' · '+s.daysOffRoast+'d off roast':''}</div>
         <div class="shot-meta">${s.rating?starsHTML(s.rating):'Not rated'}${s.grinderName?' · '+s.grinderName:''}</div>
       </div>
-      <button class="delete-btn" onclick="deleteShot(${s.id})">✕</button>
+      <button class="delete-btn" onclick="if(confirm('Delete this shot? This cannot be undone.'))deleteShot(${s.id})">✕</button>
     </div>
     <div class="shot-stats">
       <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>

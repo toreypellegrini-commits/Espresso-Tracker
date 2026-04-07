@@ -43,7 +43,7 @@ function renderMyShots() {
           <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roastName ? s.roaster + ' · ' + s.roastName : s.roaster||'Unknown'}</div>
           <div class="shot-meta">${fmtDate(s.date)}${s.rating?' · '+starsHTML(s.rating):''}${s.grinderName?' · '+s.grinderName:''}</div>
         </div>
-        <button class="delete-btn" onclick="deleteShot(${s.id})">✕</button>
+        <button class="delete-btn" onclick="if(confirm('Delete this shot? This cannot be undone.'))deleteShot(${s.id})">✕</button>
       </div>
       ${chips?`<div class="shot-chips">${chips}</div>`:''}
       <div class="shot-stats">

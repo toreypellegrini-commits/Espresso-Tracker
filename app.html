@@ -77,6 +77,8 @@
       <button class="drawer-item" id="nav-insights" onclick="navTo('insights')"><span class="drawer-item-icon">◎</span>Insights</button>
       <div class="drawer-divider"></div>
       <button class="drawer-item" id="nav-profile" onclick="navTo('profile')"><span class="drawer-item-icon">👤</span>My Profile</button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-item" id="nav-whatsnew" onclick="openWhatsNew()"><span class="drawer-item-icon">✨</span>What's new<span id="whatsnew-dot" class="whatsnew-dot" style="display:none;"></span></button>
     </nav>
     <div class="drawer-footer">
       <button class="signout-btn" onclick="signOut()">Sign out</button>
@@ -546,6 +548,17 @@
   </div>
 </div>
 
+<!-- WHAT'S NEW MODAL -->
+<div id="modal-whatsnew" class="modal-hidden">
+  <div class="modal-backdrop" onclick="if(event.target===this)closeWhatsNew()">
+    <div class="modal" style="max-width:500px;max-height:80vh;overflow-y:auto;">
+      <div class="modal-title">What's new in Dialed ✨</div>
+      <div id="whatsnew-content" style="margin-top:0.5rem;"></div>
+      <div class="btn-row" style="margin-top:1rem;"><button class="btn primary" onclick="closeWhatsNew()">Got it</button></div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -565,6 +578,44 @@
 <script src="js/import.js"></script>
 <script src="js/achievements.js"></script>
 <script src="js/profile.js"></script>
+<script>
+// ─── What's New ───
+function checkWhatsNew() {
+  const lastSeen = localStorage.getItem('dialed_last_seen_version');
+  const dot = document.getElementById('whatsnew-dot');
+  if (!dot) return;
+  if (lastSeen !== CURRENT_VERSION) {
+    dot.style.display = 'inline-block';
+  } else {
+    dot.style.display = 'none';
+  }
+}
+
+function openWhatsNew() {
+  const content = document.getElementById('whatsnew-content');
+  content.innerHTML = CHANGELOG.map(entry => `
+    <div class="whatsnew-entry">
+      <div class="whatsnew-version">v${entry.version} <span class="whatsnew-date">${entry.date}</span></div>
+      ${entry.title ? `<div class="whatsnew-title">${entry.title}</div>` : ''}
+      <ul class="whatsnew-list">
+        ${entry.changes.map(c => `<li>${c}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+  document.getElementById('modal-whatsnew').classList.remove('modal-hidden');
+  // Mark as seen
+  localStorage.setItem('dialed_last_seen_version', CURRENT_VERSION);
+  const dot = document.getElementById('whatsnew-dot');
+  if (dot) dot.style.display = 'none';
+}
+
+function closeWhatsNew() {
+  document.getElementById('modal-whatsnew').classList.add('modal-hidden');
+}
+
+// Check on load
+document.addEventListener('DOMContentLoaded', () => setTimeout(checkWhatsNew, 500));
+</script>
 <script>initAuth();</script>
 </body>
 </html>

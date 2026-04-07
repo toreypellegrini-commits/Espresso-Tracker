@@ -242,6 +242,14 @@ function loadRoast() {
     // Clear any change indicators from previous form use
     document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
     document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
+  } else {
+    // No prior shot for this roast — clear prefillable fields so values from a previous roast don't carry over
+    ['f-grind','f-dose','f-yield','f-time','f-temp','f-preinfusion'].forEach(id => setField(id, ''));
+    document.getElementById('f-grinder').value = '';
+    updateRatio();
+    updateShareNotice();
+    document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
+    document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
   }
 
   // Do NOT prefill: rating, notes, tags — those are shot-specific

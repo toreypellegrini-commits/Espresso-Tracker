@@ -22,7 +22,7 @@ const RANKS = [
 const ACHIEVEMENTS = [
   { id:'first_pull',       icon:'☕', name:'First Pull',          desc:'Log your first shot' },
   { id:'turbo_time',       icon:'⚡', name:"It's Turbo Time",     desc:'Log a shot with ratio 1:3 or higher' },
-  { id:'turbo_charged',    icon:'⚡⚡', name:'Turbo Mode',          desc:'Log 10 shots with ratio 1:3+' },
+  { id:'turbo_charged',    icon:'🚀', name:'Turbo Mode',          desc:'Log 10 shots with ratio 1:3+' },
   { id:'perfectionist',    icon:'⭐', name:'Perfectionist',       desc:'Log a 5★ shot' },
   { id:'high_five',        icon:'🖐', name:'High Five',           desc:'Log 5 consecutive 5★ shots' },
   { id:'dedicated',        icon:'📅', name:'The Dedicated',       desc:'Log shots 7 days in a row' },

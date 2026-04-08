@@ -37,13 +37,20 @@ function renderMyShots() {
 
   el.innerHTML = filtered.map(s => {
     const chips = [s.origin,s.varietal,s.process,s.roast].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
+    // Check if this shot is the reference for its roast
+    const roast = s.roastLibId ? roastLib.find(r => r.id == s.roastLibId) : null;
+    const isRef = roast && roast.referenceShotId == s.id;
+    const canBeRef = !!s.roastLibId;
     return `<div class="shot-card">
       <div class="shot-card-header">
         <div>
           <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${s.roastName ? s.roaster + ' · ' + s.roastName : s.roaster||'Unknown'}</div>
           <div class="shot-meta">${fmtDate(s.date)}${s.rating?' · '+starsHTML(s.rating):''}${s.grinderName?' · '+s.grinderName:''}</div>
         </div>
-        <button class="delete-btn" onclick="if(confirm('Delete this shot? This cannot be undone.'))deleteShot(${s.id})">✕</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          ${canBeRef ? `<button class="ref-star-btn ${isRef?'active':''}" onclick="toggleReferenceShot(${s.id})" title="${isRef?'Reference recipe':'Set as reference recipe'}">${isRef?'⭐':'☆'}</button>` : ''}
+          <button class="delete-btn" onclick="if(confirm('Delete this shot? This cannot be undone.'))deleteShot(${s.id})">✕</button>
+        </div>
       </div>
       ${chips?`<div class="shot-chips">${chips}</div>`:''}
       <div class="shot-stats">

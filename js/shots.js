@@ -2,6 +2,10 @@
 // Shot logging form: compact layout, roast-based prefill, taste tags, smart save.
 // Loads after router.js.
 
+// Current recipe source on the log form: 'reference' or 'last'.
+// Resets to default each time the log page is opened (default = reference if exists, else last).
+let _recipeMode = 'reference';
+
 // ─── INIT ───
 function initExtractionDate() {
   const el = document.getElementById('f-extractdate');
@@ -185,7 +189,18 @@ function loadRoast() {
   document.getElementById('f-process').value = r.process || '';
   document.getElementById('f-roast').value = r.roast || '';
 
-  // Build context block
+  // Determine default recipe mode: reference if it exists, else last
+  const referenceShot = getReferenceShot(roastId);
+  const lastShot = shots.find(s => s.roastLibId == roastId);
+  if (referenceShot) _recipeMode = 'reference';
+  else _recipeMode = 'last';
+
+  renderShotContext(r, roastId);
+  applyRecipePrefill(roastId);
+}
+
+// Renders the shot-context block (roast title, chips, days off roast, recipe line + toggle)
+function renderShotContext(r, roastId) {
   const days = calcDaysOffRoast(r.roastDate, todayStr());
   const daysHTML = days !== null ? (() => {
     const cls = days < 7 ? 'days-fresh' : days <= 21 ? 'days-peak' : 'days-old';
@@ -193,53 +208,80 @@ function loadRoast() {
     return `<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;
   })() : '';
 
-  // Find most recent shot for this roast
+  const referenceShot = getReferenceShot(roastId);
   const lastShot = shots.find(s => s.roastLibId == roastId);
+  const activeShot = _recipeMode === 'reference' && referenceShot ? referenceShot : lastShot;
+  const hasBoth = referenceShot && lastShot && referenceShot.id !== lastShot.id;
 
-  let lastShotHTML = '';
-  if (lastShot) {
+  // Build recipe line for whichever mode is active
+  let recipeHTML = '';
+  if (activeShot) {
     const parts = [];
-    if (lastShot.dose) parts.push(`<span>${lastShot.dose}g in</span>`);
-    if (lastShot.yield) parts.push(`<span>${lastShot.yield}g out</span>`);
-    if (lastShot.time) parts.push(`<span>${lastShot.time}s</span>`);
-    if (lastShot.grind) parts.push(`<span>grind ${lastShot.grind}</span>`);
-    if (lastShot.rating) parts.push(`<span>${'★'.repeat(lastShot.rating)}</span>`);
-    if (lastShot.tags && lastShot.tags.length) parts.push(`<span>${lastShot.tags.join(', ')}</span>`);
+    if (activeShot.dose) parts.push(`<span>${activeShot.dose}g in</span>`);
+    if (activeShot.yield) parts.push(`<span>${activeShot.yield}g out</span>`);
+    if (activeShot.time) parts.push(`<span>${activeShot.time}s</span>`);
+    if (activeShot.grind) parts.push(`<span>grind ${activeShot.grind}</span>`);
+    if (_recipeMode === 'last' && activeShot.rating) parts.push(`<span>${'★'.repeat(activeShot.rating)}</span>`);
+    if (_recipeMode === 'last' && activeShot.tags && activeShot.tags.length) parts.push(`<span>${activeShot.tags.join(', ')}</span>`);
     if (parts.length) {
-      const notesHTML = lastShot.notes ? `<div class="shot-context-notes">${lastShot.notes}</div>` : '';
-      lastShotHTML = `<div class="shot-context-last">Last: ${parts.join(' · ')}</div>${notesHTML}`;
+      const label = _recipeMode === 'reference' ? 'Ref' : 'Last';
+      const notesHTML = (_recipeMode === 'last' && activeShot.notes) ? `<div class="shot-context-notes">${activeShot.notes}</div>` : '';
+      recipeHTML = `<div class="shot-context-last">${label}: ${parts.join(' · ')}</div>${notesHTML}`;
     }
+  }
+
+  // Toggle button — only show if both reference and last exist and they're different
+  let toggleHTML = '';
+  if (hasBoth) {
+    toggleHTML = `
+      <div class="recipe-toggle">
+        <button class="recipe-toggle-btn ${_recipeMode === 'reference' ? 'active' : ''}" onclick="setRecipeMode('reference')">⭐ Reference</button>
+        <button class="recipe-toggle-btn ${_recipeMode === 'last' ? 'active' : ''}" onclick="setRecipeMode('last')">Last</button>
+      </div>`;
+  } else if (referenceShot && !lastShot) {
+    // Only a reference exists (edge case — first shot was deleted but reference was kept? Unlikely but handle.)
+    toggleHTML = `<div class="recipe-mode-indicator">⭐ Reference</div>`;
+  } else if (!referenceShot && lastShot) {
+    // Only last shot exists (no reference set yet)
+    toggleHTML = `<div class="recipe-mode-indicator">Last shot</div>`;
   }
 
   const chips = [r.origin, r.varietal, r.process, r.roast].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
   const ctx = document.getElementById('shot-context');
   ctx.style.display = 'block';
   ctx.innerHTML = `
-    <div class="shot-context-title">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}</div>
+    <div class="shot-context-header">
+      <div class="shot-context-title">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}</div>
+      ${toggleHTML}
+    </div>
     <div class="shot-context-meta">${chips} ${daysHTML}</div>
-    ${lastShotHTML}
+    ${recipeHTML}
   `;
+}
 
-  // Prefill from most recent shot for this roast
+// Applies the prefill values from the active source (reference or last) to the form
+function applyRecipePrefill(roastId) {
+  const referenceShot = getReferenceShot(roastId);
+  const lastShot = shots.find(s => s.roastLibId == roastId);
+  const source = _recipeMode === 'reference' && referenceShot ? referenceShot : lastShot;
+
   _refValues = {};
-  if (lastShot) {
-    if (lastShot.grinderName) {
+  if (source) {
+    if (source.grinderName) {
       const sel = document.getElementById('f-grinder');
-      // Make sure the grinder option exists
-      if (!Array.from(sel.options).some(o => o.value === lastShot.grinderName)) {
-        sel.innerHTML += `<option value="${lastShot.grinderName}">${lastShot.grinderName}</option>`;
+      if (!Array.from(sel.options).some(o => o.value === source.grinderName)) {
+        sel.innerHTML += `<option value="${source.grinderName}">${source.grinderName}</option>`;
       }
-      sel.value = lastShot.grinderName;
+      sel.value = source.grinderName;
     }
-    if (lastShot.grind) { setField('f-grind', cleanNum(lastShot.grind)); _refValues['f-grind'] = parseFloat(lastShot.grind); }
-    if (lastShot.dose) { setField('f-dose', cleanNum(lastShot.dose)); _refValues['f-dose'] = parseFloat(lastShot.dose); }
-    if (lastShot.yield) { setField('f-yield', cleanNum(lastShot.yield)); _refValues['f-yield'] = parseFloat(lastShot.yield); }
-    if (lastShot.time) { setField('f-time', cleanNum(lastShot.time)); _refValues['f-time'] = parseFloat(lastShot.time); }
-    if (lastShot.temp) setField('f-temp', cleanNum(lastShot.temp));
-    if (lastShot.preinfusion) setField('f-preinfusion', cleanNum(lastShot.preinfusion));
+    if (source.grind) { setField('f-grind', cleanNum(source.grind)); _refValues['f-grind'] = parseFloat(source.grind); }
+    if (source.dose) { setField('f-dose', cleanNum(source.dose)); _refValues['f-dose'] = parseFloat(source.dose); }
+    if (source.yield) { setField('f-yield', cleanNum(source.yield)); _refValues['f-yield'] = parseFloat(source.yield); }
+    if (source.time) { setField('f-time', cleanNum(source.time)); _refValues['f-time'] = parseFloat(source.time); }
+    if (source.temp) setField('f-temp', cleanNum(source.temp));
+    if (source.preinfusion) setField('f-preinfusion', cleanNum(source.preinfusion));
     updateRatio();
     updateShareNotice();
-    // Clear any change indicators from previous form use
     document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
     document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
   } else {
@@ -251,8 +293,16 @@ function loadRoast() {
     document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
     document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
   }
+}
 
-  // Do NOT prefill: rating, notes, tags — those are shot-specific
+// Called when the user toggles between Reference and Last
+function setRecipeMode(mode) {
+  _recipeMode = mode;
+  const roastId = document.getElementById('roast-select').value;
+  const r = roastLib.find(x => x.id == roastId);
+  if (!r) return;
+  renderShotContext(r, roastId);
+  applyRecipePrefill(roastId);
 }
 
 // ─── SAVE ───
@@ -369,6 +419,7 @@ function clearForm() {
   const adv = document.getElementById('shot-advanced');
   if (adv) adv.removeAttribute('open');
   _refValues = {};
+  _recipeMode = 'reference'; // Reset to default so next roast load uses reference if available
   document.querySelectorAll('.stepper').forEach(s => s.classList.remove('changed'));
   document.querySelectorAll('.change-indicator').forEach(el => el.textContent = '');
 }
@@ -380,6 +431,17 @@ async function deleteShot(id) {
   try {
     await dbDelete('shots', s._db_id);
     shots = shots.filter(x => x.id !== id);
+    // If this shot was the reference recipe for its roast, clear the reference
+    if (s.roastLibId) {
+      const roast = roastLib.find(r => r.id == s.roastLibId);
+      if (roast && roast.referenceShotId == id) {
+        roast.referenceShotId = null;
+        try {
+          await dbUpdate('roast_library', roast._db_id, roast);
+          showSimpleToast('☆ Reference recipe cleared — this shot was your reference');
+        } catch (e) { console.warn('Failed to clear reference on delete:', e.message); }
+      }
+    }
     setDbStatus('ok', 'Saved');
     syncShotCount();
     if (currentPage === 'roast-detail') renderRoastShots();

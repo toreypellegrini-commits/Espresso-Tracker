@@ -48,7 +48,24 @@ function navTo(page, opts = {}) {
   subtitle.style.display = 'none';
 
   if (page === 'library') { renderLibrary(); }
-  if (page === 'log') { populateRoastDropdown(); populateGrinderDropdown(); if (opts.roastId) { const sel = document.getElementById('roast-select'); sel.value = opts.roastId; loadRoast(); } }
+  if (page === 'log') {
+    populateRoastDropdown();
+    populateGrinderDropdown();
+    const sel = document.getElementById('roast-select');
+    if (opts.roastId) {
+      // Explicit roast passed in (from a bag card, roast detail, etc.)
+      sel.value = opts.roastId;
+      loadRoast();
+    } else if (sel.value) {
+      // No roast passed but dropdown still has a previous selection — refresh context
+      // so any changes since last visit (e.g., new reference recipe) show up.
+      loadRoast();
+    } else {
+      // No roast selected at all — make sure the stale context block is hidden
+      const ctx = document.getElementById('shot-context');
+      if (ctx) ctx.style.display = 'none';
+    }
+  }
   if (page === 'roast-detail' && opts.roastId) { currentDetailRoastId = opts.roastId; renderRoastDetail(); }
   if (page === 'home') { renderHome(); }
   if (page === 'profile') { populateProfileForm(); const thSel = document.getElementById('p-theme'); if (thSel) thSel.value = localStorage.getItem('ext_theme') || 'auto'; renderProfileRankAndAchievements(); }

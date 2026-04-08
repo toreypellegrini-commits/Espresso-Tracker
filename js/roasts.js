@@ -43,6 +43,8 @@ function renderLibrary(){
 
 // ─── ROAST DETAIL ───
 function renderRoastDetail(){
+  // Safety net: recompute achievements when viewing roast detail (catches anything missed elsewhere)
+  if(typeof computeAchievements==='function')computeAchievements();
   const r=roastLib.find(x=>x.id==currentDetailRoastId);
   if(!r){navTo('library');return;}
   document.getElementById('header-title').textContent='Roast Details';

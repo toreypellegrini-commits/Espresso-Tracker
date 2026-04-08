@@ -8,6 +8,23 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
+const CURRENT_VERSION = '1.0.0';
+
+const CHANGELOG = [
+  {
+    version: '1.0.0',
+    date: 'April 2026',
+    title: 'Reddit Launch',
+    changes: [
+      'Guided onboarding flow for new users',
+      'Achievements progress bar on profile page',
+      'Co-ferment and Anaerobic Washed added to process options',
+      'Delete confirmations on shot cards',
+      'Unified grinder picker across the app',
+      'Shot log shows last shot tags and notes for context',
+    ],
+  },
+];
 
 const RANKS = [
   { min: 0,   max: 0,   icon: '☕', name: 'Coffee Butler' },
@@ -22,7 +39,7 @@ const RANKS = [
 const ACHIEVEMENTS = [
   { id:'first_pull',       icon:'☕', name:'First Pull',          desc:'Log your first shot' },
   { id:'turbo_time',       icon:'⚡', name:"It's Turbo Time",     desc:'Log a shot with ratio 1:3 or higher' },
-  { id:'turbo_charged',    icon:'⚡⚡', name:'Turbo Mode',          desc:'Log 10 shots with ratio 1:3+' },
+  { id:'turbo_charged',    icon:'🚀', name:'Turbo Mode',          desc:'Log 10 shots with ratio 1:3+' },
   { id:'perfectionist',    icon:'⭐', name:'Perfectionist',       desc:'Log a 5★ shot' },
   { id:'high_five',        icon:'🖐', name:'High Five',           desc:'Log 5 consecutive 5★ shots' },
   { id:'dedicated',        icon:'📅', name:'The Dedicated',       desc:'Log shots 7 days in a row' },

@@ -6,7 +6,7 @@
 async function publishCommunityShot(shot,grinderName){
   if(!shot||!grinderName||shot.rating<SHARE_MIN_RATING)return;
   try{
-    await sb.from('community_shots').insert({
+    const{data,error}=await sb.from('community_shots').insert({
       user_id:currentUser.id,grinder_name:grinderName,
       coffee:[shot.roaster,shot.roastName,shot.origin,shot.varietal].filter(Boolean).join(' · '),
       process:shot.process||null,roast:shot.roast||null,
@@ -18,7 +18,10 @@ async function publishCommunityShot(shot,grinderName){
       temp:shot.temp||null,time_s:shot.time||null,
       rating:parseInt(shot.rating),
       extraction_date:shot.date?.slice(0,10)||todayStr()
-    });
+    }).select().single();
+    if(error)throw error;
+    // Add to local array so achievements like "Community Contributor" can detect it immediately
+    if(data)communityShots.unshift(data);
     console.log('Community shot published successfully');
   }catch(e){console.error('Community shot publish failed:',e.message,e);}
 }

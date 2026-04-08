@@ -53,6 +53,20 @@ function renderProfileRankAndAchievements() {
 
   const unlocked = computeAchievements();
   const gridEl = document.getElementById('profile-achievements-grid');
+  const headerEl = document.getElementById('profile-achievements-header');
+  const totalCount = ACHIEVEMENTS.length;
+  const unlockedCount = unlocked.size;
+  const pct = totalCount ? Math.round((unlockedCount / totalCount) * 100) : 0;
+
+  if (headerEl) {
+    headerEl.innerHTML = `
+      <div class="achievements-progress-label">${unlockedCount} of ${totalCount} (${pct}%) Achievements Earned</div>
+      <div class="achievements-progress-bar">
+        <div class="achievements-progress-fill" style="width:${pct}%"></div>
+      </div>
+    `;
+  }
+
   if (gridEl) {
     // Split into unlocked and locked for ordering
     const unlockedList = ACHIEVEMENTS.filter(a => unlocked.has(a.id)).sort((a, b) => a.name.localeCompare(b.name));

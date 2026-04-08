@@ -93,6 +93,16 @@
     .signout-btn { font-size: 13px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 8px 0; font-family: var(--font); width: 100%; text-align: left; }
     .signout-btn:hover { color: var(--danger-text); }
 
+    /* ─── What's New ─── */
+    .whatsnew-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e24b4a; margin-left: auto; flex-shrink: 0; }
+    .whatsnew-entry { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+    .whatsnew-entry:last-child { border-bottom: none; }
+    .whatsnew-version { font-size: 13px; font-weight: 600; color: var(--accent); }
+    .whatsnew-date { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+    .whatsnew-title { font-family: var(--font-serif); font-size: 15px; font-weight: 600; margin-top: 2px; }
+    .whatsnew-list { margin: 8px 0 0 0; padding-left: 1.25rem; font-size: 13px; color: var(--text); line-height: 1.6; }
+    .whatsnew-list li { margin-bottom: 3px; }
+
     /* ─── PAGE SYSTEM ─── */
     .page { display: none; min-height: calc(100vh - var(--header-h)); }
     .page.active { display: block; }
@@ -387,6 +397,9 @@
     .achievement-row-name { font-size: 13px; font-weight: 600; color: var(--text); }
     .achievement-row.unlocked .achievement-row-name { color: var(--accent); }
     .achievement-row-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .achievements-progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+    .achievements-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+    .achievements-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s ease; }
     .achievements-section { margin-bottom: 1rem; }
     .achievements-section summary.profile-section-title { cursor: pointer; -webkit-tap-highlight-color: transparent; list-style: none; padding-bottom: 0.875rem; }
     .achievements-section[open] summary.profile-section-title { padding-bottom: 0.25rem; }

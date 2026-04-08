@@ -211,7 +211,6 @@ function renderShotContext(r, roastId) {
   const referenceShot = getReferenceShot(roastId);
   const lastShot = shots.find(s => s.roastLibId == roastId);
   const activeShot = _recipeMode === 'reference' && referenceShot ? referenceShot : lastShot;
-  const hasBoth = referenceShot && lastShot && referenceShot.id !== lastShot.id;
 
   // Build recipe line for whichever mode is active
   let recipeHTML = '';
@@ -230,19 +229,19 @@ function renderShotContext(r, roastId) {
     }
   }
 
-  // Toggle button — only show if both reference and last exist and they're different
+  // Toggle button — always show whenever a reference recipe exists for this roast,
+  // regardless of whether the reference is the same as the most recent shot.
+  // This keeps the UI consistent and predictable: the toggle's presence means
+  // "this bag has a reference recipe".
   let toggleHTML = '';
-  if (hasBoth) {
+  if (referenceShot) {
     toggleHTML = `
       <div class="recipe-toggle">
         <button class="recipe-toggle-btn ${_recipeMode === 'reference' ? 'active' : ''}" onclick="setRecipeMode('reference')">⭐ Reference</button>
         <button class="recipe-toggle-btn ${_recipeMode === 'last' ? 'active' : ''}" onclick="setRecipeMode('last')">Last</button>
       </div>`;
-  } else if (referenceShot && !lastShot) {
-    // Only a reference exists (edge case — first shot was deleted but reference was kept? Unlikely but handle.)
-    toggleHTML = `<div class="recipe-mode-indicator">⭐ Reference</div>`;
-  } else if (!referenceShot && lastShot) {
-    // Only last shot exists (no reference set yet)
+  } else if (lastShot) {
+    // No reference set yet — show a static indicator so the user knows what they're seeing
     toggleHTML = `<div class="recipe-mode-indicator">Last shot</div>`;
   }
 

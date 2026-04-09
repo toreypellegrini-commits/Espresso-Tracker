@@ -212,37 +212,33 @@ function renderShotContext(r, roastId) {
   const lastShot = shots.find(s => s.roastLibId == roastId);
   const activeShot = _recipeMode === 'reference' && referenceShot ? referenceShot : lastShot;
 
-  // Build recipe line for whichever mode is active
+  // Build compact recipe line for whichever mode is active.
+  // Format: "⭐ 18g → 45g · 13s · grind 37" (Reference) or "Last · 18g → 45g · 13s · grind 37"
   let recipeHTML = '';
   if (activeShot) {
     const parts = [];
-    if (activeShot.dose) parts.push(`<span>${activeShot.dose}g in</span>`);
-    if (activeShot.yield) parts.push(`<span>${activeShot.yield}g out</span>`);
-    if (activeShot.time) parts.push(`<span>${activeShot.time}s</span>`);
-    if (activeShot.grind) parts.push(`<span>grind ${activeShot.grind}</span>`);
-    if (_recipeMode === 'last' && activeShot.rating) parts.push(`<span>${'★'.repeat(activeShot.rating)}</span>`);
-    if (_recipeMode === 'last' && activeShot.tags && activeShot.tags.length) parts.push(`<span>${activeShot.tags.join(', ')}</span>`);
+    if (activeShot.dose && activeShot.yield) parts.push(`${activeShot.dose}g → ${activeShot.yield}g`);
+    else if (activeShot.dose) parts.push(`${activeShot.dose}g in`);
+    else if (activeShot.yield) parts.push(`${activeShot.yield}g out`);
+    if (activeShot.time) parts.push(`${activeShot.time}s`);
+    if (activeShot.grind) parts.push(`grind ${activeShot.grind}`);
     if (parts.length) {
-      const label = _recipeMode === 'reference' ? 'Ref' : 'Last';
+      const prefix = _recipeMode === 'reference' ? '⭐' : '<span class="recipe-line-label">Last</span>';
       const notesHTML = (_recipeMode === 'last' && activeShot.notes) ? `<div class="shot-context-notes">${activeShot.notes}</div>` : '';
-      recipeHTML = `<div class="shot-context-last">${label}: ${parts.join(' · ')}</div>${notesHTML}`;
+      recipeHTML = `<div class="shot-context-recipe">${prefix} ${parts.join(' · ')}</div>${notesHTML}`;
     }
   }
 
-  // Toggle button — always show whenever a reference recipe exists for this roast,
-  // regardless of whether the reference is the same as the most recent shot.
-  // This keeps the UI consistent and predictable: the toggle's presence means
-  // "this bag has a reference recipe".
+  // Inline text toggle — always show whenever a reference recipe exists.
+  // Compact "Ref · Last" with the active option in accent color.
   let toggleHTML = '';
   if (referenceShot) {
     toggleHTML = `
       <div class="recipe-toggle">
-        <button class="recipe-toggle-btn ${_recipeMode === 'reference' ? 'active' : ''}" onclick="setRecipeMode('reference')">⭐ Reference</button>
-        <button class="recipe-toggle-btn ${_recipeMode === 'last' ? 'active' : ''}" onclick="setRecipeMode('last')">Last</button>
+        <span class="recipe-toggle-opt ${_recipeMode === 'reference' ? 'active' : ''}" onclick="setRecipeMode('reference')">Ref</span>
+        <span class="recipe-toggle-sep">·</span>
+        <span class="recipe-toggle-opt ${_recipeMode === 'last' ? 'active' : ''}" onclick="setRecipeMode('last')">Last</span>
       </div>`;
-  } else if (lastShot) {
-    // No reference set yet — show a static indicator so the user knows what they're seeing
-    toggleHTML = `<div class="recipe-mode-indicator">Last shot</div>`;
   }
 
   const chips = [r.origin, r.varietal, r.process, r.roast].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');

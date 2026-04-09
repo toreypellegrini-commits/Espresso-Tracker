@@ -22,6 +22,9 @@ const CHANGELOG = [
       'Delete confirmations on shot cards',
       'Unified grinder picker across the app',
       'Shot log shows last shot tags and notes for context',
+      'Reference recipe feature',
+      'Log shot card refinements',
+      'Bug fixes',
     ],
   },
 ];

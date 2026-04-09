@@ -2,6 +2,99 @@
 // Roast library rendering, roast detail, roast modal CRUD.
 // Loads after router.js.
 
+// ─── REFERENCE RECIPE HELPERS ───
+// Each roast stores a single referenceShotId pointing to a shot in the shots array.
+// Helpers below read/write that pointer and handle persistence + toast notifications.
+
+function getReferenceShot(roastId) {
+  const r = roastLib.find(x => x.id == roastId);
+  if (!r || !r.referenceShotId) return null;
+  return shots.find(s => s.id == r.referenceShotId) || null;
+}
+
+async function setReferenceShot(shotId) {
+  const shot = shots.find(s => s.id == shotId);
+  if (!shot || !shot.roastLibId) return;
+  const roast = roastLib.find(r => r.id == shot.roastLibId);
+  if (!roast) return;
+
+  const hadPrevious = !!roast.referenceShotId;
+  roast.referenceShotId = shot.id;
+
+  try {
+    await dbUpdate('roast_library', roast._db_id, roast);
+    setDbStatus('ok', 'Saved');
+    showSimpleToast(hadPrevious ? '⭐ Reference recipe updated' : '⭐ Reference recipe saved');
+    // Re-render the relevant views so the star state updates
+    if (currentPage === 'roast-detail') renderRoastShots();
+    if (currentPage === 'myshots' && typeof renderMyShots === 'function') renderMyShots();
+    if (currentPage === 'home' && typeof renderOpenBags === 'function') renderOpenBags();
+  } catch (e) {
+    setDbStatus('error', 'Save failed');
+  }
+}
+
+async function clearReferenceShot(roastId, silent) {
+  const roast = roastLib.find(r => r.id == roastId);
+  if (!roast || !roast.referenceShotId) return;
+  roast.referenceShotId = null;
+  try {
+    await dbUpdate('roast_library', roast._db_id, roast);
+    setDbStatus('ok', 'Saved');
+    if (!silent) showSimpleToast('☆ Reference recipe cleared');
+    if (currentPage === 'roast-detail') renderRoastShots();
+    if (currentPage === 'myshots' && typeof renderMyShots === 'function') renderMyShots();
+    if (currentPage === 'home' && typeof renderOpenBags === 'function') renderOpenBags();
+  } catch (e) {
+    setDbStatus('error', 'Save failed');
+  }
+}
+
+// Toggle a shot as reference (clicked on the star icon)
+function toggleReferenceShot(shotId) {
+  const shot = shots.find(s => s.id == shotId);
+  if (!shot || !shot.roastLibId) return;
+  const roast = roastLib.find(r => r.id == shot.roastLibId);
+  if (!roast) return;
+  if (roast.referenceShotId == shotId) {
+    // Clicking star on current reference clears it
+    clearReferenceShot(roast.id);
+  } else {
+    setReferenceShot(shotId);
+  }
+}
+
+// Simple non-blocking toast for reference recipe actions.
+// Uses an inline DOM element inserted into body, auto-dismisses after 2s.
+let _simpleToastTimeout = null;
+function showSimpleToast(message) {
+  let el = document.getElementById('simple-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'simple-toast';
+    el.className = 'simple-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.classList.add('show');
+  if (_simpleToastTimeout) clearTimeout(_simpleToastTimeout);
+  _simpleToastTimeout = setTimeout(() => {
+    el.classList.remove('show');
+  }, 2000);
+}
+
+// Format a shot as a compact recipe line: "18g → 42g · 29s · grind 36"
+function formatRecipeLine(shot) {
+  if (!shot) return '';
+  const parts = [];
+  if (shot.dose && shot.yield) parts.push(`${shot.dose}g → ${shot.yield}g`);
+  else if (shot.dose) parts.push(`${shot.dose}g in`);
+  else if (shot.yield) parts.push(`${shot.yield}g out`);
+  if (shot.time) parts.push(`${shot.time}s`);
+  if (shot.grind) parts.push(`grind ${shot.grind}`);
+  return parts.join(' · ');
+}
+
 // ─── LIBRARY ───
 
 function renderLibCard(r){
@@ -82,13 +175,20 @@ function renderRoastShots(){
   else if(sortVal==='rating-desc')roastShots.sort((a,b)=>(b.rating||0)-(a.rating||0));
   const el=document.getElementById('roast-shots-list');
   if(!roastShots.length){el.innerHTML='<div class="empty">No shots logged for this roast yet.<br>Tap "+ Log Shot" to add your first.</div>';return;}
-  el.innerHTML=roastShots.map(s=>`<div class="shot-card">
+  const roast=roastLib.find(x=>x.id==currentDetailRoastId);
+  const refId=roast?roast.referenceShotId:null;
+  el.innerHTML=roastShots.map(s=>{
+    const isRef=refId==s.id;
+    return `<div class="shot-card">
     <div class="shot-card-header">
       <div>
         <div class="shot-date">${fmtDate(s.date)}${s.daysOffRoast!=null?' · '+s.daysOffRoast+'d off roast':''}</div>
         <div class="shot-meta">${s.rating?starsHTML(s.rating):'Not rated'}${s.grinderName?' · '+s.grinderName:''}</div>
       </div>
-      <button class="delete-btn" onclick="deleteShot(${s.id})">✕</button>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button class="ref-star-btn ${isRef?'active':''}" onclick="toggleReferenceShot(${s.id})" title="${isRef?'Reference recipe':'Set as reference recipe'}">${isRef?'⭐':'☆'}</button>
+        <button class="delete-btn" onclick="if(confirm('Delete this shot? This cannot be undone.'))deleteShot(${s.id})">✕</button>
+      </div>
     </div>
     <div class="shot-stats">
       <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>
@@ -103,7 +203,8 @@ function renderRoastShots(){
       <div class="stat"><div class="stat-val">${s.daysOffRoast!=null?s.daysOffRoast+'d':'—'}</div><div class="stat-lbl">Off roast</div></div>
     </div>
     ${s.notes?`<div class="shot-note">${s.notes}</div>`:''}
-  </div>`).join('');
+  </div>`;
+  }).join('');
 }
 
 

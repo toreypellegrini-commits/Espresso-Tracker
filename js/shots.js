@@ -223,9 +223,11 @@ function renderShotContext(r, roastId) {
     if (activeShot.time) parts.push(`${activeShot.time}s`);
     if (activeShot.grind) parts.push(`grind ${activeShot.grind}`);
     if (parts.length) {
-      const prefix = _recipeMode === 'reference' ? '⭐' : '<span class="recipe-line-label">Last</span>';
+      const prefix = _recipeMode === 'reference'
+        ? '<span class="recipe-line-star">⭐</span>'
+        : '<span class="recipe-line-label">Last</span>';
       const notesHTML = (_recipeMode === 'last' && activeShot.notes) ? `<div class="shot-context-notes">${activeShot.notes}</div>` : '';
-      recipeHTML = `<div class="shot-context-recipe">${prefix} ${parts.join(' · ')}</div>${notesHTML}`;
+      recipeHTML = `<div class="shot-context-recipe">${prefix}${parts.join(' · ')}</div>${notesHTML}`;
     }
   }
 
@@ -292,12 +294,33 @@ function applyRecipePrefill(roastId) {
 
 // Called when the user toggles between Reference and Last
 function setRecipeMode(mode) {
+  if (_recipeMode === mode) return; // No-op if already in this mode
   _recipeMode = mode;
   const roastId = document.getElementById('roast-select').value;
   const r = roastLib.find(x => x.id == roastId);
   if (!r) return;
-  renderShotContext(r, roastId);
-  applyRecipePrefill(roastId);
+
+  // Brief fade-out → re-render → fade-in for a smooth recipe line swap
+  const existingRecipe = document.querySelector('.shot-context-recipe');
+  if (existingRecipe) {
+    existingRecipe.classList.add('fading');
+    setTimeout(() => {
+      renderShotContext(r, roastId);
+      applyRecipePrefill(roastId);
+      // Force a reflow then add the entering class so the fade-in transition fires
+      const newRecipe = document.querySelector('.shot-context-recipe');
+      if (newRecipe) {
+        newRecipe.classList.add('entering');
+        // Remove the entering class on the next frame to trigger the transition
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => newRecipe.classList.remove('entering'));
+        });
+      }
+    }, 130);
+  } else {
+    renderShotContext(r, roastId);
+    applyRecipePrefill(roastId);
+  }
 }
 
 // ─── SAVE ───

@@ -185,13 +185,16 @@
 
     /* ─── SHOT FORM (compact) ─── */
     .shot-context { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.7rem 0.875rem; margin-bottom: 1rem; }
-    .shot-context-header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 4px; }
-    .shot-context-title { font-family: var(--font-serif); font-size: 14.5px; font-weight: 600; line-height: 1.25; flex: 1; min-width: 0; }
+    .shot-context-header { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+    .shot-context-title { font-family: var(--font-serif); font-size: 13.5px; font-weight: 600; line-height: 1.2; flex: 1; min-width: 0; }
     .shot-context-meta { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
     .shot-context-meta .chip { font-size: 10.5px; padding: 1px 7px; opacity: 0.85; }
     .shot-context-meta .days-badge { font-size: 11px; padding: 2px 9px; }
-    .shot-context-recipe { font-size: 12px; color: var(--text); opacity: 0.85; margin-top: 2px; line-height: 1.4; }
-    .shot-context-recipe .recipe-line-label { color: var(--muted); font-weight: 500; }
+    .shot-context-recipe { font-size: 12px; color: var(--text); opacity: 0.85; margin-top: 2px; line-height: 1.4; transition: opacity 0.18s ease, transform 0.18s ease; }
+    .shot-context-recipe.fading { opacity: 0; transform: translateY(-1px); }
+    .shot-context-recipe.entering { opacity: 0; transform: translateY(2px); }
+    .shot-context-recipe .recipe-line-star { font-size: 10px; margin-right: 4px; vertical-align: 1px; display: inline-block; }
+    .shot-context-recipe .recipe-line-label { color: var(--muted); font-weight: 500; margin-right: 6px; }
     .shot-context-notes { font-size: 12px; color: var(--hint); font-style: italic; margin-top: 4px; line-height: 1.4; }
 
     /* Inline text-based recipe toggle (Ref · Last) */

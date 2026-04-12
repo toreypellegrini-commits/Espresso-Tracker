@@ -14,7 +14,7 @@ const CHANGELOG = [
   {
     version: '1.0.0',
     date: 'April 2026',
-    title: 'Reddit Launch',
+    title: 'Public Beta',
     changes: [
       'Guided onboarding flow for new users',
       'Achievements progress bar on profile page',
@@ -25,6 +25,7 @@ const CHANGELOG = [
       'Reference recipe feature',
       'Log shot card refinements',
       'Bug fixes',
+      'Reworked community shots cards',
     ],
   },
 ];

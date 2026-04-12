@@ -284,7 +284,7 @@
     .comm-params { font-size: 13px; margin-top: 4px; }
 
     /* Community card username byline (own line, subtle) */
-    .comm-user-byline { font-size: 12px; margin-top: -4px; margin-bottom: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: inline-block; }
+    .comm-user-byline { font-size: 12px; margin-top: -6px; margin-bottom: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: inline-block; }
     .comm-user-handle { color: var(--muted); font-weight: 500; transition: color 0.12s; }
     .comm-user-byline:hover .comm-user-handle { color: var(--accent); }
     .comm-user-handle.mine { color: var(--success-text); }

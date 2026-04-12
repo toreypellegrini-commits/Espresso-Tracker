@@ -106,8 +106,15 @@ function renderCommunity(){
       ? `<div class="comm-user-byline" onclick="openProfileSheet('${s.user_id}')"><span class="comm-user-handle${isMe?' mine':''}">@${username}</span>${isMe?'<span class="comm-user-you"> (you)</span>':''}</div>`
       : (isMe?`<div class="comm-user-byline"><span class="comm-user-handle mine">you</span></div>`:'');
 
-    // Params grid — same pattern as My Shots stats row
+    // Params summary — inline line: Grind · Ratio · Temp · Time · Days off roast
     const ratioVal=s.ratio?parseFloat(s.ratio).toFixed(2):(s.dose&&s.yield_g?(s.yield_g/s.dose).toFixed(2):null);
+    const params=[
+      s.grind?`Grind ${s.grind}`:null,
+      ratioVal?`1:${ratioVal}`:null,
+      s.temp?`${s.temp}°C`:null,
+      s.time_s?`${s.time_s}s`:null,
+      s.days_off_roast!=null?`${s.days_off_roast}d off roast`:null
+    ].filter(Boolean).join(' · ');
 
     return `<div class="shot-card">
       <div class="shot-card-header">
@@ -119,18 +126,7 @@ function renderCommunity(){
       </div>
       ${userByline}
       ${chips?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">${chips}</div>`:''}
-      <div class="shot-stats">
-        <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>
-        <div class="stat"><div class="stat-val">${s.yield_g||'—'}g</div><div class="stat-lbl">Yield</div></div>
-        <div class="stat"><div class="stat-val">${ratioVal?'1:'+ratioVal:'—'}</div><div class="stat-lbl">Ratio</div></div>
-        <div class="stat"><div class="stat-val">${s.time_s?s.time_s+'s':'—'}</div><div class="stat-lbl">Time</div></div>
-      </div>
-      <div class="shot-stats" style="margin-top:6px;">
-        <div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div>
-        <div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div>
-        <div class="stat"><div class="stat-val">${s.process||'—'}</div><div class="stat-lbl">Process</div></div>
-        <div class="stat"><div class="stat-val">${s.days_off_roast!=null?s.days_off_roast+'d':'—'}</div><div class="stat-lbl">Off roast</div></div>
-      </div>
+      <div class="comm-params" style="color:var(--muted);">${params}</div>
     </div>`;
   }).join('');
 }

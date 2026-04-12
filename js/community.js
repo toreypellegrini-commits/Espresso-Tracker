@@ -93,15 +93,18 @@ function renderCommunity(){
     const chipsArr=[origin,varietal,s.process,s.roast].filter(Boolean);
     const chips=chipsArr.map(c=>`<span class="chip">${c}</span>`).join('');
 
-    // Build meta line: date · rating · grinder · @username (clickable)
+    // Build meta line: date · rating · grinder (username moved to its own line)
     const metaParts=[];
     if(s.extraction_date)metaParts.push(fmtDate(s.extraction_date+'T12:00:00'));
     if(s.rating)metaParts.push(starsHTML(s.rating));
     if(s.grinder_name)metaParts.push(s.grinder_name);
     const metaLine=metaParts.join(' · ');
-    const userChip=username
-      ? `<span class="chip ${isMe?'mine':''}" style="font-size:10px;padding:2px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-left:6px;" onclick="openProfileSheet('${s.user_id}')">${isMe?'you · ':''}@${username}</span>`
-      : (isMe?`<span class="chip mine" style="font-size:10px;padding:2px 8px;margin-left:6px;">you</span>`:'');
+
+    // Username byline — own line, left-aligned, clickable for profile sheet.
+    // For your own shots, show "@username (you)" with the suffix in muted italic.
+    const userByline=username
+      ? `<div class="comm-user-byline" onclick="openProfileSheet('${s.user_id}')"><span class="comm-user-handle${isMe?' mine':''}">@${username}</span>${isMe?'<span class="comm-user-you"> (you)</span>':''}</div>`
+      : (isMe?`<div class="comm-user-byline"><span class="comm-user-handle mine">you</span></div>`:'');
 
     // Params grid — same pattern as My Shots stats row
     const ratioVal=s.ratio?parseFloat(s.ratio).toFixed(2):(s.dose&&s.yield_g?(s.yield_g/s.dose).toFixed(2):null);
@@ -110,10 +113,11 @@ function renderCommunity(){
       <div class="shot-card-header">
         <div style="min-width:0;flex:1;">
           <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${title}</div>
-          <div class="shot-meta">${metaLine}${userChip}</div>
+          <div class="shot-meta">${metaLine}</div>
         </div>
         ${isMe?`<button class="delete-btn" onclick="deleteCommunityShot('${s.id}')" title="Remove from community">✕</button>`:''}
       </div>
+      ${userByline}
       ${chips?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">${chips}</div>`:''}
       <div class="shot-stats">
         <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>

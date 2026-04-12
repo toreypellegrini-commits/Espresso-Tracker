@@ -12,7 +12,7 @@ const CURRENT_VERSION = '1.0.0';
 
 const CHANGELOG = [
   {
-    version: '1.0.0',
+    version: '1.0.1',
     date: 'April 2026',
     title: 'Public Beta',
     changes: [

@@ -12,9 +12,9 @@ const CURRENT_VERSION = '1.0.0';
 
 const CHANGELOG = [
   {
-    version: '1.0.0',
+    version: '1.0.1',
     date: 'April 2026',
-    title: 'Reddit Launch',
+    title: 'Public Beta',
     changes: [
       'Guided onboarding flow for new users',
       'Achievements progress bar on profile page',
@@ -25,6 +25,7 @@ const CHANGELOG = [
       'Reference recipe feature',
       'Log shot card refinements',
       'Bug fixes',
+      'Reworked community shots cards',
     ],
   },
 ];

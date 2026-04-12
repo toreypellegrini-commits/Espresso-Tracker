@@ -282,6 +282,16 @@
     .comm-coffee { font-family: var(--font-serif); font-weight: 500; font-size: 15px; }
     .comm-meta { font-size: 12px; color: var(--muted); }
     .comm-params { font-size: 13px; margin-top: 4px; }
+
+    /* Community card username byline (own line, subtle) */
+    /* When the byline follows the header, zero out the header's bottom margin
+       so the byline controls its own spacing cleanly. */
+    .shot-card-header:has(+ .comm-user-byline) { margin-bottom: 2px; }
+    .comm-user-byline { font-size: 12px; line-height: 1; margin-top: 0; margin-bottom: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: inline-block; }
+    .comm-user-handle { color: var(--muted); font-weight: 500; transition: color 0.12s; }
+    .comm-user-byline:hover .comm-user-handle { color: var(--accent); }
+    .comm-user-handle.mine { color: var(--success-text); }
+    .comm-user-you { color: var(--muted); font-style: italic; font-size: 11px; }
     .rating-stars-sm { color: #d4880a; font-size: 12px; }
 
     /* ─── INSIGHTS ─── */

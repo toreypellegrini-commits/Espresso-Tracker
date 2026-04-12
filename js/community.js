@@ -8,6 +8,12 @@ async function publishCommunityShot(shot,grinderName){
   try{
     const{data,error}=await sb.from('community_shots').insert({
       user_id:currentUser.id,grinder_name:grinderName,
+      // New separated columns for clean rendering
+      roaster:shot.roaster||null,
+      roast_name:shot.roastName||null,
+      origin:shot.origin||null,
+      varietal:shot.varietal||null,
+      // Keep legacy concatenated string for search/filter compatibility
       coffee:[shot.roaster,shot.roastName,shot.origin,shot.varietal].filter(Boolean).join(' · '),
       process:shot.process||null,roast:shot.roast||null,
       days_off_roast:shot.daysOffRoast!=null?parseInt(shot.daysOffRoast):null,
@@ -20,7 +26,6 @@ async function publishCommunityShot(shot,grinderName){
       extraction_date:shot.date?.slice(0,10)||todayStr()
     }).select().single();
     if(error)throw error;
-    // Add to local array so achievements like "Community Contributor" can detect it immediately
     if(data)communityShots.unshift(data);
     console.log('Community shot published successfully');
   }catch(e){console.error('Community shot publish failed:',e.message,e);}
@@ -67,26 +72,61 @@ function renderCommunity(){
   else if(sortVal==='rating-desc')filtered.sort((a,b)=>(b.rating||0)-(a.rating||0));
   const el=document.getElementById('community-list');
   if(!filtered.length){el.innerHTML='<div class="empty">No community shots match these filters.</div>';return;}
+
   el.innerHTML=filtered.map(s=>{
     const isMe=s.user_id===currentUser?.id;
     const profile=profileCache[s.user_id]||{};
     const username=isMe?(userProfile.username||profile.username||''):profile.username||'';
-    const params=[s.grind?`Grind ${s.grind}`:null,s.ratio?`1:${parseFloat(s.ratio).toFixed(2)}`:(s.dose&&s.yield_g?`1:${(s.yield_g/s.dose).toFixed(2)}`:null),s.temp?`${s.temp}°C`:null,s.time_s?`${s.time_s}s`:null,s.days_off_roast!=null?`${s.days_off_roast}d off roast`:null].filter(Boolean).join(' · ');
-    const usernameTag=username
-      ? `<span class="chip ${isMe?'mine':''}" style="font-size:10px;padding:2px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent;" onclick="openProfileSheet('${s.user_id}')">${isMe?'you · ':''}@${username}</span>`
-      : (isMe?`<span class="chip mine" style="font-size:10px;padding:2px 8px;">you</span>`:'');
-    return`<div class="comm-card">
-      <div class="comm-card-header">
-        <div class="comm-coffee">${s.coffee||'Unknown coffee'}</div>
-        <div class="comm-meta" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          ${s.rating?`<span class="rating-stars-sm">${'★'.repeat(s.rating)}</span>`:''}
-          ${s.extraction_date?`<span>${fmtDate(s.extraction_date+'T12:00:00')}</span>`:''}
-          ${usernameTag}
-          ${isMe?`<button class="delete-btn" onclick="deleteCommunityShot('${s.id}')" title="Remove from community">✕</button>`:''}
+
+    // Use new separated columns when present; fall back to parsing legacy `coffee` string
+    // for backward compatibility with community shots posted before the schema update.
+    let roaster=s.roaster,roastName=s.roast_name,origin=s.origin,varietal=s.varietal;
+    if(!roaster&&s.coffee){
+      const parts=s.coffee.split(' · ');
+      roaster=parts[0]||null;
+      roastName=parts[1]||null;
+      origin=parts[2]||null;
+      varietal=parts[3]||null;
+    }
+
+    const title=roastName?(roaster?roaster+' · '+roastName:roastName):(roaster||'Unknown coffee');
+    const chipsArr=[origin,varietal,s.process,s.roast].filter(Boolean);
+    const chips=chipsArr.map(c=>`<span class="chip">${c}</span>`).join('');
+
+    // Build meta line: date · rating · grinder · @username (clickable)
+    const metaParts=[];
+    if(s.extraction_date)metaParts.push(fmtDate(s.extraction_date+'T12:00:00'));
+    if(s.rating)metaParts.push(starsHTML(s.rating));
+    if(s.grinder_name)metaParts.push(s.grinder_name);
+    const metaLine=metaParts.join(' · ');
+    const userChip=username
+      ? `<span class="chip ${isMe?'mine':''}" style="font-size:10px;padding:2px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-left:6px;" onclick="openProfileSheet('${s.user_id}')">${isMe?'you · ':''}@${username}</span>`
+      : (isMe?`<span class="chip mine" style="font-size:10px;padding:2px 8px;margin-left:6px;">you</span>`:'');
+
+    // Params grid — same pattern as My Shots stats row
+    const ratioVal=s.ratio?parseFloat(s.ratio).toFixed(2):(s.dose&&s.yield_g?(s.yield_g/s.dose).toFixed(2):null);
+
+    return `<div class="shot-card">
+      <div class="shot-card-header">
+        <div style="min-width:0;flex:1;">
+          <div class="shot-date" style="font-family:var(--font-serif);font-size:15px;">${title}</div>
+          <div class="shot-meta">${metaLine}${userChip}</div>
         </div>
+        ${isMe?`<button class="delete-btn" onclick="deleteCommunityShot('${s.id}')" title="Remove from community">✕</button>`:''}
       </div>
-      <div style="font-size:12px;color:var(--muted);">${s.grinder_name}${[s.process,s.roast].filter(Boolean).length?' · '+[s.process,s.roast].filter(Boolean).join(' · '):''}</div>
-      <div class="comm-params" style="color:var(--muted);">${params}</div>
+      ${chips?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">${chips}</div>`:''}
+      <div class="shot-stats">
+        <div class="stat"><div class="stat-val">${s.dose||'—'}g</div><div class="stat-lbl">Dose</div></div>
+        <div class="stat"><div class="stat-val">${s.yield_g||'—'}g</div><div class="stat-lbl">Yield</div></div>
+        <div class="stat"><div class="stat-val">${ratioVal?'1:'+ratioVal:'—'}</div><div class="stat-lbl">Ratio</div></div>
+        <div class="stat"><div class="stat-val">${s.time_s?s.time_s+'s':'—'}</div><div class="stat-lbl">Time</div></div>
+      </div>
+      <div class="shot-stats" style="margin-top:6px;">
+        <div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div>
+        <div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div>
+        <div class="stat"><div class="stat-val">${s.process||'—'}</div><div class="stat-lbl">Process</div></div>
+        <div class="stat"><div class="stat-val">${s.days_off_roast!=null?s.days_off_roast+'d':'—'}</div><div class="stat-lbl">Off roast</div></div>
+      </div>
     </div>`;
   }).join('');
 }

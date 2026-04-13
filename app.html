@@ -513,6 +513,7 @@
         <div class="form-group"><label>Process</label><select id="m-process"><option value="">Select…</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option><option>Other</option></select></div>
         <div class="form-group"><label>Roast level</label><select id="m-roast-level"><option value="">Select…</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>
         <div class="form-group"><label>Roast date</label><input type="date" id="m-roastdate"></div>
+        <div class="form-group"><label>Rest days</label><input type="number" id="m-restdays" min="1" max="60" step="1" placeholder="7"><div class="upload-hint">Days before peak window starts</div></div>
         <div class="form-group full"><label>Bag photo</label><input type="file" id="m-photo" accept="image/*" onchange="previewPhoto()"><div class="upload-hint">Upload a photo of the bag or label</div><img id="m-photo-preview" style="display:none;margin-top:8px;width:80px;height:80px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);"></div>
         <div class="form-group full"><label>Notes (optional)</label><textarea id="m-desc" style="min-height:52px;"></textarea></div>
         <div class="form-group full" id="modal-roast-extra" style="display:none;">

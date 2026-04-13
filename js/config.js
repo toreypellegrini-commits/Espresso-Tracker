@@ -8,7 +8,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.0.0';
+const CURRENT_VERSION = '1.0.1';
 
 const CHANGELOG = [
   {

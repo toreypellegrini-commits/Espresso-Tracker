@@ -23,7 +23,7 @@ const CHANGELOG = [
       'Unified grinder picker across the app',
       'Shot log shows last shot tags and notes for context',
       'Reference recipe feature',
-      'Log shot card refinements'
+      'Log shot card refinements',
       'Custom rest days feature',
       'Bug fixes',
     ],

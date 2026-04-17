@@ -24,7 +24,7 @@ const CHANGELOG = [
       'Shot log shows last shot tags and notes for context',
       'Reference recipe feature',
       'Log shot card refinements',
-      'Custom rest days feature',
+      'Custom rest periods feature',
       'Bug fixes',
     ],
   },

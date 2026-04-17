@@ -70,7 +70,6 @@ function showApp() {
   loadProfile();
   initExtractionDate(); populateRoastDropdown(); populateGrinderDropdown();
   renderHome();
-  setTimeout(computeAchievements, 1000);
 }
 
 async function signInWithGoogle() {

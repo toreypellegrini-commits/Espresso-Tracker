@@ -153,11 +153,6 @@ function showNextToast() {
   }, 3500);
 }
 
-// Legacy function name kept for compatibility
-function showAchievementToast(achievement) {
-  queueAchievementToasts([achievement]);
-}
-
 // ─── DIALED BADGE ───
 
 function checkDialedCondition(roastId) {

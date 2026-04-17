@@ -82,10 +82,6 @@ function goBack() {
   navTo(previousPage === 'roast-detail' ? 'library' : previousPage === 'log' ? 'home' : previousPage);
 }
 
-function logShotForCurrentRoast() {
-  navTo('log', { roastId: currentDetailRoastId });
-}
-
 function globalFabClick() {
   if (currentPage === 'roast-detail' && currentDetailRoastId) {
     navTo('log', { roastId: currentDetailRoastId });

@@ -18,16 +18,8 @@ async function loadUserData() {
     roastLib = (rR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
     grinderLib = (gR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
     setDbStatus('ok', 'Saved');
-    // Defer non-critical loads so the app renders immediately.
-    // Community shots are only needed for the community page and a few achievements —
-    // load them in the background and recompute achievements once they arrive.
-    if (typeof loadCommunityShots === 'function') {
-      loadCommunityShots().then(() => {
-        if (typeof computeAchievements === 'function') computeAchievements();
-      }).catch(() => {});
-    }
-    // Sync shot count to profile for public visibility
-    syncShotCount();
+    // Defer non-critical work so it doesn't block initial render
+    setTimeout(() => syncShotCount(), 3000);
   } catch (e) {
     if (e.message === 'timeout') {
       setDbStatus('error', 'Tap to retry');

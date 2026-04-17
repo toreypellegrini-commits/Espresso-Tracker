@@ -70,7 +70,7 @@ function navTo(page, opts = {}) {
   if (page === 'home') { renderHome(); }
   if (page === 'profile') { populateProfileForm(); const thSel = document.getElementById('p-theme'); if (thSel) thSel.value = localStorage.getItem('ext_theme') || 'auto'; renderProfileRankAndAchievements(); }
   if (page === 'myshots') { populateMyShotsGrinderFilter(); renderMyShots(); }
-  if (page === 'community') { loadCommunityShots().then(() => { populateCommunityGrinderFilter(); renderCommunity(); }); }
+  if (page === 'community') { ensureCommunityLoaded(); }
   if (page === 'grinders') renderGrinders();
   if (page === 'insights') renderInsights();
 
@@ -80,6 +80,10 @@ function navTo(page, opts = {}) {
 
 function goBack() {
   navTo(previousPage === 'roast-detail' ? 'library' : previousPage === 'log' ? 'home' : previousPage);
+}
+
+function logShotForCurrentRoast() {
+  navTo('log', { roastId: currentDetailRoastId });
 }
 
 function globalFabClick() {

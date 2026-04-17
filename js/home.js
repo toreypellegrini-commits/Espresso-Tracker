@@ -196,14 +196,13 @@ function renderOpenBags() {
   const SEVEN_DAYS_MS = 7 * 86400000;
   const today = todayStr();
 
-  // Build index of most recent shot timestamp per roast (single pass over shots)
-  const lastShotByRoast = {};
+  // Build a map of roastLibId → most recent shot timestamp in one pass (O(shots))
+  const lastShotMap = new Map();
   for (const s of shots) {
     if (s.roastLibId != null) {
       const t = new Date(s.date).getTime();
-      if (!lastShotByRoast[s.roastLibId] || t > lastShotByRoast[s.roastLibId]) {
-        lastShotByRoast[s.roastLibId] = t;
-      }
+      const prev = lastShotMap.get(s.roastLibId) || 0;
+      if (t > prev) lastShotMap.set(s.roastLibId, t);
     }
   }
 
@@ -211,7 +210,7 @@ function renderOpenBags() {
     const days = calcDaysOffRoast(r.roastDate, today);
     const phase = getRoastPhase(days, r.restDays); // null if no roast date
     const rest = (typeof r.restDays === 'number' && r.restDays > 0) ? r.restDays : 7;
-    const lastShotTs = lastShotByRoast[r.id] || 0;
+    const lastShotTs = lastShotMap.get(r.id) || 0;
     const hasRecentShot = lastShotTs > 0 && (now - lastShotTs) <= SEVEN_DAYS_MS;
 
     let tier;

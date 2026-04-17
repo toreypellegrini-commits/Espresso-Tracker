@@ -83,6 +83,18 @@ function showSimpleToast(message) {
   }, 2000);
 }
 
+// Format a shot as a compact recipe line: "18g → 42g · 29s · grind 36"
+function formatRecipeLine(shot) {
+  if (!shot) return '';
+  const parts = [];
+  if (shot.dose && shot.yield) parts.push(`${shot.dose}g → ${shot.yield}g`);
+  else if (shot.dose) parts.push(`${shot.dose}g in`);
+  else if (shot.yield) parts.push(`${shot.yield}g out`);
+  if (shot.time) parts.push(`${shot.time}s`);
+  if (shot.grind) parts.push(`grind ${shot.grind}`);
+  return parts.join(' · ');
+}
+
 // ─── LIBRARY ───
 
 function renderLibCard(r){

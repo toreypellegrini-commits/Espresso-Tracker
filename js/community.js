@@ -27,6 +27,7 @@ async function publishCommunityShot(shot,grinderName){
     }).select().single();
     if(error)throw error;
     if(data)communityShots.unshift(data);
+    myCommunityCount++;
     console.log('Community shot published successfully');
   }catch(e){console.error('Community shot publish failed:',e.message,e);}
 }

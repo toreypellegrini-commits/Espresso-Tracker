@@ -6,17 +6,19 @@ async function loadUserData() {
   setDbStatus('saving', 'Loading…');
   const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
   try {
-    const [sR, rR, gR] = await Promise.race([
+    const [sR, rR, gR, ccR] = await Promise.race([
       Promise.all([
         sb.from('shots').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
         sb.from('roast_library').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
-        sb.from('grinders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true })
+        sb.from('grinders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true }),
+        sb.from('community_shots').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id)
       ]),
       timeout.then(() => { throw new Error('timeout'); })
     ]);
     shots = (sR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
     roastLib = (rR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
     grinderLib = (gR.data || []).map(r => ({ ...r.data, _db_id: r.id }));
+    myCommunityCount = ccR.count || 0;
     setDbStatus('ok', 'Saved');
     // Defer non-critical work so it doesn't block initial render
     setTimeout(() => syncShotCount(), 3000);

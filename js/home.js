@@ -51,7 +51,7 @@ function renderProfileRankAndAchievements() {
     `;
   }
 
-  const unlocked = computeAchievements();
+  const unlocked = getEarnedAchievementIds();
   const gridEl = document.getElementById('profile-achievements-grid');
   const headerEl = document.getElementById('profile-achievements-header');
   const totalCount = ACHIEVEMENTS.length;

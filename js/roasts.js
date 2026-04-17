@@ -226,8 +226,8 @@ function openEditRoast(id){
   document.getElementById('modal-roast').classList.remove('modal-hidden');
 }
 
-function toggleFinished(id){const r=roastLib.find(x=>x.id==id);if(!r)return;r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;dbUpdate('roast_library',r._db_id,r).then(()=>{setDbStatus('ok','Saved');renderLibrary();populateRoastDropdown();}).catch(()=>setDbStatus('error','Error'));}
-function modalToggleFinished(){const r=roastLib.find(x=>x.id==editingRoastId);if(!r)return;r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;dbUpdate('roast_library',r._db_id,r).then(()=>{setDbStatus('ok','Saved');document.getElementById('modal-finish-btn').textContent=r.finished?'↩ Mark active':'✓ Mark finished';renderLibrary();populateRoastDropdown();}).catch(()=>setDbStatus('error','Error'));}
+function toggleFinished(id){const r=roastLib.find(x=>x.id==id);if(!r)return;r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;dbUpdate('roast_library',r._db_id,r).then(()=>{setDbStatus('ok','Saved');renderLibrary();populateRoastDropdown();if(r.finished)computeAchievements();}).catch(()=>setDbStatus('error','Error'));}
+function modalToggleFinished(){const r=roastLib.find(x=>x.id==editingRoastId);if(!r)return;r.finished=!r.finished;r.finishedDate=r.finished?todayStr():null;dbUpdate('roast_library',r._db_id,r).then(()=>{setDbStatus('ok','Saved');document.getElementById('modal-finish-btn').textContent=r.finished?'↩ Mark active':'✓ Mark finished';renderLibrary();populateRoastDropdown();if(r.finished)computeAchievements();}).catch(()=>setDbStatus('error','Error'));}
 
 function modalDeleteRoast(){if(!editingRoastId)return;const r=roastLib.find(x=>x.id==editingRoastId);if(!r)return;dbDelete('roast_library',r._db_id).then(()=>{roastLib=roastLib.filter(x=>x.id!==editingRoastId);closeModal('roast');renderLibrary();populateRoastDropdown();setDbStatus('ok','Saved');if(currentPage==='roast-detail')navTo('library');}).catch(()=>setDbStatus('error','Error'));}
 

@@ -8,18 +8,24 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.0.3';
+const CURRENT_VERSION = '1.0.1';
 
 const CHANGELOG = [
   {
-    version: '1.0.3',
-    date: 'April 17, 2026',
-    title: 'Custom Rest Days + Optimizations',
+    version: '1.0.1',
+    date: 'April 2026',
+    title: 'Public Beta',
     changes: [
-      'Custom rest days on roasts',
-      '4-tier home screen sort for open bags',
-      'Startup optimizations',
-      'Improved achievement persistence',
+      'Guided onboarding flow for new users',
+      'Achievements progress bar on profile page',
+      'Co-ferment and Anaerobic Washed added to process options',
+      'Delete confirmations on shot cards',
+      'Unified grinder picker across the app',
+      'Shot log shows last shot tags and notes for context',
+      'Reference recipe feature',
+      'Log shot card refinements',
+      'Custom rest days feature',
+      'Bug fixes',
     ],
   },
 ];
@@ -68,17 +74,17 @@ const TIPS = [
 
 const GRINDERS = {
   'Flat Burr Electric': [
-    'Eureka Mignon Specialita', 'Eureka Mignon XL', 'Eureka Oro Single Dose',
-    'Fellow Ode', 'DF64', 'DF83', 'Lagom P64', 'Lagom P100',
-    'Mazzer Mini', 'Mazzer Philos', 'Mahlkönig X54', 'Weber EG-1',
+    'DF54', 'DF64', 'DF83', 'Eureka Atom 75', 'Eureka Mignon Specialita', 'Eureka Mignon XL', 'Eureka Oro Single Dose',
+    'Fellow Ode', 'Lagom P64', 'Lagom P100',
+    'Mahlkönig X54', 'Mazzer Mini', 'Mazzer Philos', 'Timemore Sculptor', 'Weber EG-1', 'Zerno Z1',
   ],
   'Conical Burr Electric': [
-    'Niche Zero', 'Niche Duo', 'Eureka Mignon Crono',
-    'Baratza Sette 270', 'Baratza Vario', 'Breville Smart Grinder Pro',
-    'Ceado E5P', 'Fiorenzato AllGround',
+    'Baratza Encore ESP', 'Baratza Sette 270', 'Baratza Vario', 'Breville Smart Grinder Pro',
+    'Ceado E5P', 'Eureka Mignon Crono', 'Eureka Mignon Zero', 'Fiorenzato AllGround',
+    'Niche Duo', 'Niche Zero',
   ],
   'Hand Grinders': [
-    '1Zpresso JX-Pro', '1Zpresso J-Max', '1Zpresso K-Max', '1Zpresso K-Ultra',
+    '1Zpresso J-Max', '1Zpresso JX-Pro', '1Zpresso K-Max', '1Zpresso K-Ultra',
     'Comandante C40', 'Kinu M47', 'Timemore Chestnut X',
   ],
 };

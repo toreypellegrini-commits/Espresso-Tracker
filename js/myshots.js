@@ -1,6 +1,10 @@
 // ─── Dialed — My Shots ───
-// My Shots page: filtering, sorting, rendering.
+// My Shots page: filtering, sorting, progressive rendering.
 // Loads after router.js.
+
+const MY_SHOTS_PAGE_SIZE = 10;
+let _myShotsFiltered = [];  // cached filtered+sorted result
+let _myShotsShown = 0;      // how many currently rendered
 
 // ─── MY SHOTS PAGE ───
 function populateMyShotsGrinderFilter() {
@@ -18,7 +22,7 @@ function renderMyShots() {
   const grinder = document.getElementById('ms-grinder').value;
   const sortVal = document.getElementById('ms-sort').value;
 
-  let filtered = shots.filter(s => {
+  _myShotsFiltered = shots.filter(s => {
     const text = [s.roaster,s.roastName,s.origin,s.varietal,s.notes,s.grinderName].join(' ').toLowerCase();
     if (search && !text.includes(search)) return false;
     if (process && s.process !== process) return false;
@@ -28,16 +32,30 @@ function renderMyShots() {
     return true;
   });
 
-  if (sortVal==='date-desc') filtered.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  else if (sortVal==='date-asc') filtered.sort((a,b)=>new Date(a.date)-new Date(b.date));
-  else if (sortVal==='rating-desc') filtered.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  if (sortVal==='date-desc') _myShotsFiltered.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  else if (sortVal==='date-asc') _myShotsFiltered.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  else if (sortVal==='rating-desc') _myShotsFiltered.sort((a,b)=>(b.rating||0)-(a.rating||0));
 
   const el = document.getElementById('myshots-list');
-  if (!filtered.length) { el.innerHTML='<div class="empty">No shots match these filters.</div>'; return; }
+  if (!_myShotsFiltered.length) { el.innerHTML='<div class="empty">No shots match these filters.</div>'; return; }
 
-  el.innerHTML = filtered.map(s => {
+  // Reset and render first page
+  _myShotsShown = 0;
+  el.innerHTML = '';
+  _renderMoreMyShots();
+}
+
+function _renderMoreMyShots() {
+  const el = document.getElementById('myshots-list');
+  const end = Math.min(_myShotsShown + MY_SHOTS_PAGE_SIZE, _myShotsFiltered.length);
+  const batch = _myShotsFiltered.slice(_myShotsShown, end);
+
+  // Remove existing load-more button if present
+  const oldBtn = document.getElementById('myshots-load-more');
+  if (oldBtn) oldBtn.remove();
+
+  const html = batch.map(s => {
     const chips = [s.origin,s.varietal,s.process,s.roast].filter(Boolean).map(c=>`<span class="chip">${c}</span>`).join('');
-    // Check if this shot is the reference for its roast
     const roast = s.roastLibId ? roastLib.find(r => r.id == s.roastLibId) : null;
     const isRef = roast && roast.referenceShotId == s.id;
     const canBeRef = !!s.roastLibId;
@@ -68,6 +86,15 @@ function renderMyShots() {
       ${s.notes?`<div class="shot-note">${s.notes}</div>`:''}
     </div>`;
   }).join('');
+
+  el.insertAdjacentHTML('beforeend', html);
+  _myShotsShown = end;
+
+  // Add load-more button if there are more results
+  if (_myShotsShown < _myShotsFiltered.length) {
+    const remaining = _myShotsFiltered.length - _myShotsShown;
+    el.insertAdjacentHTML('beforeend',
+      `<button id="myshots-load-more" class="load-more-btn" onclick="_renderMoreMyShots()">Show more (${remaining} remaining)</button>`
+    );
+  }
 }
-
-

@@ -27,11 +27,14 @@ async function publishCommunityShot(shot,grinderName){
     }).select().single();
     if(error)throw error;
     if(data)communityShots.unshift(data);
+    myCommunityCount++;
     console.log('Community shot published successfully');
   }catch(e){console.error('Community shot publish failed:',e.message,e);}
 }
 
 // Cache of user_id → profile data for username display
+
+let _communityLoaded = false;
 
 async function loadCommunityShots(){
   try{
@@ -44,8 +47,21 @@ async function loadCommunityShots(){
       const{data:profiles}=await sb.from('profiles').select('id,username,photo_url').in('id',userIds);
       (profiles||[]).forEach(p=>{ profileCache[p.id]={username:p.username||'',photo:p.photo_url||null}; });
     }
+    _communityLoaded = true;
   }
   catch(e){communityShots=[];}
+}
+
+// Lazy loader: called when navigating to community tab.
+// Loads data on first visit, then just renders on subsequent visits.
+async function ensureCommunityLoaded() {
+  if (!_communityLoaded) {
+    const el = document.getElementById('community-list');
+    if (el) el.innerHTML = '<div class="empty">Loading community shots…</div>';
+    await loadCommunityShots();
+  }
+  populateCommunityGrinderFilter();
+  renderCommunity();
 }
 
 // ─── COMMUNITY SHOTS ───

@@ -21,10 +21,6 @@ function syncExtractionDate() {
   if (vis && hidden) hidden.value = vis.value;
 }
 
-function updateDaysOffRoast() {
-  // no-op — days off roast now computed in context block
-}
-
 function updateRatio() {
   const dose = parseFloat(document.getElementById('f-dose').value);
   const yld = parseFloat(document.getElementById('f-yield').value);
@@ -203,9 +199,8 @@ function loadRoast() {
 function renderShotContext(r, roastId) {
   const days = calcDaysOffRoast(r.roastDate, todayStr());
   const daysHTML = days !== null ? (() => {
-    const cls = days < 7 ? 'days-fresh' : days <= 21 ? 'days-peak' : 'days-old';
-    const lbl = days < 7 ? 'resting' : days <= 21 ? 'peak' : 'past peak';
-    return `<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;
+    const p = getRoastPhase(days, r.restDays);
+    return p ? `<span class="days-badge ${p.cls}">${days}d · ${p.label}</span>` : '';
   })() : '';
 
   const referenceShot = getReferenceShot(roastId);

@@ -19,6 +19,8 @@ async function loadProfile() {
         fav_roasters: data.favorite_roasters||'',
         photo: data.photo_url||null
       };
+      // Restore persisted achievements
+      earnedAchievements = data.achievements || {};
       // Update community shots display name
       updateAvatarDisplay();
       // Re-render onboarding and greeting now that profile data is available

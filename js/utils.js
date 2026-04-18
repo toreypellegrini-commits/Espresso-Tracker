@@ -40,3 +40,15 @@ function g(id) {
 function getRank(shotCount) {
   return RANKS.find(r => shotCount >= r.min && shotCount <= r.max) || RANKS[0];
 }
+
+// Classify a bag's current phase based on days off roast and its rest period.
+// restDays = end of rest / start of peak. Peak lasts 14 days after rest ends.
+// Returns { cls, label, phase } where phase is 'rest' | 'peak' | 'past'.
+function getRoastPhase(daysOffRoast, restDays) {
+  if (daysOffRoast == null) return null;
+  const rest = (typeof restDays === 'number' && restDays > 0) ? restDays : 7;
+  const peakEnd = rest + 14;
+  if (daysOffRoast < rest) return { cls: 'days-fresh', label: 'resting', phase: 'rest' };
+  if (daysOffRoast <= peakEnd) return { cls: 'days-peak', label: 'peak', phase: 'peak' };
+  return { cls: 'days-old', label: 'past peak', phase: 'past' };
+}

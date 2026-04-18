@@ -1,14 +1,12 @@
 // ─── Dialed — Achievements ───
 // Rank system, achievement computation, dialed badge logic.
 // Loads after router.js.
-
-// Per-user localStorage key for achievements
-function _achievementsKey() {
-  return currentUser ? 'dialed_achievements_' + currentUser.id : 'dialed_achievements';
-}
-
-// Clean up the old shared key from before per-user fix
-localStorage.removeItem('dialed_achievements');
+//
+// Achievements persist in the `profiles.achievements` JSONB column as
+// { achievement_id: "YYYY-MM-DD", ... }.  On startup, `loadProfile()`
+// populates the global `earnedAchievements` object.  `computeAchievements()`
+// is called only after shot-save / bag-finish / dial — never on login.
+// New achievements are written back to the DB immediately.
 
 // Track which achievements have already been toasted this session to prevent repeats
 let _toastedThisSession = new Set();
@@ -17,15 +15,23 @@ let _toastedThisSession = new Set();
 let _toastQueue = [];
 let _toastActive = false;
 
-// Compute which achievements are unlocked from current data
+// Returns a Set of earned achievement IDs (for rendering grids/progress bars).
+// Does NOT recompute — just reads the persisted state.
+function getEarnedAchievementIds() {
+  return new Set(Object.keys(earnedAchievements));
+}
+
+// Compute which achievements are unlocked from current data.
+// Only call after a shot save, bag finish, or dial action.
 function computeAchievements() {
-  const unlocked = new Set(JSON.parse(localStorage.getItem(_achievementsKey()) || '[]'));
+  const unlocked = new Set(Object.keys(earnedAchievements));
   const newlyUnlocked = [];
+  const today = todayStr();
 
   const check = (id, condition) => {
     if (!unlocked.has(id) && condition) {
       unlocked.add(id);
-      // Only toast if we haven't already shown this achievement this session
+      earnedAchievements[id] = today;
       if (!_toastedThisSession.has(id)) {
         _toastedThisSession.add(id);
         const a = ACHIEVEMENTS.find(a => a.id === id);
@@ -87,20 +93,29 @@ function computeAchievements() {
   });
   check('roaster_loyalist', Object.values(roasterFinished).some(v => v >= 10));
 
-  // Community
-  const myCommShots = communityShots.filter(s => s.user_id === currentUser?.id);
-  check('contributor', myCommShots.length >= 1);
-  check('comm_regular', myCommShots.length >= 10);
-  check('comm_pillar', myCommShots.length >= 100);
+  // Community — uses myCommunityCount (loaded on startup) instead of scanning communityShots
+  check('contributor', myCommunityCount >= 1);
+  check('comm_regular', myCommunityCount >= 10);
+  check('comm_pillar', myCommunityCount >= 100);
 
-  localStorage.setItem(_achievementsKey(), JSON.stringify([...unlocked]));
-
-  // Queue any newly unlocked achievements for display
+  // Persist to DB if anything new was earned
   if (newlyUnlocked.length > 0) {
+    persistAchievements();
     queueAchievementToasts(newlyUnlocked);
   }
 
   return unlocked;
+}
+
+// Write earnedAchievements to profiles table (fire-and-forget)
+function persistAchievements() {
+  if (!currentUser) return;
+  sb.from('profiles')
+    .update({ achievements: earnedAchievements })
+    .eq('id', currentUser.id)
+    .then(function(res) {
+      if (res.error) console.warn('Achievement persist error:', res.error.message);
+    });
 }
 
 // Reset session toast tracking (call on sign-out so new user gets fresh toasts)
@@ -108,6 +123,8 @@ function resetAchievementSession() {
   _toastedThisSession = new Set();
   _toastQueue = [];
   _toastActive = false;
+  earnedAchievements = {};
+  myCommunityCount = 0;
   if (toastTimeout) clearTimeout(toastTimeout);
 }
 
@@ -139,39 +156,34 @@ function showNextToast() {
     return;
   }
   _toastActive = true;
-  const achievement = _toastQueue.shift();
-  const toast = document.getElementById('achievement-toast');
+  var achievement = _toastQueue.shift();
+  var toast = document.getElementById('achievement-toast');
   document.getElementById('achievement-toast-icon').textContent = achievement.icon;
   document.getElementById('achievement-toast-name').textContent = achievement.name;
   document.getElementById('achievement-toast-desc').textContent = achievement.desc;
   toast.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
+  toastTimeout = setTimeout(function() {
     toast.classList.remove('show');
     // Show next toast after a brief gap
     setTimeout(showNextToast, 500);
   }, 3500);
 }
 
-// Legacy function name kept for compatibility
-function showAchievementToast(achievement) {
-  queueAchievementToasts([achievement]);
-}
-
 // ─── DIALED BADGE ───
 
 function checkDialedCondition(roastId) {
-  const r = roastLib.find(x => x.id == roastId);
+  var r = roastLib.find(function(x) { return x.id == roastId; });
   if (!r || r.dialed) return; // already dialed
-  const bagShots = shots
-    .filter(s => s.roastLibId == roastId && s.rating > 0)
-    .sort((a,b) => new Date(b.date) - new Date(a.date))
+  var bagShots = shots
+    .filter(function(s) { return s.roastLibId == roastId && s.rating > 0; })
+    .sort(function(a,b) { return new Date(b.date) - new Date(a.date); })
     .slice(0, 4);
   if (bagShots.length < 4) return;
-  const highRated = bagShots.filter(s => s.rating >= 4).length;
+  var highRated = bagShots.filter(function(s) { return s.rating >= 4; }).length;
   if (highRated >= 3) {
     pendingDialedRoastId = roastId;
-    setTimeout(() => document.getElementById('modal-dialed').classList.remove('modal-hidden'), 600);
+    setTimeout(function() { document.getElementById('modal-dialed').classList.remove('modal-hidden'); }, 600);
   }
 }
 

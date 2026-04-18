@@ -51,7 +51,7 @@ function renderProfileRankAndAchievements() {
     `;
   }
 
-  const unlocked = computeAchievements();
+  const unlocked = getEarnedAchievementIds();
   const gridEl = document.getElementById('profile-achievements-grid');
   const headerEl = document.getElementById('profile-achievements-header');
   const totalCount = ACHIEVEMENTS.length;
@@ -187,14 +187,65 @@ function renderOpenBags() {
     return;
   }
 
+  // ─── TIER-BASED SORT ───
+  // Tier 1: Actively brewing — at least one shot in last 7 days. Sort: most recent shot first.
+  // Tier 2: In peak, not actively brewed — past rest, no shots in last 7d. Sort: closest to start of peak.
+  // Tier 3: Resting — still within rest period. Sort: closest to peak (largest daysOffRoast within rest).
+  // Tier 4: Past peak. Sort: most recent shot first.
+  const now = Date.now();
+  const SEVEN_DAYS_MS = 7 * 86400000;
+  const today = todayStr();
+
+  // Build a map of roastLibId → most recent shot timestamp in one pass (O(shots))
+  const lastShotMap = new Map();
+  for (const s of shots) {
+    if (s.roastLibId != null) {
+      const t = new Date(s.date).getTime();
+      const prev = lastShotMap.get(s.roastLibId) || 0;
+      if (t > prev) lastShotMap.set(s.roastLibId, t);
+    }
+  }
+
+  const bagMeta = activeBags.map(r => {
+    const days = calcDaysOffRoast(r.roastDate, today);
+    const phase = getRoastPhase(days, r.restDays); // null if no roast date
+    const rest = (typeof r.restDays === 'number' && r.restDays > 0) ? r.restDays : 7;
+    const lastShotTs = lastShotMap.get(r.id) || 0;
+    const hasRecentShot = lastShotTs > 0 && (now - lastShotTs) <= SEVEN_DAYS_MS;
+
+    let tier;
+    if (hasRecentShot) tier = 1;
+    else if (phase && phase.phase === 'peak') tier = 2;
+    else if (phase && phase.phase === 'rest') tier = 3;
+    else if (phase && phase.phase === 'past') tier = 4;
+    else tier = 2; // no roast date — treat as middle tier so it stays visible but not pinned
+
+    return { r, days, phase, rest, lastShotTs, tier };
+  });
+
+  bagMeta.sort((a, b) => {
+    if (a.tier !== b.tier) return a.tier - b.tier;
+    if (a.tier === 1) return b.lastShotTs - a.lastShotTs; // most recent shot first
+    if (a.tier === 2) {
+      // Closest to start of peak = smallest (days - restDays), non-negative
+      const ao = (a.days ?? Infinity) - a.rest;
+      const bo = (b.days ?? Infinity) - b.rest;
+      return ao - bo;
+    }
+    if (a.tier === 3) {
+      // Closest to peak = largest days within rest window
+      return (b.days ?? -Infinity) - (a.days ?? -Infinity);
+    }
+    // Tier 4: most recent shot first (fallback to smallest days past peak)
+    if (a.lastShotTs !== b.lastShotTs) return b.lastShotTs - a.lastShotTs;
+    return (a.days ?? Infinity) - (b.days ?? Infinity);
+  });
+
   label.style.display = 'block';
-  container.innerHTML = activeBags.map(r => {
-    const days = calcDaysOffRoast(r.roastDate, todayStr());
-    const daysHTML = days !== null ? (() => {
-      const cls = days < 7 ? 'days-fresh' : days <= 21 ? 'days-peak' : 'days-old';
-      const lbl = days < 7 ? 'resting' : days <= 21 ? 'peak' : 'past peak';
-      return `<span class="days-badge ${cls}">${days}d · ${lbl}</span>`;
-    })() : '';
+  container.innerHTML = bagMeta.map(({ r, days, phase }) => {
+    const daysHTML = (days !== null && phase)
+      ? `<span class="days-badge ${phase.cls}">${days}d · ${phase.label}</span>`
+      : '';
 
     const chips = [r.origin, r.varietal, r.process, r.roast].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join('');
     const dialedBadge = r.dialed ? '<span class="dialed-stamp"><img src="data:image/png;base64,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" alt="Dialed"></span>' : '';

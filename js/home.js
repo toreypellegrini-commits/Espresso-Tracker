@@ -247,10 +247,27 @@ function renderOpenBags() {
     return Math.abs(a.distToPeak) - Math.abs(b.distToPeak);
   });
 
+  // Filter: hide past-peak and no-roast-date bags unless pulled within last 3 days
+  const THREE_DAYS_MS = 3 * 86400000;
+  const visible = bagMeta.filter(({ phase, distToPeak, lastShotTs }) => {
+    const recentlyPulled = lastShotTs > 0 && (now - lastShotTs) <= THREE_DAYS_MS;
+    if (recentlyPulled) return true;
+    // Hide past peak (distToPeak > 14) and no roast date (distToPeak === Infinity)
+    if (distToPeak > 14 || distToPeak === Infinity) return false;
+    return true;
+  });
+
+  if (!visible.length) {
+    label.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+
   label.style.display = 'block';
 
   const HOME_BAG_LIMIT = 2;
-  const allCards = bagMeta.map(({ r, days, phase }) => {
+  const toShow = visible.slice(0, HOME_BAG_LIMIT);
+  container.innerHTML = toShow.map(({ r, days, phase }) => {
     const daysHTML = (days !== null && phase)
       ? `<span class="days-badge ${phase.cls}">${days}d · ${phase.label}</span>`
       : '';
@@ -284,22 +301,7 @@ function renderOpenBags() {
       ${lastHTML}
       <button class="bag-card-btn" onclick="navTo('log',{roastId:${r.id}})">＋ Pull a shot</button>
     </div>`;
-  });
-
-  // Show top 2 bags by default, with "Show all" link if more exist
-  if (allCards.length <= HOME_BAG_LIMIT) {
-    container.innerHTML = allCards.join('');
-  } else {
-    container.innerHTML = allCards.slice(0, HOME_BAG_LIMIT).join('')
-      + `<button id="home-bags-expand" class="load-more-btn" onclick="expandOpenBags()">Show all open bags (${allCards.length})</button>`;
-    container._allCards = allCards; // stash for expand
-  }
-}
-
-function expandOpenBags() {
-  const container = document.getElementById('home-open-bags');
-  if (!container || !container._allCards) return;
-  container.innerHTML = container._allCards.join('');
+  }).join('');
 }
 
 // ─── ONBOARDING (new users) ───

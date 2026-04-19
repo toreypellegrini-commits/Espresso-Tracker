@@ -197,12 +197,14 @@ function renderOpenBags() {
   const today = todayStr();
 
   // Build a map of roastLibId → most recent shot timestamp in one pass (O(shots))
+  // Coerce keys to string to match loosely-typed roastLibId values
   const lastShotMap = new Map();
   for (const s of shots) {
     if (s.roastLibId != null) {
+      const key = String(s.roastLibId);
       const t = new Date(s.date).getTime();
-      const prev = lastShotMap.get(s.roastLibId) || 0;
-      if (t > prev) lastShotMap.set(s.roastLibId, t);
+      const prev = lastShotMap.get(key) || 0;
+      if (t > prev) lastShotMap.set(key, t);
     }
   }
 
@@ -210,7 +212,7 @@ function renderOpenBags() {
     const days = calcDaysOffRoast(r.roastDate, today);
     const phase = getRoastPhase(days, r.restDays); // null if no roast date
     const rest = (typeof r.restDays === 'number' && r.restDays > 0) ? r.restDays : 7;
-    const lastShotTs = lastShotMap.get(r.id) || 0;
+    const lastShotTs = lastShotMap.get(String(r.id)) || 0;
     const hasShots = lastShotTs > 0;
 
     // Distance to peak start: negative = still resting, 0 = just entered peak,

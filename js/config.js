@@ -14,7 +14,7 @@ const CHANGELOG = [
   {
     version: '1.1.2',
     date: 'April 18, 2026',
-    title: 'Temp Unit Toggle Feature + Optimizations',
+    title: 'Temp Unit Toggle + Optimizations',
     changes: [
       'Temperature unit toggle (C/F)',
       'Added ultra-light roast level',

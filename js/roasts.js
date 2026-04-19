@@ -209,6 +209,19 @@ function renderRoastShots(){
 // ─── ROAST MODAL ───
 function previewPhoto(){const file=document.getElementById('m-photo').files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const img=document.getElementById('m-photo-preview');img.src=e.target.result;img.style.display='block';};reader.readAsDataURL(file);}
 
+// Auto-populate rest days when roast level changes (only if rest days field is empty or matches a default)
+function onRoastLevelChange() {
+  const level = document.getElementById('m-roast-level').value;
+  const restField = document.getElementById('m-restdays');
+  const currentVal = restField.value.trim();
+  // Only auto-fill if the field is empty or already holds a default value
+  // (so we don't overwrite a custom value the user deliberately set)
+  const defaults = new Set(Object.values(REST_DAYS_BY_ROAST).map(String));
+  if (level && REST_DAYS_BY_ROAST[level] != null && (currentVal === '' || defaults.has(currentVal))) {
+    restField.value = REST_DAYS_BY_ROAST[level];
+  }
+}
+
 function openModal(type){document.getElementById('modal-'+type).classList.remove('modal-hidden');if(type==='roast'){editingRoastId=null;document.getElementById('modal-roast-title').textContent='Add roast';document.getElementById('modal-roast-save').textContent='Save roast';['m-roaster','m-roastname','m-origin','m-varietal','m-desc','m-roastdate','m-restdays'].forEach(id=>setField(id,''));document.getElementById('m-process').value='';document.getElementById('m-roast-level').value='';document.getElementById('m-photo-preview').style.display='none';document.getElementById('modal-roast-msg').textContent='';document.getElementById('modal-roast-extra').style.display='none';}if(type==='grinder'){editingGrinderId=null;document.getElementById('modal-grinder-title').textContent='Add grinder';populateGrinderModal('');setField('mg-notes','');document.getElementById('modal-grinder-msg').textContent='';document.getElementById('mg-name-other-wrap').style.display='none';setField('mg-name-other','');}}
 function closeModal(type){document.getElementById('modal-'+type).classList.add('modal-hidden');}
 

@@ -8,11 +8,11 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.1.0';
+const CURRENT_VERSION = '1.1.1';
 
 const CHANGELOG = [
   {
-    version: '1.1.0',
+    version: '1.1.1',
     date: 'April 18, 2026',
     title: 'UI Improvements + Optimizations',
     changes: [
@@ -21,6 +21,8 @@ const CHANGELOG = [
       'Machine and grinder dropdown list expansions',
       'Startup optimizations',
       'Improved achievement persistence',
+      'Added ultra-light roast level',
+      'Auto-default rest days by roast level',
     ],
   },
 ];
@@ -66,6 +68,17 @@ const TIPS = [
   'Tip: If your shot tastes bitter, try a slightly coarser grind or lower temp.',
   'Tip: Consistency in tamping pressure matters more than the pressure amount.',
 ];
+
+// Default rest days by roast level.
+// Auto-populates the rest days field when a roast level is selected.
+const REST_DAYS_BY_ROAST = {
+  'Ultra-light': 28,
+  'Light': 14,
+  'Light-medium': 14,
+  'Medium': 7,
+  'Medium-dark': 7,
+  'Dark': 7,
+};
 
 const GRINDERS = {
   'Flat Burr Electric': [

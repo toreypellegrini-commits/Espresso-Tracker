@@ -260,7 +260,7 @@
             <input type="date" id="f-extractdate-visible" onchange="syncExtractionDate()">
           </div>
           <div class="shot-input-group">
-            <label>Temp (°C)</label>
+            <label id="f-temp-label">Temp (°C)</label>
             <input type="number" id="f-temp" placeholder="93" step="0.5" inputmode="decimal">
           </div>
           <div class="shot-input-group">
@@ -466,6 +466,13 @@
             <option value="auto">System default</option>
             <option value="light">Light</option>
             <option value="dark">Dark</option>
+          </select>
+        </div>
+        <div class="profile-field">
+          <span class="profile-field-label">Temperature</span>
+          <select id="p-temp-unit" style="border:none;background:transparent;font-size:14px;color:var(--text);flex:1;padding:0;font-family:var(--font);outline:none;">
+            <option value="C">Celsius (°C)</option>
+            <option value="F">Fahrenheit (°F)</option>
           </select>
         </div>
       </div>

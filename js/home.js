@@ -197,12 +197,14 @@ function renderOpenBags() {
   const today = todayStr();
 
   // Build a map of roastLibId → most recent shot timestamp in one pass (O(shots))
+  // Coerce keys to string to match loosely-typed roastLibId values
   const lastShotMap = new Map();
   for (const s of shots) {
     if (s.roastLibId != null) {
+      const key = String(s.roastLibId);
       const t = new Date(s.date).getTime();
-      const prev = lastShotMap.get(s.roastLibId) || 0;
-      if (t > prev) lastShotMap.set(s.roastLibId, t);
+      const prev = lastShotMap.get(key) || 0;
+      if (t > prev) lastShotMap.set(key, t);
     }
   }
 
@@ -210,39 +212,64 @@ function renderOpenBags() {
     const days = calcDaysOffRoast(r.roastDate, today);
     const phase = getRoastPhase(days, r.restDays); // null if no roast date
     const rest = (typeof r.restDays === 'number' && r.restDays > 0) ? r.restDays : 7;
-    const lastShotTs = lastShotMap.get(r.id) || 0;
-    const hasRecentShot = lastShotTs > 0 && (now - lastShotTs) <= SEVEN_DAYS_MS;
+    const lastShotTs = lastShotMap.get(String(r.id)) || 0;
+    const hasShots = lastShotTs > 0;
 
-    let tier;
-    if (hasRecentShot) tier = 1;
-    else if (phase && phase.phase === 'peak') tier = 2;
-    else if (phase && phase.phase === 'rest') tier = 3;
-    else if (phase && phase.phase === 'past') tier = 4;
-    else tier = 2; // no roast date — treat as middle tier so it stays visible but not pinned
+    // Distance to peak start: negative = still resting, 0 = just entered peak,
+    // positive ≤ 14 = in peak, > 14 = past peak. Null roast date → Infinity (sink).
+    const distToPeak = days != null ? days - rest : Infinity;
 
-    return { r, days, phase, rest, lastShotTs, tier };
+    return { r, days, phase, rest, lastShotTs, hasShots, distToPeak };
   });
 
   bagMeta.sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier - b.tier;
-    if (a.tier === 1) return b.lastShotTs - a.lastShotTs; // most recent shot first
-    if (a.tier === 2) {
-      // Closest to start of peak = smallest (days - restDays), non-negative
-      const ao = (a.days ?? Infinity) - a.rest;
-      const bo = (b.days ?? Infinity) - b.rest;
-      return ao - bo;
+    // Tier 1: bags with shots always on top, most recent shot first
+    if (a.hasShots !== b.hasShots) return a.hasShots ? -1 : 1;
+    if (a.hasShots && b.hasShots) return b.lastShotTs - a.lastShotTs;
+
+    // Tier 2: no shots — sort by proximity to peak
+    // Closest to peak (or in peak) first. distToPeak ascending puts
+    // "2 days from peak" (-2) ahead of "28 days from peak" (-28),
+    // and peak bags (0–14) ahead of resting bags (negative).
+    // Past peak (>14) sinks to bottom.
+    // Use absolute distance from 0 for bags on either side of peak start,
+    // but keep past-peak bags (>14) always last.
+    const aPast = a.distToPeak > 14;
+    const bPast = b.distToPeak > 14;
+    if (aPast !== bPast) return aPast ? 1 : -1;
+
+    // Both past peak: most recent shot first, fallback to fewer days past
+    if (aPast && bPast) {
+      if (a.lastShotTs !== b.lastShotTs) return b.lastShotTs - a.lastShotTs;
+      return a.distToPeak - b.distToPeak;
     }
-    if (a.tier === 3) {
-      // Closest to peak = largest days within rest window
-      return (b.days ?? -Infinity) - (a.days ?? -Infinity);
-    }
-    // Tier 4: most recent shot first (fallback to smallest days past peak)
-    if (a.lastShotTs !== b.lastShotTs) return b.lastShotTs - a.lastShotTs;
-    return (a.days ?? Infinity) - (b.days ?? Infinity);
+
+    // Neither past peak: sort by absolute distance from peak start (0)
+    // so a bag 2 days away (-2) beats one 28 days away (-28)
+    return Math.abs(a.distToPeak) - Math.abs(b.distToPeak);
   });
 
+  // Filter: hide past-peak and no-roast-date bags unless pulled within last 3 days
+  const THREE_DAYS_MS = 3 * 86400000;
+  const visible = bagMeta.filter(({ phase, distToPeak, lastShotTs }) => {
+    const recentlyPulled = lastShotTs > 0 && (now - lastShotTs) <= THREE_DAYS_MS;
+    if (recentlyPulled) return true;
+    // Hide past peak (distToPeak > 14) and no roast date (distToPeak === Infinity)
+    if (distToPeak > 14 || distToPeak === Infinity) return false;
+    return true;
+  });
+
+  if (!visible.length) {
+    label.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+
   label.style.display = 'block';
-  container.innerHTML = bagMeta.map(({ r, days, phase }) => {
+
+  const HOME_BAG_LIMIT = 2;
+  const toShow = visible.slice(0, HOME_BAG_LIMIT);
+  container.innerHTML = toShow.map(({ r, days, phase }) => {
     const daysHTML = (days !== null && phase)
       ? `<span class="days-badge ${phase.cls}">${days}d · ${phase.label}</span>`
       : '';

@@ -8,24 +8,19 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.0.1';
+const CURRENT_VERSION = '1.1.0';
 
 const CHANGELOG = [
   {
-    version: '1.0.1',
-    date: 'April 2026',
-    title: 'Public Beta',
+    version: '1.1.0',
+    date: 'April 18, 2026',
+    title: 'UI Improvements + Optimizations',
     changes: [
-      'Guided onboarding flow for new users',
-      'Achievements progress bar on profile page',
-      'Co-ferment and Anaerobic Washed added to process options',
-      'Delete confirmations on shot cards',
-      'Unified grinder picker across the app',
-      'Shot log shows last shot tags and notes for context',
-      'Reference recipe feature',
-      'Log shot card refinements',
-      'Custom rest days feature',
-      'Bug fixes',
+      'Pagination for my shots & community pages',
+      'Improvements to active bags section on home page',
+      'Machine and grinder dropdown list expansions',
+      'Startup optimizations',
+      'Improved achievement persistence',
     ],
   },
 ];

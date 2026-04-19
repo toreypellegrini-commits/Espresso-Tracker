@@ -67,6 +67,17 @@ const TIPS = [
   'Tip: Consistency in tamping pressure matters more than the pressure amount.',
 ];
 
+// Default rest days by roast level.
+// Auto-populates the rest days field when a roast level is selected.
+const REST_DAYS_BY_ROAST = {
+  'Ultra-light': 28,
+  'Light': 14,
+  'Light-medium': 14,
+  'Medium': 7,
+  'Medium-dark': 7,
+  'Dark': 7,
+};
+
 const GRINDERS = {
   'Flat Burr Electric': [
     'DF54', 'DF64', 'DF83', 'Eureka Atom 75', 'Eureka Mignon Specialita', 'Eureka Mignon XL', 'Eureka Oro Single Dose',

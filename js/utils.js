@@ -58,7 +58,7 @@ function getRoastPhase(daysOffRoast, restDays) {
 // based on userProfile.temp_unit ('C' or 'F').
 
 function cToF(c) { return Math.round(c * 9 / 5 + 32); }
-function fToC(f) { return Math.round((f - 32) * 5 / 9); }
+function fToC(f) { return Math.round((f - 32) * 5 / 9 * 10) / 10; }
 
 // Format a temp value (stored in °C) for display in the user's preferred unit.
 // Returns e.g. "93°C" or "200°F", or '—' if no value.
@@ -67,7 +67,8 @@ function fmtTemp(tempC) {
   const v = parseFloat(tempC);
   if (isNaN(v)) return '—';
   if (userProfile.temp_unit === 'F') return cToF(v) + '°F';
-  return v + '°C';
+  const display = Number.isInteger(v) ? v : parseFloat(v.toFixed(1));
+  return display + '°C';
 }
 
 // Returns the unit label string, e.g. "°C" or "°F"

@@ -67,8 +67,7 @@ function fmtTemp(tempC) {
   const v = parseFloat(tempC);
   if (isNaN(v)) return '—';
   if (userProfile.temp_unit === 'F') return cToF(v) + '°F';
-  const display = Number.isInteger(v) ? v : parseFloat(v.toFixed(1));
-  return display + '°C';
+  return Math.round(v) + '°C';
 }
 
 // Returns the unit label string, e.g. "°C" or "°F"
@@ -92,5 +91,5 @@ function tempCToInput(tempC) {
   const v = parseFloat(tempC);
   if (isNaN(v)) return '';
   if (userProfile.temp_unit === 'F') return cToF(v);
-  return v;
+  return Math.round(v);
 }

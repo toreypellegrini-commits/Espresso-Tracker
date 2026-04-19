@@ -7,6 +7,13 @@
 let _recipeMode = 'reference';
 
 // ─── INIT ───
+function updateTempLabel() {
+  const lbl = document.getElementById('f-temp-label');
+  const input = document.getElementById('f-temp');
+  if (lbl) lbl.textContent = 'Temp (' + tempUnitLabel() + ')';
+  if (input) input.placeholder = userProfile.temp_unit === 'F' ? '200' : '93';
+}
+
 function initExtractionDate() {
   const el = document.getElementById('f-extractdate');
   const vis = document.getElementById('f-extractdate-visible');
@@ -270,7 +277,7 @@ function applyRecipePrefill(roastId) {
     if (source.dose) { setField('f-dose', cleanNum(source.dose)); _refValues['f-dose'] = parseFloat(source.dose); }
     if (source.yield) { setField('f-yield', cleanNum(source.yield)); _refValues['f-yield'] = parseFloat(source.yield); }
     if (source.time) { setField('f-time', cleanNum(source.time)); _refValues['f-time'] = parseFloat(source.time); }
-    if (source.temp) setField('f-temp', cleanNum(source.temp));
+    if (source.temp) setField('f-temp', tempCToInput(source.temp));
     if (source.preinfusion) setField('f-preinfusion', cleanNum(source.preinfusion));
     updateRatio();
     updateShareNotice();
@@ -349,7 +356,7 @@ async function saveShot() {
     dose: isNaN(dose) ? null : dose,
     yield: isNaN(yld) ? null : yld,
     ratio,
-    temp: g('f-temp'),
+    temp: tempInputToC(g('f-temp')),
     preinfusion: g('f-preinfusion'),
     time: g('f-time'),
     rating: currentRating,

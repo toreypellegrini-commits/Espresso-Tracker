@@ -15,4 +15,4 @@ let toastTimeout = null;
 let pendingDialedRoastId = null;
 let earnedAchievements = {};   // { achievement_id: "date_earned", ... } — loaded from profiles table
 let myCommunityCount = 0;      // count of current user's community shots — avoids loading all community data
-let userProfile = { username:'', location:'', machine:'', machine_other:'', grinder:'', coffee_prefs:'', fav_roasters:'', photo:null };
+let userProfile = { username:'', location:'', machine:'', machine_other:'', grinder:'', coffee_prefs:'', fav_roasters:'', photo:null, temp_unit:'C' };

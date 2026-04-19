@@ -184,7 +184,7 @@ function _renderCommCard(s) {
   const params = [
     s.grind ? `Grind ${s.grind}` : null,
     ratioVal ? `1:${ratioVal}` : null,
-    s.temp ? `${s.temp}°C` : null,
+    s.temp ? fmtTemp(s.temp) : null,
     s.time_s ? `${s.time_s}s` : null,
     s.days_off_roast != null ? `${s.days_off_roast}d off roast` : null
   ].filter(Boolean).join(' · ');

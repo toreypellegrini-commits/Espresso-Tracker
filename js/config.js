@@ -16,10 +16,10 @@ const CHANGELOG = [
     date: 'April 18, 2026',
     title: 'Temp Unit Toggle + Optimizations',
     changes: [
-      'Temperature unit toggle (C/F)',
+      'Added temperature unit toggle (C/F) in profile settings',
       'Added ultra-light roast level',
-      'Auto-default rest days by roast level',
-      'Machine and grinder dropdown list expansions',
+      'Added custom rest periods and auto-default rest days by roast level',
+      'Machine and grinder dropdown list expansion',
       'Pagination for my shots & community pages',
       'Improvements to active bags section on home page',
       'Startup optimizations',

@@ -8,11 +8,11 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.1.0';
+const CURRENT_VERSION = '1.1.1';
 
 const CHANGELOG = [
   {
-    version: '1.1.0',
+    version: '1.1.1',
     date: 'April 18, 2026',
     title: 'UI Improvements + Optimizations',
     changes: [
@@ -21,6 +21,8 @@ const CHANGELOG = [
       'Machine and grinder dropdown list expansions',
       'Startup optimizations',
       'Improved achievement persistence',
+      'Added ultra-light roast level',
+      'Auto-default rest days by roast level',
     ],
   },
 ];

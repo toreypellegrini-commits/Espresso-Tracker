@@ -17,7 +17,8 @@ async function loadProfile() {
         grinder: data.grinder||'',
         coffee_prefs: data.coffee_prefs||'',
         fav_roasters: data.favorite_roasters||'',
-        photo: data.photo_url||null
+        photo: data.photo_url||null,
+        temp_unit: data.temp_unit||'C'
       };
       // Restore persisted achievements
       earnedAchievements = data.achievements || {};
@@ -77,6 +78,9 @@ function populateProfileForm() {
     }
   }
   updateAvatarDisplay();
+  // Temp unit
+  const tempSel = document.getElementById('p-temp-unit');
+  if (tempSel) tempSel.value = userProfile.temp_unit || 'C';
 }
 
 document.getElementById('p-machine').addEventListener('change', function() {
@@ -100,6 +104,7 @@ async function saveProfile() {
   const machine = machSel.value === '__other__' ? g('p-machine-other') : machSel.value;
   const username = g('p-username')||null;
   const location = g('p-location')||null;
+  const tempUnit = document.getElementById('p-temp-unit')?.value || 'C';
   // Grinder is managed on the grinders page — save the first grinder name for profile display
   const grinderName = grinderLib.length ? grinderLib[0].name : (userProfile.grinder || null);
   const fields = {
@@ -109,6 +114,7 @@ async function saveProfile() {
     coffee_prefs: g('p-coffee-prefs')||null,
     favorite_roasters: g('p-fav-roasters')||null,
     photo_url: userProfile.photo||null,
+    temp_unit: tempUnit,
     updated_at: new Date().toISOString()
   };
   if (username) fields.username = username;
@@ -131,6 +137,7 @@ async function saveProfile() {
       userProfile.grinder = grinderName||'';
       userProfile.coffee_prefs = fields.coffee_prefs||'';
       userProfile.fav_roasters = fields.favorite_roasters||'';
+      userProfile.temp_unit = tempUnit;
       updateAvatarDisplay();
       flash('profile-save-msg', 'Profile saved!', 'success');
     }

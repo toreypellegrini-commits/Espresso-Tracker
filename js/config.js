@@ -8,21 +8,22 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.1.1';
+const CURRENT_VERSION = '1.1.2';
 
 const CHANGELOG = [
   {
-    version: '1.1.1',
+    version: '1.1.2',
     date: 'April 18, 2026',
-    title: 'UI Improvements + Optimizations',
+    title: 'Temp Unit Toggle + Optimizations',
     changes: [
+      'Added temperature unit toggle (C/F) in profile settings',
+      'Added ultra-light roast level',
+      'Added custom rest periods and auto-default rest days by roast level',
+      'Machine and grinder dropdown list expansion',
       'Pagination for my shots & community pages',
       'Improvements to active bags section on home page',
-      'Machine and grinder dropdown list expansions',
       'Startup optimizations',
       'Improved achievement persistence',
-      'Added ultra-light roast level',
-      'Auto-default rest days by roast level',
     ],
   },
 ];

@@ -52,3 +52,44 @@ function getRoastPhase(daysOffRoast, restDays) {
   if (daysOffRoast <= peakEnd) return { cls: 'days-peak', label: 'peak', phase: 'peak' };
   return { cls: 'days-old', label: 'past peak', phase: 'past' };
 }
+
+// ─── TEMPERATURE HELPERS ───
+// All temps are stored in °C. These helpers convert for display/input
+// based on userProfile.temp_unit ('C' or 'F').
+
+function cToF(c) { return Math.round(c * 9 / 5 + 32); }
+function fToC(f) { return Math.round((f - 32) * 5 / 9 * 10) / 10; }
+
+// Format a temp value (stored in °C) for display in the user's preferred unit.
+// Returns e.g. "93°C" or "200°F", or '—' if no value.
+function fmtTemp(tempC) {
+  if (tempC == null || tempC === '') return '—';
+  const v = parseFloat(tempC);
+  if (isNaN(v)) return '—';
+  if (userProfile.temp_unit === 'F') return cToF(v) + '°F';
+  return Math.round(v) + '°C';
+}
+
+// Returns the unit label string, e.g. "°C" or "°F"
+function tempUnitLabel() {
+  return userProfile.temp_unit === 'F' ? '°F' : '°C';
+}
+
+// Convert a user-entered temp to °C for storage.
+// If user is in F mode, converts from F to C. Otherwise returns as-is.
+function tempInputToC(val) {
+  if (val === '' || val == null) return '';
+  const v = parseFloat(val);
+  if (isNaN(v)) return '';
+  if (userProfile.temp_unit === 'F') return fToC(v);
+  return v;
+}
+
+// Convert a stored °C temp to the user's unit for form prefill.
+function tempCToInput(tempC) {
+  if (tempC == null || tempC === '') return '';
+  const v = parseFloat(tempC);
+  if (isNaN(v)) return '';
+  if (userProfile.temp_unit === 'F') return cToF(v);
+  return Math.round(v);
+}

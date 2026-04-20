@@ -51,6 +51,7 @@ function navTo(page, opts = {}) {
   if (page === 'log') {
     populateRoastDropdown();
     populateGrinderDropdown();
+    updateTempLabel();
     const sel = document.getElementById('roast-select');
     if (opts.roastId) {
       // Explicit roast passed in (from a bag card, roast detail, etc.)

@@ -79,7 +79,7 @@ function _renderMoreMyShots() {
       </div>
       <div class="shot-stats" style="margin-top:6px;">
         <div class="stat"><div class="stat-val">${s.grind||'—'}</div><div class="stat-lbl">Grind</div></div>
-        <div class="stat"><div class="stat-val">${s.temp?s.temp+'°C':'—'}</div><div class="stat-lbl">Temp</div></div>
+        <div class="stat"><div class="stat-val">${s.temp?fmtTemp(s.temp):'—'}</div><div class="stat-lbl">Temp</div></div>
         <div class="stat"><div class="stat-val">${s.preinfusion?s.preinfusion+'s':'—'}</div><div class="stat-lbl">Pre-inf</div></div>
         <div class="stat"><div class="stat-val">${s.daysOffRoast!=null?s.daysOffRoast+'d':'—'}</div><div class="stat-lbl">Off roast</div></div>
       </div>

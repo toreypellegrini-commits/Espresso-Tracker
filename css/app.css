@@ -280,7 +280,9 @@
 
     /* Filter bar: search + filter button */
     .filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; }
-    .filter-bar input { flex: 1; font-size: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-family: var(--font); }
+    .search-wrap { flex: 1; position: relative; }
+    .search-wrap input { width: 100%; font-size: 14px; padding: 10px 32px 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-family: var(--font); box-sizing: border-box; }
+    .search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); cursor: pointer; line-height: 1; }
     .filter-btn { display: flex; align-items: center; gap: 5px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; white-space: nowrap; }
     .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
     .filter-icon { font-size: 14px; }

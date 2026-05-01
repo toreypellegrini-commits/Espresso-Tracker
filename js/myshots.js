@@ -32,6 +32,7 @@ function openFilterModal(target) {
   _filterSelections = {
     process: document.getElementById(prefix + '-process').value,
     roast: document.getElementById(prefix + '-roast').value,
+    origin: document.getElementById(prefix + '-origin').value,
     varietal: document.getElementById(prefix + '-varietal').value,
     rating: document.getElementById(prefix + '-rating').value,
     grinder: document.getElementById(prefix + '-grinder') ? document.getElementById(prefix + '-grinder').value : ''
@@ -52,6 +53,8 @@ function _renderFilterSections(target) {
   var html = '';
   html += _renderFilterSection('roast', FILTER_DEFS.roast.title, FILTER_DEFS.roast.options);
   html += _renderFilterSection('process', FILTER_DEFS.process.title, FILTER_DEFS.process.options);
+  var origins = _getOriginOptions(target);
+  if (origins.length) html += _renderFilterSection('origin', 'Origin', origins);
   var varietals = _getVarietalOptions(target);
   if (varietals.length) html += _renderFilterSection('varietal', 'Varietal', varietals);
   var grinders = _getGrinderOptions(target);
@@ -90,7 +93,7 @@ function _toggleFilterChip(key, value, el) {
 }
 
 function clearAllFilters() {
-  _filterSelections = { process: '', roast: '', varietal: '', rating: '', grinder: '' };
+  _filterSelections = { process: '', roast: '', origin: '', varietal: '', rating: '', grinder: '' };
   document.querySelectorAll('#filter-modal-sections .filter-chip').forEach(function(c) { c.classList.remove('selected'); });
 }
 
@@ -99,6 +102,7 @@ function applyFilters() {
   var prefix = target === 'myshots' ? 'ms' : 'cf';
   document.getElementById(prefix + '-process').value = _filterSelections.process || '';
   document.getElementById(prefix + '-roast').value = _filterSelections.roast || '';
+  document.getElementById(prefix + '-origin').value = _filterSelections.origin || '';
   document.getElementById(prefix + '-varietal').value = _filterSelections.varietal || '';
   document.getElementById(prefix + '-rating').value = _filterSelections.rating || '';
   var gEl = document.getElementById(prefix + '-grinder');
@@ -110,7 +114,7 @@ function applyFilters() {
 }
 
 function _updateFilterBadge(prefix) {
-  var count = ['process','roast','varietal','rating','grinder'].reduce(function(n, key) {
+  var count = ['process','roast','origin','varietal','rating','grinder'].reduce(function(n, key) {
     var el = document.getElementById(prefix + '-' + key);
     return n + (el && el.value ? 1 : 0);
   }, 0);
@@ -118,6 +122,16 @@ function _updateFilterBadge(prefix) {
   var btn = document.getElementById(prefix + '-filter-btn');
   if (label) label.textContent = count ? 'Filter (' + count + ')' : 'Filter';
   if (btn) { if (count) btn.classList.add('active'); else btn.classList.remove('active'); }
+}
+
+function _getOriginOptions(target) {
+  var vals = {};
+  if (target === 'myshots') {
+    shots.forEach(function(s) { if (s.origin) vals[s.origin] = true; });
+  } else {
+    communityShots.forEach(function(s) { if (s.origin) vals[s.origin] = true; });
+  }
+  return Object.keys(vals).sort();
 }
 
 function _getVarietalOptions(target) {
@@ -153,6 +167,7 @@ function renderMyShots() {
   var search = document.getElementById('ms-search').value.toLowerCase();
   var process = document.getElementById('ms-process').value;
   var roast = document.getElementById('ms-roast').value;
+  var origin = document.getElementById('ms-origin').value;
   var varietal = document.getElementById('ms-varietal').value;
   var minRating = +document.getElementById('ms-rating').value || 0;
   var grinder = document.getElementById('ms-grinder').value;
@@ -162,6 +177,7 @@ function renderMyShots() {
     if (search && !text.includes(search)) return false;
     if (process && s.process !== process) return false;
     if (roast && s.roast !== roast) return false;
+    if (origin && s.origin !== origin) return false;
     if (varietal && s.varietal !== varietal) return false;
     if (minRating && (s.rating||0) < minRating) return false;
     if (grinder && s.grinderName !== grinder) return false;

@@ -43,6 +43,7 @@ async function _fetchCommunityPage(offset) {
   var process = document.getElementById('cf-process').value;
   var roast = document.getElementById('cf-roast').value;
   var varietal = document.getElementById('cf-varietal').value;
+  var origin = document.getElementById('cf-origin').value;
   var minRating = +document.getElementById('cf-rating').value || 0;
 
   var q = sb.from('community_shots').select('*');
@@ -52,6 +53,7 @@ async function _fetchCommunityPage(offset) {
   if (process) q = q.eq('process', process);
   if (roast) q = q.eq('roast', roast);
   if (varietal) q = q.eq('varietal', varietal);
+  if (origin) q = q.eq('origin', origin);
   if (minRating) q = q.gte('rating', minRating);
 
   // Always newest first

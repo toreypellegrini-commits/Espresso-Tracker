@@ -117,7 +117,7 @@ function getTimeGreeting(day) {
     const opts = [
       `Burning the midnight oil on a ${day}?`,
       `Late night ${day} pull?`,
-      `Up late on ${day} — hope it's worth it!`,
+      `Up late on a ${day} — one more shot won't hurt!`,
     ];
     return opts[new Date().getDate() % opts.length];
   }

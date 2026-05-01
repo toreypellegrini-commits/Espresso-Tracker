@@ -8,20 +8,17 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.1.2';
+const CURRENT_VERSION = '1.1.0';
 
 const CHANGELOG = [
   {
-    version: '1.1.2',
+    version: '1.1.0',
     date: 'April 18, 2026',
-    title: 'Temp Unit Toggle + Optimizations',
+    title: 'UI Improvements + Optimizations',
     changes: [
-      'Added temperature unit toggle (C/F) in profile settings',
-      'Added ultra-light roast level',
-      'Added custom rest periods and auto-default rest days by roast level',
-      'Machine and grinder dropdown list expansion',
       'Pagination for my shots & community pages',
       'Improvements to active bags section on home page',
+      'Machine and grinder dropdown list expansions',
       'Startup optimizations',
       'Improved achievement persistence',
     ],
@@ -62,24 +59,21 @@ const ACHIEVEMENTS = [
 ];
 
 const TIPS = [
-  'Tip: Try dropping your dose 0.5g and see if clarity improves.',
-  'Tip: Grind finer if your shot is running fast and tasting sour.',
-  'Tip: Letting a new bag rest 7–10 days off roast often hits the sweet spot.',
-  'Tip: A longer pre-infusion can help even out extraction on light roasts.',
-  'Tip: If your shot tastes bitter, try a slightly coarser grind or lower temp.',
-  'Tip: Consistency in tamping pressure matters more than the pressure amount.',
+  'Tip: Change one variable at a time. Otherwise you\u2019re guessing, not dialing.',
+  'Tip: Think in ratios, not time. Time is a symptom \u2014 ratio is the lever.',
+  'Tip: To increase extraction, the #1 move is more water through the coffee.',
+  'Tip: Grind coarser than you think. You get comparable extraction with less channeling and more consistency.',
+  'Tip: Grinding too fine can actually decrease extraction \u2014 fines clog the puck and create uneven flow.',
+  'Tip: Darker roasts: shorter ratios, lower temps, coarser grinds. They extract easily.',
+  'Tip: Lighter roasts: longer ratios, higher temps, finer grinds. They resist extraction.',
+  'Tip: Heavily processed coffees need less extraction \u2014 the interesting notes live in the process, not the terroir.',
+  'Tip: Acidity comes out early in the shot; bitterness comes out late. Taste accordingly.',
+  'Tip: If your shot tastes both sour and bitter, you likely have channeling \u2014 try grinding coarser, not finer.',
+  'Tip: Reducing your dose by a gram or two can increase extraction yield without changing grind or ratio.',
+  'Tip: Consistency in prep matters more than any single variable. Weigh your dose, weigh your output.',
+  'Tip: A longer pre-infusion can help even out extraction, especially on light roasts.',
+  'Tip: Quality of coffee and water matters more than anything else you do at the machine.',
 ];
-
-// Default rest days by roast level.
-// Auto-populates the rest days field when a roast level is selected.
-const REST_DAYS_BY_ROAST = {
-  'Ultra-light': 28,
-  'Light': 14,
-  'Light-medium': 14,
-  'Medium': 7,
-  'Medium-dark': 7,
-  'Dark': 7,
-};
 
 const GRINDERS = {
   'Flat Burr Electric': [

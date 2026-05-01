@@ -95,7 +95,8 @@ function clearAllFilters() {
 }
 
 function applyFilters() {
-  var prefix = _filterTarget === 'myshots' ? 'ms' : 'cf';
+  var target = _filterTarget;
+  var prefix = target === 'myshots' ? 'ms' : 'cf';
   document.getElementById(prefix + '-process').value = _filterSelections.process || '';
   document.getElementById(prefix + '-roast').value = _filterSelections.roast || '';
   document.getElementById(prefix + '-varietal').value = _filterSelections.varietal || '';
@@ -104,7 +105,7 @@ function applyFilters() {
   if (gEl) gEl.value = _filterSelections.grinder || '';
   _updateFilterBadge(prefix);
   closeFilterModal();
-  if (_filterTarget === 'myshots') renderMyShots();
+  if (target === 'myshots') renderMyShots();
   else renderCommunity();
 }
 
@@ -120,13 +121,23 @@ function _updateFilterBadge(prefix) {
 }
 
 function _getVarietalOptions(target) {
-  if (target === 'myshots') return [].concat(new Set(shots.map(function(s){return s.varietal;}).filter(Boolean))).sort();
-  return [].concat(new Set(communityShots.map(function(s){return s.varietal;}).filter(Boolean))).sort();
+  var vals = {};
+  if (target === 'myshots') {
+    shots.forEach(function(s) { if (s.varietal) vals[s.varietal] = true; });
+  } else {
+    communityShots.forEach(function(s) { if (s.varietal) vals[s.varietal] = true; });
+  }
+  return Object.keys(vals).sort();
 }
 
 function _getGrinderOptions(target) {
-  if (target === 'myshots') return [].concat(new Set(shots.map(function(s){return s.grinderName;}).filter(Boolean))).sort();
-  return [].concat(new Set(communityShots.map(function(s){return s.grinder_name;}).filter(Boolean))).sort();
+  var vals = {};
+  if (target === 'myshots') {
+    shots.forEach(function(s) { if (s.grinderName) vals[s.grinderName] = true; });
+  } else {
+    communityShots.forEach(function(s) { if (s.grinder_name) vals[s.grinder_name] = true; });
+  }
+  return Object.keys(vals).sort();
 }
 
 // ─── MY SHOTS PAGE ───

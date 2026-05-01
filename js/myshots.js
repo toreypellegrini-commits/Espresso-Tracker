@@ -154,6 +154,33 @@ function _getGrinderOptions(target) {
   return Object.keys(vals).sort();
 }
 
+// Reset all filters and search for a page (called on page entry)
+function _resetPageFilters(prefix) {
+  ['process','roast','origin','varietal','rating','grinder'].forEach(function(key) {
+    var el = document.getElementById(prefix + '-' + key);
+    if (el) el.value = '';
+  });
+  var searchEl = document.getElementById(prefix + '-search');
+  if (searchEl) searchEl.value = '';
+  _updateFilterBadge(prefix);
+  _updateSearchClear(prefix);
+}
+
+// Show/hide the search clear button based on input content
+function _updateSearchClear(prefix) {
+  var btn = document.getElementById(prefix + '-search-clear');
+  var input = document.getElementById(prefix + '-search');
+  if (btn && input) btn.style.display = input.value ? 'block' : 'none';
+}
+
+function _clearSearch(prefix) {
+  var input = document.getElementById(prefix + '-search');
+  if (input) input.value = '';
+  _updateSearchClear(prefix);
+  if (prefix === 'ms') renderMyShots();
+  else renderCommunity();
+}
+
 // ─── MY SHOTS PAGE ───
 var MY_SHOTS_PAGE_SIZE = 10;
 var _myShotsFiltered = [];

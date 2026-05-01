@@ -51,7 +51,6 @@ function navTo(page, opts = {}) {
   if (page === 'log') {
     populateRoastDropdown();
     populateGrinderDropdown();
-    updateTempLabel();
     const sel = document.getElementById('roast-select');
     if (opts.roastId) {
       // Explicit roast passed in (from a bag card, roast detail, etc.)
@@ -70,8 +69,8 @@ function navTo(page, opts = {}) {
   if (page === 'roast-detail' && opts.roastId) { currentDetailRoastId = opts.roastId; renderRoastDetail(); }
   if (page === 'home') { renderHome(); }
   if (page === 'profile') { populateProfileForm(); const thSel = document.getElementById('p-theme'); if (thSel) thSel.value = localStorage.getItem('ext_theme') || 'auto'; renderProfileRankAndAchievements(); }
-  if (page === 'myshots') { populateMyShotsGrinderFilter(); renderMyShots(); }
-  if (page === 'community') { ensureCommunityLoaded(); }
+  if (page === 'myshots') { _resetPageFilters('ms'); populateMyShotsGrinderFilter(); renderMyShots(); }
+  if (page === 'community') { _resetPageFilters('cf'); ensureCommunityLoaded(); }
   if (page === 'grinders') renderGrinders();
   if (page === 'insights') renderInsights();
 

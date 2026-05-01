@@ -8,9 +8,30 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SHARE_MIN_RATING = 4;
 const APP_NAME = 'Dialed';
-const CURRENT_VERSION = '1.1.0';
+const CURRENT_VERSION = '1.2.0';
 
 const CHANGELOG = [
+  {
+    version: '1.2.0',
+    date: 'May 2026',
+    title: 'Filters, Temperature & More',
+    changes: [
+      'New search + filter modal replacing dropdown selects on My Shots and Community pages',
+      'Origin and varietal added as filter options',
+      'Temperature unit toggle (Celsius / Fahrenheit) in profile settings',
+      'Custom rest days per roast with auto-defaults by roast level',
+      'Ultra-light roast level added',
+      'Redesigned active bags sort \u2014 prioritizes bags with shots and proximity to peak',
+      'Active bags limited to 2 on home screen for a cleaner layout',
+      'Bag card chips split into two rows for consistency',
+      'Achievement persistence in database \u2014 no more recompute on login',
+      'Community shots lazy-loaded on tab visit for faster startup',
+      'Expanded grinder and machine dropdown lists',
+      'New espresso tips based on extraction research and best practices',
+      'Updated greeting messages',
+      'Insights page layout fixes',
+    ],
+  },
   {
     version: '1.1.0',
     date: 'April 18, 2026',

@@ -67,10 +67,11 @@ function _renderFilterSection(key, title, labels, values) {
   var current = _filterSelections[key] || '';
   var html = '<div class="filter-section"><div class="filter-section-title">' + title + '</div><div class="filter-options">';
   for (var i = 0; i < labels.length; i++) {
-    var val = values[i];
+    var val = String(values[i]);
     var label = labels[i];
     var selected = current === val ? ' selected' : '';
-    html += '<div class="filter-chip' + selected + '" onclick="_toggleFilterChip(\'' + key + '\',\'' + val.replace(/'/g, "\\'") + '\',this)">' + label + '</div>';
+    var safeVal = val.replace(/'/g, "\\'");
+    html += '<div class="filter-chip' + selected + '" onclick="_toggleFilterChip(\'' + key + '\',\'' + safeVal + '\',this)">' + label + '</div>';
   }
   html += '</div></div>';
   return html;

@@ -288,7 +288,10 @@
         <div style="font-size:13px;color:var(--muted);line-height:1.6;">These are 4★+ shots shared by all users who logged with a grinder selected. Use this to dial in a new bag — find a similar coffee and see what grind settings, ratios, shot times, and temps other users are hitting. Tasting notes are always kept private.</div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="cf-search" placeholder="Roaster, roast name…" oninput="renderCommunity()" autocorrect="off">
+        <div class="search-wrap">
+          <input type="text" id="cf-search" placeholder="Roaster, roast name…" oninput="renderCommunity();_updateSearchClear('cf')" autocorrect="off">
+          <span class="search-clear" id="cf-search-clear" onclick="_clearSearch('cf')" style="display:none;">✕</span>
+        </div>
         <button class="filter-btn" id="cf-filter-btn" onclick="openFilterModal('community')"><span class="filter-icon">☰</span> <span id="cf-filter-label">Filter</span></button>
       </div>
       <!-- Hidden filter state holders -->
@@ -324,7 +327,10 @@
         <div id="import-results" style="display:none;" class="import-results"></div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="ms-search" placeholder="Roaster, roast name, notes…" oninput="renderMyShots()" autocorrect="off">
+        <div class="search-wrap">
+          <input type="text" id="ms-search" placeholder="Roaster, roast name, notes…" oninput="renderMyShots();_updateSearchClear('ms')" autocorrect="off">
+          <span class="search-clear" id="ms-search-clear" onclick="_clearSearch('ms')" style="display:none;">✕</span>
+        </div>
         <button class="filter-btn" id="ms-filter-btn" onclick="openFilterModal('myshots')"><span class="filter-icon">☰</span> <span id="ms-filter-label">Filter</span></button>
       </div>
       <!-- Hidden filter state holders -->

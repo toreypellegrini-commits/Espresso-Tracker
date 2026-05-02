@@ -287,14 +287,21 @@
         <div style="font-family:var(--font-serif);font-size:15px;font-weight:500;margin-bottom:4px;">Community Shots</div>
         <div style="font-size:13px;color:var(--muted);line-height:1.6;">These are 4★+ shots shared by all users who logged with a grinder selected. Use this to dial in a new bag — find a similar coffee and see what grind settings, ratios, shot times, and temps other users are hitting. Tasting notes are always kept private.</div>
       </div>
-      <div class="comm-filters">
-        <input type="text" id="cf-search" placeholder="Roaster, roast name…" oninput="renderCommunity()" autocorrect="off">
-        <select id="cf-grinder" onchange="renderCommunity()"><option value="">All grinders</option></select>
-        <select id="cf-process" onchange="renderCommunity()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option></select>
-        <select id="cf-roast" onchange="renderCommunity()"><option value="">All roast levels</option><option>Ultra-light</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
-        <select id="cf-rating" onchange="renderCommunity()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option><option value="3">3★+</option></select>
-        <select id="cf-sort" onchange="renderCommunity()"><option value="date-desc">Newest first</option><option value="date-asc">Oldest first</option><option value="rating-desc">Highest rated</option></select>
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <input type="text" id="cf-search" placeholder="Roaster, roast name…" oninput="renderCommunity();_updateSearchClear('cf')" autocorrect="off">
+          <span class="search-clear" id="cf-search-clear" onclick="_clearSearch('cf')" style="display:none;">✕</span>
+        </div>
+        <button class="filter-btn" id="cf-filter-btn" onclick="openFilterModal('community')"><span class="filter-icon">☰</span> <span id="cf-filter-label">Filter</span></button>
       </div>
+      <!-- Hidden filter state holders -->
+      <input type="hidden" id="cf-grinder" value="">
+      <input type="hidden" id="cf-process" value="">
+      <input type="hidden" id="cf-roast" value="">
+      <input type="hidden" id="cf-origin" value="">
+      <input type="hidden" id="cf-varietal" value="">
+      <input type="hidden" id="cf-rating" value="">
+      <input type="hidden" id="cf-sort" value="date-desc">
       <div id="community-list"></div>
     </div>
   </div>
@@ -319,14 +326,21 @@
         <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCSVFile(this.files[0])">
         <div id="import-results" style="display:none;" class="import-results"></div>
       </div>
-      <div class="comm-filters">
-        <input type="text" id="ms-search" placeholder="Roaster, roast name, notes…" oninput="renderMyShots()" autocorrect="off">
-        <select id="ms-process" onchange="renderMyShots()"><option value="">All processes</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Anaerobic Washed</option><option>Co-ferment</option><option>Wet-hulled</option><option>Other</option></select>
-        <select id="ms-roast" onchange="renderMyShots()"><option value="">All roast levels</option><option>Ultra-light</option><option>Light</option><option>Light-medium</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select>
-        <select id="ms-rating" onchange="renderMyShots()"><option value="">Any rating</option><option value="5">★★★★★</option><option value="4">4★+</option><option value="3">3★+</option></select>
-        <select id="ms-grinder" onchange="renderMyShots()"><option value="">All grinders</option></select>
-        <select id="ms-sort" onchange="renderMyShots()"><option value="date-desc">Newest first</option><option value="date-asc">Oldest first</option><option value="rating-desc">Highest rated</option></select>
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <input type="text" id="ms-search" placeholder="Roaster, roast name, notes…" oninput="renderMyShots();_updateSearchClear('ms')" autocorrect="off">
+          <span class="search-clear" id="ms-search-clear" onclick="_clearSearch('ms')" style="display:none;">✕</span>
+        </div>
+        <button class="filter-btn" id="ms-filter-btn" onclick="openFilterModal('myshots')"><span class="filter-icon">☰</span> <span id="ms-filter-label">Filter</span></button>
       </div>
+      <!-- Hidden filter state holders -->
+      <input type="hidden" id="ms-process" value="">
+      <input type="hidden" id="ms-roast" value="">
+      <input type="hidden" id="ms-origin" value="">
+      <input type="hidden" id="ms-varietal" value="">
+      <input type="hidden" id="ms-rating" value="">
+      <input type="hidden" id="ms-grinder" value="">
+      <input type="hidden" id="ms-sort" value="date-desc">
       <div id="myshots-list"></div>
     </div>
   </div>
@@ -537,6 +551,23 @@
     <div class="sheet-handle"></div>
     <div class="sheet-content" id="profile-sheet-content">
       <div class="empty">Loading…</div>
+    </div>
+  </div>
+
+  <!-- FILTER MODAL (shared by My Shots + Community) -->
+  <div class="sheet-backdrop" id="filter-modal-backdrop" onclick="closeFilterModal()"></div>
+  <div class="sheet" id="filter-modal" style="max-height:80vh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content" id="filter-modal-content" style="padding-bottom:80px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-family:var(--font-serif);font-size:17px;font-weight:600;">Filters</div>
+        <a style="font-size:13px;color:var(--accent);cursor:pointer;" onclick="clearAllFilters()">Clear all</a>
+      </div>
+      <div id="filter-modal-sections"></div>
+    </div>
+    <div class="filter-modal-footer">
+      <button class="btn" onclick="closeFilterModal()" style="flex:1;">Cancel</button>
+      <button class="btn primary" onclick="applyFilters()" style="flex:1;">Apply</button>
     </div>
   </div>
 

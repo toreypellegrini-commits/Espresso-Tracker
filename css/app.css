@@ -277,6 +277,23 @@
     /* ─── COMMUNITY SHOTS / HISTORY ─── */
     .comm-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
     .comm-filters input, .comm-filters select { font-size: 13px; max-width: 160px; }
+
+    /* Filter bar: search + filter button */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; }
+    .search-wrap { flex: 1; position: relative; }
+    .search-wrap input { width: 100%; font-size: 14px; padding: 10px 32px 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-family: var(--font); box-sizing: border-box; }
+    .search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); cursor: pointer; line-height: 1; }
+    .filter-btn { display: flex; align-items: center; gap: 5px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+    .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .filter-icon { font-size: 14px; }
+
+    /* Filter modal */
+    .filter-modal-footer { position: absolute; bottom: 0; left: 0; right: 0; display: flex; gap: 10px; padding: 14px 1.25rem; background: var(--surface); border-top: 1px solid var(--border); }
+    .filter-section { margin-bottom: 20px; }
+    .filter-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px; }
+    .filter-options { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-chip { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; font-family: var(--font); cursor: pointer; transition: all 0.15s; }
+    .filter-chip.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
     .comm-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 10px; }
     .comm-card-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
     .comm-coffee { font-family: var(--font-serif); font-weight: 500; font-size: 15px; }

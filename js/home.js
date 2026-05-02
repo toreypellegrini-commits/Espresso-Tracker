@@ -117,7 +117,7 @@ function getTimeGreeting(day) {
     const opts = [
       `Burning the midnight oil on a ${day}?`,
       `Late night ${day} pull?`,
-      `Up late on ${day} — hope it's worth it!`,
+      `Up late on a ${day} — one more shot won't hurt!`,
     ];
     return opts[new Date().getDate() % opts.length];
   }
@@ -299,7 +299,8 @@ function renderOpenBags() {
 
     return `<div class="bag-card">
       <div class="bag-card-title">${r.roastName ? r.roaster + ' · ' + r.roastName : r.roaster}</div>
-      <div class="bag-card-meta">${chips} ${daysHTML} ${dialedBadge} ${shotCount ? `<span>${shotCount} shot${shotCount>1?'s':''}</span>` : ''}</div>
+      ${chips ? `<div class="bag-card-meta">${chips}</div>` : ''}
+      <div class="bag-card-meta">${daysHTML} ${dialedBadge} ${shotCount ? `<span>${shotCount} shot${shotCount>1?'s':''}</span>` : ''}</div>
       ${lastHTML}
       <button class="bag-card-btn" onclick="navTo('log',{roastId:${r.id}})">＋ Pull a shot</button>
     </div>`;

@@ -258,10 +258,10 @@
     /* ─── BOTTOM SHEET (public profile) ─── */
     .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     .sheet-backdrop.open { opacity: 1; pointer-events: all; }
-    .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 65; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 65; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 85vh; display: flex; flex-direction: column; }
     .sheet.open { transform: translateY(0); }
-    .sheet-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 12px auto 0; }
-    .sheet-content { padding: 1.25rem 1.25rem 2.5rem; }
+    .sheet-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+    .sheet-content { padding: 1.25rem 1.25rem 2.5rem; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; min-height: 0; }
     .pub-profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--accent-light); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600; color: var(--accent); overflow: hidden; flex-shrink: 0; }
     .pub-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .pub-profile-username { font-family: var(--font-serif); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
@@ -288,7 +288,7 @@
     .filter-icon { font-size: 14px; }
 
     /* Filter modal */
-    .filter-modal-footer { position: absolute; bottom: 0; left: 0; right: 0; display: flex; gap: 10px; padding: 14px 1.25rem; background: var(--surface); border-top: 1px solid var(--border); }
+    .filter-modal-footer { display: flex; gap: 10px; padding: 14px 1.25rem; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
     .filter-section { margin-bottom: 20px; }
     .filter-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px; }
     .filter-options { display: flex; flex-wrap: wrap; gap: 8px; }

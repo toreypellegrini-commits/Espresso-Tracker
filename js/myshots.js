@@ -3,6 +3,67 @@
 // My Shots page: filtering, progressive rendering.
 // Loads after router.js.
 
+// ─── SHARED SHEET UTILITIES ───
+// Background scroll lock — prevents page from scrolling when a sheet is open
+function _lockBodyScroll() {
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.top = '-' + window.scrollY + 'px';
+}
+
+function _unlockBodyScroll() {
+  var scrollY = document.body.style.top;
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.top = '';
+  window.scrollTo(0, parseInt(scrollY || '0') * -1);
+}
+
+// Generic swipe-to-dismiss for any sheet element
+function _initSheetSwipe(sheetId, closeFn) {
+  var startY = 0, currentY = 0, dragging = false;
+  document.addEventListener('DOMContentLoaded', function() {
+    var sheet = document.getElementById(sheetId);
+    if (!sheet) return;
+    sheet.addEventListener('touchstart', function(e) {
+      var content = sheet.querySelector('.sheet-content');
+      if (content && content.scrollTop > 0) return;
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      dragging = true;
+      sheet.style.transition = 'none';
+    }, { passive: true });
+    sheet.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      currentY = e.touches[0].clientY;
+      var dy = currentY - startY;
+      if (dy > 0) {
+        e.preventDefault();
+        sheet.style.transform = 'translateY(' + dy + 'px)';
+      } else {
+        dragging = false;
+        sheet.style.transition = '';
+        sheet.style.transform = '';
+      }
+    }, { passive: false });
+    sheet.addEventListener('touchend', function() {
+      if (!dragging) return;
+      dragging = false;
+      sheet.style.transition = '';
+      if (currentY - startY > 80) {
+        closeFn();
+      } else {
+        sheet.style.transform = 'translateY(0)';
+      }
+    });
+  });
+}
+
+// Init swipe for filter modal
+_initSheetSwipe('filter-modal', function() { closeFilterModal(); });
+
 // ─── SHARED FILTER MODAL ───
 let _filterTarget = null; // 'myshots' or 'community'
 let _filterSelections = {}; // temp selections while modal is open
@@ -38,6 +99,7 @@ function openFilterModal(target) {
     grinder: document.getElementById(prefix + '-grinder') ? document.getElementById(prefix + '-grinder').value : ''
   };
   _renderFilterSections(target);
+  _lockBodyScroll();
   document.getElementById('filter-modal-backdrop').classList.add('open');
   document.getElementById('filter-modal').classList.add('open');
 }
@@ -45,6 +107,7 @@ function openFilterModal(target) {
 function closeFilterModal() {
   document.getElementById('filter-modal-backdrop').classList.remove('open');
   document.getElementById('filter-modal').classList.remove('open');
+  _unlockBodyScroll();
   _filterTarget = null;
 }
 

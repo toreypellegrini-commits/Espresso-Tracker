@@ -18,7 +18,8 @@ function _unlockBodyScroll() {
 
 // Generic swipe-to-dismiss for any sheet element
 function _initSheetSwipe(sheetId, closeFn) {
-  var startY = 0, currentY = 0, dragging = false;
+  var startY = 0, currentY = 0, dragging = false, tracking = false;
+  var DEAD_ZONE = 10; // px — finger must move this far before swipe activates
   document.addEventListener('DOMContentLoaded', function() {
     var sheet = document.getElementById(sheetId);
     if (!sheet) return;
@@ -27,31 +28,39 @@ function _initSheetSwipe(sheetId, closeFn) {
       if (content && content.scrollTop > 0) return;
       startY = e.touches[0].clientY;
       currentY = startY;
-      dragging = true;
-      sheet.style.transition = 'none';
+      tracking = true;
+      dragging = false;
     }, { passive: true });
     sheet.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
+      if (!tracking) return;
       currentY = e.touches[0].clientY;
       var dy = currentY - startY;
-      if (dy > 0) {
-        e.preventDefault();
-        sheet.style.transform = 'translateY(' + dy + 'px)';
-      } else {
-        dragging = false;
-        sheet.style.transition = '';
-        sheet.style.transform = '';
+      if (!dragging) {
+        if (dy > DEAD_ZONE) {
+          dragging = true;
+          sheet.style.transition = 'none';
+        } else if (dy < -DEAD_ZONE) {
+          // Scrolling up — release tracking
+          tracking = false;
+          return;
+        }
+        // Within dead zone — do nothing, let tap work
+        return;
       }
+      // Actively dragging
+      e.preventDefault();
+      sheet.style.transform = 'translateY(' + (dy - DEAD_ZONE) + 'px)';
     }, { passive: false });
     sheet.addEventListener('touchend', function() {
-      if (!dragging) return;
+      if (!tracking) return;
+      tracking = false;
+      if (!dragging) return; // Was a tap, not a swipe — do nothing
       dragging = false;
       sheet.style.transition = '';
       if (currentY - startY > 80) {
         closeFn();
       } else {
         sheet.style.transform = 'translateY(0)';
-        // Clean up inline transition after snap-back completes
         setTimeout(function() { sheet.style.transition = ''; sheet.style.transform = ''; }, 300);
       }
     });

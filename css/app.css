@@ -288,6 +288,7 @@
     .filter-icon { font-size: 14px; }
 
     /* Filter modal */
+    .filter-modal-sheet { max-height: 80vh; }
     .filter-modal-footer { display: flex; gap: 10px; padding: 14px 1.25rem; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
     .filter-section { margin-bottom: 20px; }
     .filter-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px; }
@@ -428,7 +429,7 @@
     .profile-field input::placeholder, .profile-field textarea::placeholder { color: var(--hint); }
     .stats-table { width: 100%; border-collapse: collapse; }
     .stats-table td { padding: 10px 1.25rem; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
-    .stats-table td:first-child { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .stats-table td:first-child { color: var(--muted); font-size: 13px; width: 60%; }
     .stats-table td:last-child { font-weight: 600; text-align: right; font-family: var(--font-serif); font-size: 16px; }
     .stats-table tr:last-child td { border-bottom: none; }
 

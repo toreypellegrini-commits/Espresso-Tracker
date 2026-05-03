@@ -5,20 +5,15 @@
 
 // ─── SHARED SHEET UTILITIES ───
 // Background scroll lock — prevents page from scrolling when a sheet is open
+var _savedScrollY = 0;
+
 function _lockBodyScroll() {
+  _savedScrollY = window.scrollY;
   document.body.style.overflow = 'hidden';
-  document.body.style.position = 'fixed';
-  document.body.style.width = '100%';
-  document.body.style.top = '-' + window.scrollY + 'px';
 }
 
 function _unlockBodyScroll() {
-  var scrollY = document.body.style.top;
   document.body.style.overflow = '';
-  document.body.style.position = '';
-  document.body.style.width = '';
-  document.body.style.top = '';
-  window.scrollTo(0, parseInt(scrollY || '0') * -1);
 }
 
 // Generic swipe-to-dismiss for any sheet element
@@ -56,6 +51,8 @@ function _initSheetSwipe(sheetId, closeFn) {
         closeFn();
       } else {
         sheet.style.transform = 'translateY(0)';
+        // Clean up inline transition after snap-back completes
+        setTimeout(function() { sheet.style.transition = ''; sheet.style.transform = ''; }, 300);
       }
     });
   });
@@ -105,8 +102,12 @@ function openFilterModal(target) {
 }
 
 function closeFilterModal() {
-  document.getElementById('filter-modal-backdrop').classList.remove('open');
-  document.getElementById('filter-modal').classList.remove('open');
+  var modal = document.getElementById('filter-modal');
+  var backdrop = document.getElementById('filter-modal-backdrop');
+  // Remove inline styles left by swipe handler so CSS class controls transform
+  modal.removeAttribute('style');
+  modal.classList.remove('open');
+  backdrop.classList.remove('open');
   _unlockBodyScroll();
   _filterTarget = null;
 }

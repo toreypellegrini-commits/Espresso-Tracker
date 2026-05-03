@@ -265,9 +265,10 @@ async function deleteCommunityShot(id) {
 }
 
 function closeProfileSheet() {
-  document.getElementById('profile-sheet').style.transform = '';
+  var sheet = document.getElementById('profile-sheet');
+  sheet.removeAttribute('style');
   document.getElementById('profile-sheet-backdrop').classList.remove('open');
-  document.getElementById('profile-sheet').classList.remove('open');
+  sheet.classList.remove('open');
   _unlockBodyScroll();
 }
 

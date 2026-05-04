@@ -189,6 +189,7 @@ function renderCommunity() {
 
 // ─── PUBLIC PROFILE SHEET ───
 async function openProfileSheet(userId) {
+  _lockBodyScroll();
   document.getElementById('profile-sheet-backdrop').classList.add('open');
   document.getElementById('profile-sheet').classList.add('open');
   document.getElementById('profile-sheet-content').innerHTML = '<div class="empty" style="padding:2rem;">Loading\u2026</div>';
@@ -264,6 +265,12 @@ async function deleteCommunityShot(id) {
 }
 
 function closeProfileSheet() {
+  var sheet = document.getElementById('profile-sheet');
+  sheet.removeAttribute('style');
   document.getElementById('profile-sheet-backdrop').classList.remove('open');
-  document.getElementById('profile-sheet').classList.remove('open');
+  sheet.classList.remove('open');
+  _unlockBodyScroll();
 }
+
+// Init swipe for profile sheet
+_initSheetSwipe('profile-sheet', function() { closeProfileSheet(); });

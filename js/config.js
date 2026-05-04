@@ -34,7 +34,7 @@ const CHANGELOG = [
   },
   {
     version: '1.1.0',
-    date: 'April 18, 2026',
+    date: 'April 2026',
     title: 'UI Improvements + Optimizations',
     changes: [
       'Pagination for my shots & community pages',

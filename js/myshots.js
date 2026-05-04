@@ -3,6 +3,73 @@
 // My Shots page: filtering, progressive rendering.
 // Loads after router.js.
 
+// ─── SHARED SHEET UTILITIES ───
+// Background scroll lock — prevents page from scrolling when a sheet is open
+var _savedScrollY = 0;
+
+function _lockBodyScroll() {
+  _savedScrollY = window.scrollY;
+  document.body.style.overflow = 'hidden';
+}
+
+function _unlockBodyScroll() {
+  document.body.style.overflow = '';
+}
+
+// Generic swipe-to-dismiss for any sheet element
+function _initSheetSwipe(sheetId, closeFn) {
+  var startY = 0, currentY = 0, dragging = false, tracking = false;
+  var DEAD_ZONE = 10; // px — finger must move this far before swipe activates
+  document.addEventListener('DOMContentLoaded', function() {
+    var sheet = document.getElementById(sheetId);
+    if (!sheet) return;
+    sheet.addEventListener('touchstart', function(e) {
+      var content = sheet.querySelector('.sheet-content');
+      if (content && content.scrollTop > 0) return;
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      tracking = true;
+      dragging = false;
+    }, { passive: true });
+    sheet.addEventListener('touchmove', function(e) {
+      if (!tracking) return;
+      currentY = e.touches[0].clientY;
+      var dy = currentY - startY;
+      if (!dragging) {
+        if (dy > DEAD_ZONE) {
+          dragging = true;
+          sheet.style.transition = 'none';
+        } else if (dy < -DEAD_ZONE) {
+          // Scrolling up — release tracking
+          tracking = false;
+          return;
+        }
+        // Within dead zone — do nothing, let tap work
+        return;
+      }
+      // Actively dragging
+      e.preventDefault();
+      sheet.style.transform = 'translateY(' + (dy - DEAD_ZONE) + 'px)';
+    }, { passive: false });
+    sheet.addEventListener('touchend', function() {
+      if (!tracking) return;
+      tracking = false;
+      if (!dragging) return; // Was a tap, not a swipe — do nothing
+      dragging = false;
+      sheet.style.transition = '';
+      if (currentY - startY > 80) {
+        closeFn();
+      } else {
+        sheet.style.transform = 'translateY(0)';
+        setTimeout(function() { sheet.style.transition = ''; sheet.style.transform = ''; }, 300);
+      }
+    });
+  });
+}
+
+// Init swipe for filter modal
+_initSheetSwipe('filter-modal', function() { closeFilterModal(); });
+
 // ─── SHARED FILTER MODAL ───
 let _filterTarget = null; // 'myshots' or 'community'
 let _filterSelections = {}; // temp selections while modal is open
@@ -38,13 +105,19 @@ function openFilterModal(target) {
     grinder: document.getElementById(prefix + '-grinder') ? document.getElementById(prefix + '-grinder').value : ''
   };
   _renderFilterSections(target);
+  _lockBodyScroll();
   document.getElementById('filter-modal-backdrop').classList.add('open');
   document.getElementById('filter-modal').classList.add('open');
 }
 
 function closeFilterModal() {
-  document.getElementById('filter-modal-backdrop').classList.remove('open');
-  document.getElementById('filter-modal').classList.remove('open');
+  var modal = document.getElementById('filter-modal');
+  var backdrop = document.getElementById('filter-modal-backdrop');
+  // Remove inline styles left by swipe handler so CSS class controls transform
+  modal.removeAttribute('style');
+  modal.classList.remove('open');
+  backdrop.classList.remove('open');
+  _unlockBodyScroll();
   _filterTarget = null;
 }
 

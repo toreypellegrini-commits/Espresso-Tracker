@@ -11,6 +11,10 @@ function chartTheme(){const dark=window.matchMedia('(prefers-color-scheme: dark)
 function calcStreak() {
   if (!shots.length) return 0;
   const dates = [...new Set(shots.map(s=>s.date.slice(0,10)))].sort().reverse();
+  const today = todayStr();
+  const yd = new Date(Date.now() - 86400000);
+  const yesterdayStr = yd.getFullYear() + '-' + String(yd.getMonth()+1).padStart(2,'0') + '-' + String(yd.getDate()).padStart(2,'0');
+  if (dates[0] !== today && dates[0] !== yesterdayStr) return 0;
   let streak = 0, prev = null;
   for (const d of dates) {
     if (!prev) { streak = 1; prev = d; continue; }

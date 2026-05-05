@@ -386,8 +386,6 @@ async function saveShot() {
     // Check for new achievements
     computeAchievements();
 
-    clearForm();
-
     // Navigate back to roast detail
     if (roastLibId) {
       setTimeout(() => navTo('roast-detail', { roastId: parseInt(roastLibId) }), 1500);

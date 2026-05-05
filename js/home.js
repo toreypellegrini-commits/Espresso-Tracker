@@ -302,7 +302,7 @@ function renderOpenBags() {
       ${chips ? `<div class="bag-card-meta">${chips}</div>` : ''}
       <div class="bag-card-meta">${daysHTML} ${dialedBadge} ${shotCount ? `<span>${shotCount} shot${shotCount>1?'s':''}</span>` : ''}</div>
       ${lastHTML}
-      <button class="bag-card-btn" onclick="navTo('log',{roastId:${r.id}})">＋ Pull a shot</button>
+      <button class="bag-card-btn" onclick="tapFeedback(this);navTo('log',{roastId:${r.id}})">＋ Pull a shot</button>
     </div>`;
   }).join('');
 }

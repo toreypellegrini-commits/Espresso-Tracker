@@ -49,7 +49,13 @@ function navTo(page, opts = {}) {
 
   if (page === 'library') { renderLibrary(); }
   if (page === 'log') {
-    clearForm();
+    // Reset fields that don't get repopulated by loadRoast prefill
+    currentRating = 0;
+    document.querySelectorAll('.star').forEach(function(x) { x.classList.remove('active'); });
+    document.getElementById('star-label').textContent = 'tap to rate';
+    setField('f-notes', '');
+    if (typeof clearTags === 'function') clearTags();
+    updateShareNotice();
     populateRoastDropdown();
     populateGrinderDropdown();
     updateTempLabel();

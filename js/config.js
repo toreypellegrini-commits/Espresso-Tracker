@@ -82,6 +82,7 @@ const ACHIEVEMENTS = [
 const TIPS = [
   'Tip: Change one variable at a time. Otherwise you\u2019re guessing, not dialing.',
   'Tip: Think in ratios, not time. Time is a symptom \u2014 ratio is the lever.',
+  'Tip: Traditional recipes don’t work well for ultralights. To retain florality, try a lower contact time and faster flow rate.',
   'Tip: The number one way to increase extraction is to increase the amount of solvent you are putting over the coffee.',
   'Tip: Grind coarser than you think. You get comparable extraction with less channeling and more consistency.',
   'Tip: Darker roasts: shorter ratios, lower temps, coarser grinds. They extract easily.',

@@ -2,7 +2,7 @@
 // Service Worker v1
 // Bump the version string below every time you push a new build
 // to ensure all users get the update automatically.
-const VERSION = 'dialed-v132';
+const VERSION = 'dialed-v133';
 const CACHE_NAME = VERSION;
 
 // Files to cache for offline use

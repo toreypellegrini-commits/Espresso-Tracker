@@ -49,6 +49,7 @@ function navTo(page, opts = {}) {
 
   if (page === 'library') { renderLibrary(); }
   if (page === 'log') {
+    clearForm();
     populateRoastDropdown();
     populateGrinderDropdown();
     updateTempLabel();

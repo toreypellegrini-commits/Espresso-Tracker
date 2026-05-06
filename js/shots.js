@@ -65,7 +65,6 @@ document.querySelectorAll('.star').forEach(s => {
     currentRating = +s.dataset.v;
     document.querySelectorAll('.star').forEach(x => x.classList.toggle('active', +x.dataset.v <= currentRating));
     document.getElementById('star-label').textContent = ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'][currentRating];
-    tapFeedback(s);
     updateShareNotice();
   });
   s.addEventListener('mouseover', () => document.querySelectorAll('.star').forEach(x => x.style.color = +x.dataset.v <= +s.dataset.v ? '#d4880a' : ''));
@@ -383,14 +382,13 @@ async function saveShot() {
     // Smart save message
     const msg = getSaveMessage(shot, willShare);
     flash('save-msg', msg, 'success');
-    successFeedback(btn);
 
     // Check for new achievements
     computeAchievements();
 
     // Navigate back to roast detail
     if (roastLibId) {
-      setTimeout(() => navTo('roast-detail', { roastId: parseInt(roastLibId) }), 1500);
+      setTimeout(() => { clearForm(); navTo('roast-detail', { roastId: parseInt(roastLibId) }); }, 1500);
     }
   } catch (e) {
     setDbStatus('error', 'Save failed');

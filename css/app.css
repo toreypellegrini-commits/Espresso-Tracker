@@ -485,6 +485,9 @@
     .load-more-btn { display:block; width:100%; padding:12px; margin-top:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-size:14px; font-weight:500; cursor:pointer; text-align:center; }
     .load-more-btn:hover { background:var(--surface); }
 
+    /* Tap feedback — prevent layout shift during scale animations */
+    .bag-card-btn, .ref-star-btn, .star, .filter-chip { will-change: transform; }
+
     @media (max-width: 480px) {
       .shot-stats { grid-template-columns: repeat(2, 1fr); }
       .form-grid { grid-template-columns: 1fr; }

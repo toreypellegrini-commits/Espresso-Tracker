@@ -388,7 +388,7 @@ async function saveShot() {
 
     // Navigate back to roast detail
     if (roastLibId) {
-      setTimeout(() => navTo('roast-detail', { roastId: parseInt(roastLibId) }), 1500);
+      setTimeout(() => { clearForm(); navTo('roast-detail', { roastId: parseInt(roastLibId) }); }, 1500);
     }
   } catch (e) {
     setDbStatus('error', 'Save failed');

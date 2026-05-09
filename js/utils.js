@@ -93,3 +93,44 @@ function tempCToInput(tempC) {
   if (userProfile.temp_unit === 'F') return cToF(v);
   return Math.round(v);
 }
+
+// ─── HAPTIC FEEDBACK ───
+// Light tap — for button presses, chip selections, star taps
+function hapticTap() {
+  if (navigator.vibrate) navigator.vibrate(10);
+}
+
+// Success — for shot save, reference set, confirmations
+function hapticSuccess() {
+  if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+}
+
+// Bounce animation — scale an element briefly for visual feedback
+// Works on all platforms including iOS where vibrate isn't supported
+function animateTap(el) {
+  if (!el) return;
+  el.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  el.style.transform = 'scale(0.92)';
+  setTimeout(function() {
+    el.style.transform = 'scale(1)';
+    setTimeout(function() { el.style.transition = ''; el.style.transform = ''; }, 150);
+  }, 100);
+}
+
+// Combined: vibrate + animate
+function tapFeedback(el) {
+  hapticTap();
+  animateTap(el);
+}
+
+function successFeedback(el) {
+  hapticSuccess();
+  if (el) {
+    el.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    el.style.transform = 'scale(1.1)';
+    setTimeout(function() {
+      el.style.transform = 'scale(1)';
+      setTimeout(function() { el.style.transition = ''; el.style.transform = ''; }, 200);
+    }, 150);
+  }
+}

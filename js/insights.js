@@ -2,6 +2,8 @@
 // Chart.js insights: overview, bag-level analysis.
 // Loads after router.js.
 
+let _scatterRatingFilter = new Set(); // empty = show all
+
 // ─── INSIGHTS ───
 function switchInsightView(view){currentInsightView=view;document.getElementById('toggle-overview').classList.toggle('active',view==='overview');document.getElementById('toggle-bag').classList.toggle('active',view==='bag');document.getElementById('insights-overview').style.display=view==='overview'?'block':'none';document.getElementById('insights-bag').style.display=view==='bag'?'block':'none';if(view==='bag')renderBagInsights();}
 
@@ -31,6 +33,7 @@ function ratingColor(r) {
 }
 
 function renderInsights(){
+  _scatterRatingFilter = new Set();
   const el=document.getElementById('insights-overview');
   if(!shots.length){el.innerHTML='<div class="empty">Log some shots to see insights.</div>';return;}
 
@@ -59,13 +62,13 @@ function renderInsights(){
     </div>
     <div class="section-title">Shot scatter — all bags</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Shot time (x) · Grind (left y) · Ratio (right y) · Color = rating</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;">
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#2a9d4e;display:inline-block;"></span>5★</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#7ab648;display:inline-block;"></span>4★</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#d4880a;display:inline-block;"></span>3★</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#e8783a;display:inline-block;"></span>2★</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>1★</span>
-      <span style="display:flex;align-items:center;gap:4px;color:var(--muted);"><span style="width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block;opacity:0.5;"></span>unrated</span>
+    <div id="scatter-legend" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;">
+      <span class="scatter-legend-item" data-rating="5" onclick="toggleScatterRating(5)" style="display:flex;align-items:center;gap:4px;cursor:pointer;"><span style="width:10px;height:10px;border-radius:50%;background:#2a9d4e;display:inline-block;"></span>5★</span>
+      <span class="scatter-legend-item" data-rating="4" onclick="toggleScatterRating(4)" style="display:flex;align-items:center;gap:4px;cursor:pointer;"><span style="width:10px;height:10px;border-radius:50%;background:#7ab648;display:inline-block;"></span>4★</span>
+      <span class="scatter-legend-item" data-rating="3" onclick="toggleScatterRating(3)" style="display:flex;align-items:center;gap:4px;cursor:pointer;"><span style="width:10px;height:10px;border-radius:50%;background:#d4880a;display:inline-block;"></span>3★</span>
+      <span class="scatter-legend-item" data-rating="2" onclick="toggleScatterRating(2)" style="display:flex;align-items:center;gap:4px;cursor:pointer;"><span style="width:10px;height:10px;border-radius:50%;background:#e8783a;display:inline-block;"></span>2★</span>
+      <span class="scatter-legend-item" data-rating="1" onclick="toggleScatterRating(1)" style="display:flex;align-items:center;gap:4px;cursor:pointer;"><span style="width:10px;height:10px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>1★</span>
+      <span class="scatter-legend-item" data-rating="0" onclick="toggleScatterRating(0)" style="display:flex;align-items:center;gap:4px;color:var(--muted);cursor:pointer;"><span style="width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block;opacity:0.5;"></span>unrated</span>
     </div>
     <div class="chart-wrap" style="height:300px;"><canvas id="chart-scatter-all"></canvas></div>`;
 
@@ -108,6 +111,27 @@ function renderInsights(){
       }
     });
   },100);
+}
+
+function toggleScatterRating(rating) {
+  if (_scatterRatingFilter.has(rating)) {
+    _scatterRatingFilter.delete(rating);
+  } else {
+    _scatterRatingFilter.add(rating);
+  }
+  document.querySelectorAll('.scatter-legend-item').forEach(function(el) {
+    var r = +el.dataset.rating;
+    var active = !_scatterRatingFilter.size || _scatterRatingFilter.has(r);
+    el.style.opacity = active ? '1' : '0.3';
+  });
+  var chart = chartInstances['chart-scatter-all'];
+  if (!chart) return;
+  var ratingLabels = {0:'Unrated',1:'1★',2:'2★',3:'3★',4:'4★',5:'5★'};
+  chart.data.datasets.forEach(function(ds) {
+    var r = +Object.entries(ratingLabels).find(function(e) { return e[1] === ds.label; })[0];
+    ds.hidden = _scatterRatingFilter.size > 0 && !_scatterRatingFilter.has(r);
+  });
+  chart.update();
 }
 
 function renderBagInsights(){

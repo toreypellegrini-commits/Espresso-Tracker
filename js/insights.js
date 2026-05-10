@@ -113,6 +113,7 @@ function renderInsights(){
 function renderBagInsights(){
   const el=document.getElementById('insights-bag');
   const bagsWithShots=roastLib.filter(r=>shots.some(s=>s.roastLibId==r.id));
+  bagsWithShots.sort((a,b)=>{const la=shots.find(s=>s.roastLibId==a.id);const lb=shots.find(s=>s.roastLibId==b.id);return new Date(lb?.date||0)-new Date(la?.date||0);});
   if(!bagsWithShots.length){el.innerHTML='<div class="empty">No shots linked to a roast yet.</div>';return;}
   if(!selectedBagId||!bagsWithShots.find(r=>r.id==selectedBagId))selectedBagId=bagsWithShots[0].id;
   const bag=roastLib.find(r=>r.id==selectedBagId);
